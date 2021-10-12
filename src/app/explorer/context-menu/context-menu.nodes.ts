@@ -1,7 +1,7 @@
 import { ImmutableTree } from '@youwol/fv-tree'
 import { Client, Document } from '../../client/client'
 import { ExplorerState } from '../explorer.view'
-import { StoryNode, DocumentNode, SignalType } from '../nodes'
+import { StoryNode, DocumentNode, SignalType, ExplorerNode } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
 
 /**
@@ -28,7 +28,7 @@ export let ALL_ACTIONS = {
     renameStoryNode: {
         applicable: (selectedNode) => selectedNode instanceof StoryNode,
         createNode: (node: StoryNode, explorerState: ExplorerState) =>
-            new RenameStoryNode({
+            new RenameNode<StoryNode>({
                 node,
                 explorerState
             })
@@ -36,7 +36,7 @@ export let ALL_ACTIONS = {
     renameDocumentNode: {
         applicable: (selectedNode) => selectedNode instanceof DocumentNode,
         createNode: (node: DocumentNode, explorerState: ExplorerState) =>
-            new RenameDocumentNode({
+            new RenameNode<DocumentNode>({
                 node,
                 explorerState
             })
@@ -132,41 +132,22 @@ export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
 /**
  * Rename document node type of the context-menu's tree-view
  */
-export class RenameDocumentNode extends ContextTreeNode implements ExecutableNode {
+export class RenameNode<TNode extends ExplorerNode> 
+extends ContextTreeNode 
+implements ExecutableNode {
 
     public readonly explorerState: ExplorerState
-    public readonly node: DocumentNode
+    public readonly node: TNode
 
     constructor(params: {
         explorerState: ExplorerState,
-        node: DocumentNode
+        node: TNode
     }) {
-        super({ id: 'rename-document', children: undefined, name: 'rename document', faIcon: 'fas fa-pen' })
-        Object.assign(this, params)
-    }
-
-    execute(
-        state: ContextMenuState
-    ) {
-        this.node.signal$.next({
-            type: SignalType.Rename
-        })
-    }
-}
-
-/**
- * Rename story node type of the context-menu's tree-view
- */
-export class RenameStoryNode extends ContextTreeNode implements ExecutableNode {
-
-    public readonly explorerState: ExplorerState
-    public readonly node: DocumentNode
-
-    constructor(params: {
-        explorerState: ExplorerState,
-        node: StoryNode
-    }) {
-        super({ id: 'rename-story', children: undefined, name: 'rename story', faIcon: 'fas fa-pen' })
+        super({ 
+            id: params.node instanceof DocumentNode ? 'rename-document' : 'rename-story', 
+            children: undefined, 
+            name: params.node instanceof DocumentNode ? 'rename document' : 'rename story', 
+            faIcon: 'fas fa-pen' })
         Object.assign(this, params)
     }
 
