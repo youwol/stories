@@ -1,5 +1,5 @@
 import { HTMLElement$, VirtualDOM } from "@youwol/flux-view";
-import { merge, Observable, ReplaySubject, Subject } from "rxjs";
+import { merge, Observable, ReplaySubject } from "rxjs";
 import { debounceTime, skip, take } from "rxjs/operators";
 import { AppState } from "../../../main-app/app-state";
 import { DocumentNode, ExplorerNode } from "../../../explorer/nodes"

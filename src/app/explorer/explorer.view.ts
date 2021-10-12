@@ -37,8 +37,8 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
                 title: newName
             }
             Client.postDocument$(document.storyId, document.documentId, body)
-                .subscribe((document: Document) => {
-                    this.replaceAttributes(node, { document: document})
+                .subscribe((newDoc: Document) => {
+                    this.replaceAttributes(node, { document: newDoc})
                 })
         }
         if( node instanceof StoryNode) {
@@ -49,8 +49,8 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
                 title: newName
             }
             Client.postStory$(story.storyId, body)
-                .subscribe((story: Story ) => {
-                    this.replaceAttributes(node, { story: story})
+                .subscribe((newStory: Story ) => {
+                    this.replaceAttributes(node, { story: newStory})
                 })
         }
     }
@@ -87,7 +87,8 @@ export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
                 explorerState: this.state as ExplorerState, 
                 explorerDiv
             })
-            new ContextMenu.View({state:contextState, class:"fv-bg-background border fv-color-primary"} as any)
+            // This 
+            return new ContextMenu.View({state:contextState, class:"fv-bg-background border fv-color-primary"} as any)
         }
     }
 }

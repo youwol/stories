@@ -1,12 +1,10 @@
-import { child$, VirtualDOM } from "@youwol/flux-view";
-import { ReplaySubject } from "rxjs";
+import { child$, VirtualDOM, render } from "@youwol/flux-view";
+import { ReplaySubject, forkJoin } from "rxjs";
 import { Story, Document, Client } from "../client/client";
 import { ExplorerView } from "../explorer/explorer.view";
 import { ExplorerNode } from "../explorer/nodes";
 import { panelsFactory } from "../main-panels/panels.factory";
 import { topBannerView } from "../top-banner/top-banner.view";
-import { render } from "@youwol/flux-view"
-import { forkJoin } from "rxjs"
 import { map, tap } from "rxjs/operators"
 
 /**
@@ -23,7 +21,7 @@ export function load$(storyId: string, container: HTMLElement) {
     return forkJoin([
         Client.getStory$(storyId),
         Client.getChildren$(storyId, {parentDocumentId: storyId, count:1}).pipe(
-            map( docs => docs[0] as Document)
+            map( docs => docs[0])
         )]).pipe(
         map(([story, rootDocument]:[story:Story, rootDocument: Document]) => {
             let appState = new AppState({story, rootDocument})

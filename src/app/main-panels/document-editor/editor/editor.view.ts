@@ -1,11 +1,10 @@
 import { child$, VirtualDOM } from "@youwol/flux-view";
-import { debounceTime, mergeMap, tap } from "rxjs/operators";
+import { debounceTime, mergeMap } from "rxjs/operators";
 import { AppState } from "../../../main-app/app-state";
 import { Client } from "../../../client/client";
 import { DocumentNode } from "../../../explorer/nodes"
 import { forkJoin, ReplaySubject, Subject } from "rxjs";
 import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
-import { CodeMirror } from "../../../../tests/mock-packages";
 
 type CodeMirrorEditor = any
 

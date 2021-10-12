@@ -26,7 +26,7 @@ export function fetchCodeMirror$(): Observable<any> {
     let jsCode = fetchBundles({
         codemirror: {
             version: '5.52.0',
-            sideEffects: () => { }
+            sideEffects: () => ({ })
         }
     }, window)
         .then(() => fetchJavascriptAddOn(urlsJs, window))

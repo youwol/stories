@@ -38,7 +38,7 @@ export class ContextMenuState extends ContextMenu.State{
 
     dispatch(ev: MouseEvent) : VirtualDOM{
         
-        let view = {
+        return {
             style:{
                 zIndex:1,
             },
@@ -50,8 +50,7 @@ export class ContextMenuState extends ContextMenu.State{
                     }
                 )
             ]
-        } 
-        return view
+        }
     }
 }
 
