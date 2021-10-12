@@ -55,6 +55,7 @@ module.exports = {
           "@youwol/fv-input": "window['@youwol/fv-input']",
           "@youwol/fv-tree": "window['@youwol/fv-tree']",
           "@youwol/fv-tabs": "window['@youwol/fv-tabs']",
+          "@youwol/fv-context-menu": "window['@youwol/fv-context-menu']",
           "@youwol/flux-youwol-essentials": "window['@youwol/flux-youwol-essentials']",
         }
       ],
