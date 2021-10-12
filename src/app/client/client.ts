@@ -1,7 +1,5 @@
 import { Observable } from "rxjs";
-import * as _ from 'lodash'
-import { MockService } from "./mock-client";
-import { ClientApi } from "./client-models";
+import { ClientApi } from "./API";
 import { map } from "rxjs/operators";
 
 
@@ -16,81 +14,67 @@ export class Author implements ClientApi.Author{
 }
 
 
-export class DocumentReference implements ClientApi.DocumentReference{
-
-    documentId: string
-    title: string
-
-    constructor({documentId, title}){
-        this.documentId = documentId
-        this.title = title
-    }
-}
-
 export class Document implements ClientApi.Document{
 
+    storyId: string
     documentId: string
     title: string
     contentId: string
-    children: DocumentReference[]    
+    orderIndex: number   
 
-    constructor({documentId, title, contentId, children}: ClientApi.Document){
+    constructor({documentId, title}: ClientApi.Document){
         this.documentId = documentId
         this.title = title
-        this.contentId = contentId
-        this.children = children.map( (ref) => new DocumentReference(ref))
     }
 }
 
 export class Story implements ClientApi.Story{
 
     storyId: string
-    rootDocument: DocumentReference
+    rootDocumentId: string
     authors: Author[]
-
-    constructor({storyId, rootDocument, authors}: ClientApi.Story){
+    title: string
+    
+    constructor({storyId, title, authors}: ClientApi.Story){
         this.storyId = storyId
-        this.rootDocument = new DocumentReference(rootDocument)
+        this.title = title
+        this.rootDocumentId = storyId
         this.authors = authors.map( (author) => new Author(author))
     }
 }
 
+
 export class Client{
 
-    static basePath = "/api/assets-gateway/raw/stories"
- 
-    
-    static getStories$() : Observable<Story[]>{
+    static service : ClientApi.ServiceInterface
 
-        return MockService.getStories$().pipe(
-            map( (stories) => {
-                return stories.map( story => new Story(story))
-            })
-        )
-    }
+    static getStory$( storyId: string) : Observable<Story>{
 
-    static getStory$( assetId: string) : Observable<Story>{
-
-        return MockService.getStory$(assetId).pipe(
+        return Client.service.getStory$(storyId).pipe(
             map( (story) => {
                 return new Story(story)
             })
         )
     }
 
-    static putStory$() : Observable<Story>{
+    static postStory$(
+        storyId: string, 
+        body: { title: string}
+        ) : Observable<Story>{
 
-        return MockService.putStory$().pipe(
+        return Client.service.postStory$(storyId, body).pipe(
             map( (story) => {
                 return new Story(story)
             })
         )
     }
 
+    static getDocument$(
+        storyId: string, 
+        documentId: string
+        ) : Observable<Document>{
 
-    static getDocument$( assetId: string, documentId: string ) : Observable<Document> {
-
-        return MockService.getDocument$(assetId, documentId).pipe(
+        return Client.service.getDocument$(storyId, documentId).pipe(
             map( (document) => {
                 return new Document(document)
             })
@@ -98,11 +82,11 @@ export class Client{
     }
 
     static putDocument$(
-        assetId: string, 
+        storyId: string, 
         body: { parentDocumentId: string, title: string, content: string}
         ) : Observable<Document>{
 
-        return MockService.putDocument$(assetId, body).pipe(
+        return Client.service.putDocument$(storyId, body).pipe(
             map( (document) => {
                 return new Document(document)
             })
@@ -110,24 +94,62 @@ export class Client{
     }
 
     static postDocument$(
-        assetId: string, 
-        body: { documentId: string, title: string}
+        storyId: string, 
+        documentId: string,
+        body: { title: string}
         ) : Observable<Document>{
 
-        return MockService.postDocument$(assetId, body).pipe(
+        return Client.service.postDocument$(storyId,documentId, body).pipe(
             map( (document) => {
                 return new Document(document)
             })
         )
     }
 
+    static deleteDocument$(
+        assetId: string, 
+        documentId: string
+        ) : Observable<boolean>{
 
-    static getContent$(assetId: string, documentId: string) : Observable<string> {
-
-        return MockService.getContent$(assetId, documentId)
+        return Client.service.deleteDocument$(assetId, documentId)
     }
 
-    static postContent$(documentId: string, content: string) {
-        return MockService.postContent$(documentId, content)
+    static getContent$(storyId: string, documentId: string) : Observable<string> {
+
+        return Client.service.getContent$(storyId, documentId)
     }
+
+    static postContent$(storyId: string, documentId: string, content: string) {
+        return Client.service.postContent$(storyId, documentId, content)
+    }
+
+    static getChildren$( 
+        storyId: string, 
+        body: {
+            parentDocumentId: string,
+            fromIndex?: number,
+            count?: number
+        }) : Observable<Document[]>{
+
+            let count = body.count || 1000
+            let fromIndex = body.fromIndex || -Infinity
+            return Client.service.getChildren$(
+                storyId,
+                body.parentDocumentId,
+                fromIndex,
+                count
+            ).pipe(
+                map( (docs: ClientApi.Document[]) => {
+
+                    return docs.map( doc => {
+                        return new Document({
+                            documentId:doc.documentId,
+                            storyId: doc.storyId,
+                            title: doc.title,
+                            orderIndex: doc.orderIndex
+                        })
+                    })
+                })
+            )
+        }
 }

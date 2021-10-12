@@ -1,96 +1,102 @@
 
 
 import {ImmutableTree} from '@youwol/fv-tree'
+import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { Client, Story, Document, DocumentReference } from '../client/client'
+import { Client, Story, Document } from '../client/client'
 
-export class Node extends ImmutableTree.Node{
+/**
+ * Node's signal's type enum
+ */
+export enum SignalType{
+    Rename = "Rename"
+}
+
+/**
+ * Node's signal data-structure
+ */
+interface NodeSignal{
+    type: SignalType
+}
+
+/**
+ * Base class of explorer's node
+ */
+export class ExplorerNode extends ImmutableTree.Node{
 
     name: string
 
+    signal$ = new ReplaySubject<NodeSignal>()
+    
     constructor({id, name, children}){
         super({id, children})
         this.name = name
     }
 }
 
-export class LibraryNode extends Node{
-
-    constructor({children} : {children?} = {}){
-        super({
-            id: 'library', 
-            name: 'My library', 
-            children: children || getChildrenOfLibrary$()
-        })
-    }
-}
-
-export class StoryNode extends Node{
+/**
+ * Story node of explorer's node  
+ */
+export class StoryNode extends ExplorerNode{
 
     story: Story
-
-    constructor({story, children } : {story: Story, children?}){
+    rootDocument: Document
+    constructor({story, rootDocument, children } : {
+        story: Story, 
+        rootDocument: Document,
+        children?}
+        ){
         super({
-            id:story.rootDocument.documentId, 
-            name: story.rootDocument.title, 
-            children: children || getChildrenOfDocument$(story, story.rootDocument) 
+            id: story.storyId, 
+            name: story.title, 
+            children: children || getChildrenOfDocument$(story, rootDocument.documentId) 
         })
         this.story = story
+        this.rootDocument = rootDocument
     }
 }
 
-export class DocumentNode extends Node{
+/**
+ * Document node of explorer's node  
+ */
+export class DocumentNode extends ExplorerNode{
 
     story : Story
-    document: DocumentReference
+    document: Document
 
     constructor( {story, document, children} : {
         story: Story, 
-        document: DocumentReference,
+        document: Document,
         children?
     }){
         super({
             id:document.documentId, 
             name: document.title, 
-            children: children || getChildrenOfDocument$(story, document) 
+            children: children || getChildrenOfDocument$(story, document.documentId) 
         })
         this.story = story
         this.document = document
     }
 }
 
+/**
+ *
+ * Retrieves document's children
+ *
+ * @param story associated story
+ * @param parentDocumentId parent document id
+ * @returns the list of children node
+ */
+function getChildrenOfDocument$(
+    story: Story, 
+    parentDocumentId: string
+    ) : Observable<DocumentNode[]> {
 
-function getChildrenOfLibrary$() {
-
-
-    return Client.getStories$().pipe(
-        map( (stories: Story[]) => {
-            return stories.map( (story: Story) => {
-                return new StoryNode({story})
+    return Client.getChildren$(story.storyId, {parentDocumentId}).pipe(
+        map( (documents: Document[]) => {
+            return documents.map( (document:Document) => {
+                return new DocumentNode({story, document})
             })
         })
     )
-}
-
-function getChildrenOfDocument$(story: Story, document: DocumentReference) {
-
-
-    return Client.getDocument$(story.storyId, document.documentId).pipe(
-        map( (document: Document) => {
-            return document.children.map( (reference:DocumentReference) => {
-                return new DocumentNode({story, document: reference})
-            })
-        })
-    )
-}
-
-export function nodesFactory( parentStory: Story, data: Story | DocumentReference ) : Node {
-
-    if( data instanceof Story ){
-        return new StoryNode({story: data})
-    }
-    if( data instanceof DocumentReference ){
-        return new DocumentNode({story:parentStory, document:data})
-    }
-    throw Error("nodesFactory: node's type unknown")
 }

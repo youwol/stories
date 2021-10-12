@@ -5,7 +5,7 @@ export function topBannerView(): VirtualDOM {
     return {
         class: 'border fv-color-primary fv-bg-background-alt',
         style:{
-            height: '50px'
+            minHeight: '50px'
         }
     }
 }

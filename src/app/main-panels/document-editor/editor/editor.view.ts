@@ -1,106 +1,108 @@
 import { child$, VirtualDOM } from "@youwol/flux-view";
-import { ImmutableTree } from "@youwol/fv-tree"
-import { debounceTime, map, mergeMap, publish, share } from "rxjs/operators";
-import { AppState } from "../../../app-state";
-import { Client, Story } from "../../../client/client";
-import { fetchBundles, fetchJavascriptAddOn, fetchStyleSheets } from '@youwol/cdn-client'
-import { DocumentNode, Node } from "../../../explorer/nodes"
-import { forkJoin, from, Observable, ReplaySubject } from "rxjs";
+import { debounceTime, mergeMap, tap } from "rxjs/operators";
+import { AppState } from "../../../main-app/app-state";
+import { Client } from "../../../client/client";
+import { DocumentNode } from "../../../explorer/nodes"
+import { forkJoin, ReplaySubject, Subject } from "rxjs";
+import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
+import { CodeMirror } from "../../../../tests/mock-packages";
 
-let urlsJs = [
-    "codemirror#5.52.0~mode/javascript.min.js",
-    "codemirror#5.52.0~mode/markdown.min.js",
-    "codemirror#5.52.0~mode/css.min.js",
-    "codemirror#5.52.0~mode/xml.min.js",
-    "codemirror#5.52.0~mode/htmlmixed.min.js",
-    "codemirror#5.52.0~mode/gfm.min.js"
-]
-let urlsCss = [
-    "codemirror#5.52.0~codemirror.min.css",
-    "codemirror#5.52.0~theme/blackboard.min.css"
-]
+type CodeMirrorEditor = any
 
-export class EditorState {
+/**
+ * Logic side of [[EditorView]]
+ */
+ export class EditorState implements VirtualDOM {
 
-    node: Node
-    constructor({ node }: {
-        node: Node
-    }) {
-        this.node = node
-    }
-}
-
-
-function fetchCodeMirror$(): Observable<any> {
-    let css = fetchStyleSheets(urlsCss)
-    let jsCode = fetchBundles({
-        codemirror: {
-            version: '5.52.0',
-            sideEffects: () => { }
-        }
-    }, window)
-        .then(() => fetchJavascriptAddOn(urlsJs, window))
-    return from(Promise.all([jsCode, css])).pipe(
-        share()
-    )
-}
-
-
-export class EditorView implements VirtualDOM {
-
-    static codeMirror$ = fetchCodeMirror$()
+    static debounceTime = 1000
+    static codeMirror$ = fetchCodeMirror$
 
     public readonly node : DocumentNode
     public readonly appState: AppState
 
-    public readonly class = 'd-flex flex-column flex-grow-1 fv-bg-background-alt w-50 mr-1 ml-2 p-2'
-    public readonly children: Array<VirtualDOM>
-
     public readonly content$ : ReplaySubject<string>
-    
+    public readonly saved$ = new Subject<boolean>() 
+
+    /**
+     * This editor gets initialized after the required assets
+     * have been fetched from the CDN
+     */
+    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
+
     configurationCodeMirror = {
-        value: "state.content$.getValue()",
+        value: "",
         mode: 'markdown',
         lineNumbers: false,
-        theme: 'blackboard',
-        extraKeys: {
-            "Tab": (cm) => cm.replaceSelection("    ", "end")
-        }
+        theme: 'blackboard'
     }
 
     constructor( params: {
         node: DocumentNode,
         appState: AppState,
-        content$
+        content$: ReplaySubject<string>
     }) {
         Object.assign(this, params)
 
         this.content$.pipe(
-            debounceTime(500),
-            mergeMap( (content) => Client.postContent$(this.node.document.documentId, content) )
+            debounceTime(EditorState.debounceTime),
+            mergeMap( (content) => Client.postContent$(this.node.story.storyId, this.node.document.documentId, content) )
         ).subscribe( (content) => {
+            this.saved$.next(true)
         })
+    }
+
+    setContent( content: string) {
+        this.content$.next(content)
+    }
+
+    setCodeMirrorEditor( editor: CodeMirrorEditor ) {
+        this.codeMirrorEditor$.next(editor)
+    }
+}
+
+/**
+ * Editor view
+ */
+export class EditorView implements VirtualDOM {
+
+    public readonly editorState: EditorState
+    public readonly id = "editor-view"
+    public readonly class: string
+    public readonly children: Array<VirtualDOM>
+
+    constructor( params: {
+        editorState: EditorState,
+        class: string
+    }) {
+        Object.assign(this, params)
         
         this.children = [
             {
-                class: 'w-100 flex-grow-1',
+                class: 'w-100 h-100',
                 children: [
                     child$(
                         forkJoin([
-                            EditorView.codeMirror$,
-                            Client.getContent$(this.node.story.storyId, this.node.document.documentId)
+                            EditorState.codeMirror$(),
+                            Client.getContent$(
+                                this.editorState.node.story.storyId, 
+                                this.editorState.node.document.documentId)
                         ]),
                         ([_, content]) => {
                             return {
                                 id: 'code-mirror-editor',
                                 class: 'w-100 h-100',
                                 connectedCallback: (elem) => {
-                                    let config = {...this.configurationCodeMirror, value: content}
+                                    let config = {
+                                        ...this.editorState.configurationCodeMirror, 
+                                        value: content
+                                    }
                                     let editor = window['CodeMirror'](elem, config)
-                                    this.content$.next(content)
+                                    this.editorState.setContent(content)
+
                                     editor.on("changes", () => {
-                                        this.content$.next(editor.getValue())
+                                        this.editorState.setContent(editor.getValue())
                                     })
+                                    this.editorState.setCodeMirrorEditor(editor)
                                 }
                             }
                         }

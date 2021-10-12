@@ -1,21 +1,14 @@
 import { ImmutableTree } from '@youwol/fv-tree'
-import { Client, Story, Document } from '../../client/client'
+import { Client, Document } from '../../client/client'
 import { ExplorerState } from '../explorer.view'
-import { nodesFactory, StoryNode, LibraryNode, DocumentNode } from '../nodes'
+import { StoryNode, DocumentNode, SignalType } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
 
-
-
-
+/**
+ * Factory of available actions in the
+ * tree-view's context-menu
+ */
 export let ALL_ACTIONS = {
-    newStory: {
-        applicable: (selectedNode) => selectedNode instanceof LibraryNode,
-        createNode: (libraryNode: LibraryNode, explorerState: ExplorerState) =>
-            new AddStoryNode({
-                libraryNode,
-                explorerState
-            })
-    },
     newPage: {
         applicable: (selectedNode) => selectedNode instanceof DocumentNode || selectedNode instanceof StoryNode,
         createNode: (documentNode: DocumentNode, explorerState: ExplorerState) =>
@@ -24,11 +17,19 @@ export let ALL_ACTIONS = {
                 explorerState
             })
     },
-    deleteStory: {
-        applicable: (selectedNode) => selectedNode instanceof StoryNode,
-        createNode: (deletedNode: StoryNode, explorerState: ExplorerState) =>
-            new DeleteStoryNode({
+    deleteDocument: {
+        applicable: (selectedNode) => selectedNode instanceof DocumentNode,
+        createNode: (deletedNode: DocumentNode, explorerState: ExplorerState) =>
+            new DeleteDocumentNode({
                 deletedNode,
+                explorerState
+            })
+    },
+    renameStoryNode: {
+        applicable: (selectedNode) => selectedNode instanceof StoryNode,
+        createNode: (node: StoryNode, explorerState: ExplorerState) =>
+            new RenameStoryNode({
+                node,
                 explorerState
             })
     },
@@ -42,6 +43,16 @@ export let ALL_ACTIONS = {
     }
 }
 
+/**
+ * Interface of executable nodes of the context menu
+ */
+export interface ExecutableNode{
+    execute(state: ContextMenuState, { event }: { event: MouseEvent })
+}
+
+/**
+ * Base class of tree-view node of the context menu
+ */
 export class ContextTreeNode extends ImmutableTree.Node {
 
     public readonly faIcon
@@ -52,51 +63,29 @@ export class ContextTreeNode extends ImmutableTree.Node {
         this.name = name
         this.faIcon = faIcon
     }
-
-    execute(state: ContextMenuState, { event }: { event: MouseEvent }) { }
 }
 
+/**
+ * Type guard against [[ExecutableNode]]
+ */
+export function isExecutable(node: ExecutableNode | ContextTreeNode): node is ExecutableNode{
+    return (node as any as ExecutableNode).execute !== undefined
+} 
+
+/**
+ * Root node type of the context-menu's tree-view
+ */
 export class ContextRootNode extends ContextTreeNode {
 
     constructor({ children }: { children: Array<ContextTreeNode> }) {
         super({ id: 'root', children, name: 'menu list', faIcon: '' })
     }
-
 }
 
-export class AddStoryNode extends ContextTreeNode {
-
-    public readonly explorerState: ExplorerState
-    public readonly libraryNode: LibraryNode
-
-    constructor(params: {
-        explorerState: ExplorerState,
-        libraryNode: LibraryNode
-    }) {
-        super({
-            id: 'add-story',
-            children: undefined,
-            name: 'new story',
-            faIcon: 'fas fa-book-open'
-        })
-        Object.assign(this, params)
-    }
-
-    execute(
-        state: ContextMenuState,
-        { event }: { event: MouseEvent }
-    ) {
-        Client.putStory$().subscribe((story: Story) => {
-            let storyNode = new StoryNode({ story })
-            console.log("Add node", storyNode)
-            this.explorerState.addChild(this.libraryNode, storyNode)
-        })
-        console.log("Create new story")
-    }
-}
-
-
-export class AddDocumentNode extends ContextTreeNode {
+/**
+ * Add document node type of the context-menu's tree-view
+ */
+export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
 
     public readonly explorerState: ExplorerState
     public readonly parentNode: DocumentNode | StoryNode
@@ -106,7 +95,7 @@ export class AddDocumentNode extends ContextTreeNode {
         parentNode: DocumentNode
     }) {
         super({
-            id: 'add-story',
+            id: 'add-document',
             children: undefined,
             name: 'new document',
             faIcon: 'fas fa-file'
@@ -115,12 +104,11 @@ export class AddDocumentNode extends ContextTreeNode {
     }
 
     execute(
-        state: ContextMenuState,
-        { event }: { event: MouseEvent }
+        state: ContextMenuState
     ) {
         let body = this.parentNode instanceof StoryNode
             ? {
-                parentDocumentId: this.parentNode.story.storyId,
+                parentDocumentId: this.parentNode.rootDocument.documentId,
                 title: "New document",
                 content: ""
             }
@@ -141,8 +129,35 @@ export class AddDocumentNode extends ContextTreeNode {
     }
 }
 
+/**
+ * Rename document node type of the context-menu's tree-view
+ */
+export class RenameDocumentNode extends ContextTreeNode implements ExecutableNode {
 
-export class RenameDocumentNode extends ContextTreeNode {
+    public readonly explorerState: ExplorerState
+    public readonly node: DocumentNode
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        node: DocumentNode
+    }) {
+        super({ id: 'rename-document', children: undefined, name: 'rename document', faIcon: 'fas fa-pen' })
+        Object.assign(this, params)
+    }
+
+    execute(
+        state: ContextMenuState
+    ) {
+        this.node.signal$.next({
+            type: SignalType.Rename
+        })
+    }
+}
+
+/**
+ * Rename story node type of the context-menu's tree-view
+ */
+export class RenameStoryNode extends ContextTreeNode implements ExecutableNode {
 
     public readonly explorerState: ExplorerState
     public readonly node: DocumentNode
@@ -151,46 +166,42 @@ export class RenameDocumentNode extends ContextTreeNode {
         explorerState: ExplorerState,
         node: StoryNode
     }) {
-        super({ id: 'delete-story', children: undefined, name: 'rename document', faIcon: 'fas fa-pen' })
+        super({ id: 'rename-story', children: undefined, name: 'rename story', faIcon: 'fas fa-pen' })
         Object.assign(this, params)
     }
 
     execute(
-        state: ContextMenuState,
-        { event }: { event: MouseEvent }
+        state: ContextMenuState
     ) {
-        let document = this.node.document
-
-        let body = {
-            documentId: document.documentId,
-            title: "Renamed document!"
-        }
-        Client.postDocument$(document.documentId, body)
-            .subscribe((document: Document) => {
-                let newNode = new DocumentNode({ ...this.node, document })
-                console.log("Add node", { node: this.node, newNode})
-                this.explorerState.replaceNode(this.node, newNode)
-            })
+        this.node.signal$.next({
+            type: SignalType.Rename
+        })
     }
 }
 
-
-export class DeleteStoryNode extends ContextTreeNode {
+/**
+ * Delete document node type of the context-menu's tree-view
+ */
+export class DeleteDocumentNode extends ContextTreeNode implements ExecutableNode {
 
     public readonly explorerState: ExplorerState
-    public readonly deletedNode: StoryNode
+    public readonly deletedNode: DocumentNode
 
     constructor(params: {
         explorerState: ExplorerState,
-        deletedNode: StoryNode
+        deletedNode: DocumentNode
     }) {
-        super({ id: 'delete-story', children: undefined, name: 'delete story', faIcon: 'fas fa-trash' })
+        super({ id: 'delete-document', children: undefined, name: 'delete document', faIcon: 'fas fa-trash' })
         Object.assign(this, params)
     }
 
     execute(
-        state: ContextMenuState,
-        { event }: { event: MouseEvent }
+        state: ContextMenuState
     ) {
+        Client
+        .deleteDocument$(this.deletedNode.story.storyId, this.deletedNode.document.documentId)
+        .subscribe( () => {
+            this.explorerState.removeNode(this.deletedNode)
+        })
     }
 }

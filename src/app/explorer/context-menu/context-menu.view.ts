@@ -1,17 +1,20 @@
 
 import { ContextMenu } from "@youwol/fv-context-menu"
-import { fromEvent, Observable, of } from "rxjs"
-import { tap } from "rxjs/operators"
-import { AppState } from "../../app-state"
-import { DocumentNode, LibraryNode, StoryNode } from "../nodes"
-import { AddStoryNode, ContextRootNode, ContextTreeNode, DeleteStoryNode, AddDocumentNode, ALL_ACTIONS
+import { fromEvent, Observable} from "rxjs"
+import { filter, tap } from "rxjs/operators"
+import { AppState } from "../../main-app/app-state"
+import { ContextRootNode, ContextTreeNode, ALL_ACTIONS,
+    isExecutable
  } from "./context-menu.nodes"
 import { ImmutableTree } from '@youwol/fv-tree'
-import { child$, VirtualDOM } from "@youwol/flux-view"
+import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view"
 import { ExplorerState } from "../explorer.view"
+import { ExplorerNode } from "../nodes"
 
 
-
+/**
+ * Logic side of [[ContextMenuView]]
+ */
 export class ContextMenuState extends ContextMenu.State{
 
     public readonly appState : AppState
@@ -33,49 +36,80 @@ export class ContextMenuState extends ContextMenu.State{
         this.explorerDiv = explorerDiv
     }
 
-    dispatch(ev: MouseEvent){
-        
+    dispatch(ev: MouseEvent) : VirtualDOM{
         
         let view = {
+            style:{
+                zIndex:1,
+            },
             children: [ 
                 child$(
                     this.appState.selectedNode$,
-                    (node: Node ) => {
-                        let children = Object.values(ALL_ACTIONS)
-                        .filter( action => action.applicable(node))
-                        .map( action => action.createNode(node as any, this.explorerState))
-
-                        let root = new ContextRootNode({children})
-                        let state = new ContextTreeState(root)
-
-                        console.log("Dispatch", node, children)
-                        state.selectedNode$.next(root)
-                        state.selectedNode$.subscribe( (node) => node.execute(this, {event:ev}))
-
-                        return new ImmutableTree.View(
-                            {
-                                state, 
-                                headerView,
-                                class: "fv-bg-background fv-text-primary p-2 rounded border fv-color-primary"
-                            }as any)
+                    (node: ExplorerNode ) => {
+                        return new ContextMenuView({state:this,selectedNode: node})
                     }
                 )
             ]
         } 
         return view
     }
-
 }
 
+/**
+ * Context-menu view
+ */
+export class ContextMenuView implements VirtualDOM{ 
 
-class ContextTreeState extends ImmutableTree.State<ContextTreeNode>{
+    public readonly id = 'context-menu-view'
+    public readonly children : Array<VirtualDOM>
 
-    constructor(root:ContextTreeNode ){
-        super({rootNode:root, expandedNodes:  [root.id]})
+    public readonly connectedCallback : (element: HTMLElement$ & HTMLDivElement) => void
+
+    public readonly state: ContextMenuState
+    public readonly selectedNode: ExplorerNode
+
+    constructor( params: {
+        state: ContextMenuState,
+        selectedNode: ExplorerNode,
+    }){
+        Object.assign(this, params)
+
+        let actionViews = Object.values(ALL_ACTIONS)
+        .filter( action => action.applicable(this.selectedNode))
+        .map( action => action.createNode(this.selectedNode as any, this.state.explorerState))
+
+        let rootNode = new ContextRootNode({children: actionViews})
+        let contextTreeState = new ImmutableTree.State<ContextTreeNode>({
+            rootNode, 
+            expandedNodes:  [rootNode.id]
+        })
+        contextTreeState.selectedNode$.next(rootNode)
+
+        this.children = [
+            new ImmutableTree.View({
+                state:contextTreeState, 
+                headerView : (_, node) => headerView(node),
+                class: "fv-bg-background fv-text-primary p-2 rounded border fv-color-primary"
+            }as any)
+        ]
+        this.connectedCallback = (htmlElement: HTMLElement$ & HTMLDivElement) => {
+            let sub = contextTreeState.selectedNode$.pipe(
+                filter( node => isExecutable(node) )
+            ).subscribe( (node: any ) =>{
+                node.execute(this) 
+                htmlElement.parentElement.remove()
+            })
+            htmlElement.ownSubscriptions(sub)
+        }
     }
 }
 
-function headerView(state:ContextTreeState, node:ContextTreeNode) : VirtualDOM{
+/**
+ * Creates context menu tree-view's node view
+ * @param node context menu node
+ * @returns the view
+ */
+function headerView(node:ContextTreeNode) : VirtualDOM{
 
     return {
         class: 'd-flex w-100 align-items-baseline fv-pointer fv-hover-bg-background-alt px-1',
