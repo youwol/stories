@@ -28,11 +28,12 @@ type CodeMirrorEditor = any
      */
     public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
 
-    configurationCodeMirror = {
+    public readonly configurationCodeMirror = {
         value: "",
         mode: 'markdown',
         lineNumbers: false,
-        theme: 'blackboard'
+        theme: 'blackboard',
+        lineWrapping: true
     }
 
     constructor( params: {

@@ -9,6 +9,11 @@ pre{
 .youwol-definition{
     display: none;
 }
+/* codemirror-auto-line-break */
+.CodeMirror-wrap pre {
+    word-break: break-word;
+}
+
 /*
 .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{
     z-index: 0 !important;
