@@ -1,7 +1,7 @@
 import { render, VirtualDOM } from '@youwol/flux-view';
 import { parse } from 'marked'
 import { FluxAppView } from './youwol-views/flux-app.view';
-
+import { ModuleSettingsView } from './youwol-views/module-settings.view'
 
 export interface RenderableTrait {
 
@@ -71,7 +71,10 @@ export class YouwolRenderer implements RenderableTrait {
             try {
                 let code = sanitizeCodeScript(fluxAppBlock.innerHTML)
                 vDOM = new Function(code)()({
-                    youwol: { FluxAppView },
+                    youwol: { 
+                        FluxAppView,
+                        ModuleSettingsView
+                    },
                     documentScope
                 })
             }
