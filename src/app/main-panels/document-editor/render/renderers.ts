@@ -58,3 +58,41 @@ class ErrorView implements VirtualDOM {
         ]
     }
 }
+
+
+export class YouwolRenderer implements RenderableTrait {
+
+
+    render(htmlElement: HTMLElement, documentScope: {[key:string]: unknown}): Promise<HTMLElement> {
+
+        let youwolViews = htmlElement.querySelectorAll(".language-youwol-view")
+        youwolViews.forEach((fluxAppBlock: HTMLDivElement) => {
+            let vDOM
+            try {
+                let code = sanitizeCodeScript(fluxAppBlock.innerHTML)
+                console.log(code)
+                vDOM = new Function(code)()({
+                    youwol: { FluxAppView },
+                    documentScope
+                })
+            }
+            catch (error) {
+                console.log(error)
+                let errorView = new ErrorView({
+                    message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerText}`
+                })
+                fluxAppBlock.replaceWith(render(errorView))
+                return
+            }
+            fluxAppBlock.replaceWith(render(vDOM))
+        })
+        return Promise.resolve(htmlElement)
+    }
+}
+
+
+
+export function sanitizeCodeScript(text: string) {
+    return text.replace(/&gt;/g, '>').replace(/&amp;gt;/g,">")
+}
+
