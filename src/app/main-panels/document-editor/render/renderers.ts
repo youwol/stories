@@ -89,7 +89,14 @@ export class YouwolRenderer implements RenderableTrait {
 }
 
 
-
+/**
+ * When marked parse some script, some characters are encoded 
+ * differently; e.g. '>' becomes '/&gt;/g'.
+ * This function convert back to the original text.
+ * 
+ * @param text the text to sanitize
+ * @returns original text
+ */
 export function sanitizeCodeScript(text: string) {
     return text.replace(/&gt;/g, '>').replace(/&amp;gt;/g,">")
 }
