@@ -5,13 +5,13 @@ installMockPackages()
 import { mergeMap, tap } from "rxjs/operators"
 import { load$ } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
-import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
+import { EditorState, EditorView } from "../app/main-panels/document-editor/editor/editor.view"
 import { RenderView } from "../app/main-panels/document-editor/render/render.view"
 import { setupMockService } from "../app/utils/mock-service"
 import { contentRoot } from "./mock-data/test-story-root"
-import { CodeMirror, installMockPackages } from './mock-packages'
 import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
+import { storiesUnitTests } from './mock-data/database'
 
 
 setupMockService(storiesUnitTests)
@@ -30,12 +30,17 @@ test('load story, make sure everything is displayed', (done) => {
         expect(storyView).toBeTruthy()
 
         // EXPECT - 2 : editor view is displayed
-        let codeMirrorView = document.getElementById("CodeMirror")
-        expect(codeMirrorView).toBeTruthy()
+        let editorView = document.getElementById("editor-view") as any as EditorView
+        expect(editorView).toBeTruthy()
 
-        // AND :it displays 'contentRoot' text
-        let innerTextCodeMirror = codeMirrorView.innerHTML
-        expect(innerTextCodeMirror.trim()).toEqual(contentRoot.trim())
+        editorView.editorState.codeMirrorEditor$.subscribe(() => {
+            let codeMirrorView = document.getElementById("CodeMirror")
+            expect(codeMirrorView).toBeTruthy()
+            // AND :it displays 'contentRoot' text
+            let innerTextCodeMirror = codeMirrorView.innerHTML
+            expect(innerTextCodeMirror.trim()).toEqual(contentRoot.trim())
+        })
+
 
         // EXPECT - 3 : render view is displayed
         let renderView = document.getElementById("render-view") as any as RenderView
@@ -111,9 +116,14 @@ test('load story, expand root  node, select a document with flux-views', (done) 
         docViews[2].dispatchEvent(new Event('click', {bubbles:true}))
 
         // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
-        let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
-        expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentYouwolView.trim())
+        let editorView = document.getElementById("editor-view") as any as EditorView
+        expect(editorView).toBeTruthy()
 
+        editorView.editorState.codeMirrorEditor$.subscribe(() => {
+            let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
+            expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentYouwolView.trim())
+        })
+        
         // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentYouwolView'
         let renderView = document.getElementById("render-view") as any as RenderView
         renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
