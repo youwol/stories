@@ -20,11 +20,11 @@ test('load story, make sure everything is displayed', (done) => {
     .subscribe( () => {
         
         // WHEN application is loaded ...
-        // THEN - 1 : tree-view with node 'test-story' is displayed
+        // EXPECT - 1 : tree-view with node 'test-story' is displayed
         let storyView = document.getElementById("test-story")
         expect(storyView).toBeTruthy()
 
-        // THEN - 2 : editor view is displayed
+        // EXPECT - 2 : editor view is displayed
         let codeMirrorView = document.getElementById("CodeMirror")
         expect(codeMirrorView).toBeTruthy()
 
@@ -32,7 +32,7 @@ test('load story, make sure everything is displayed', (done) => {
         let innerTextCodeMirror = codeMirrorView.innerHTML
         expect(innerTextCodeMirror.trim()).toEqual(contentRoot.trim())
 
-        // THEN - 3 : render view is displayed
+        // EXPECT - 3 : render view is displayed
         let renderView = document.getElementById("render-view") as any as RenderView
         expect(renderView).toBeTruthy();
         
@@ -59,7 +59,7 @@ test('load story, change editor content', (done) => {
         // WHEN the code mirror editor is ready
         editorState.codeMirrorEditor$.pipe(
             tap( (cmEditor: CodeMirror) => {
-                // THEN the code mirror editor is available
+                // EXPECT the code mirror editor is available
                 expect(cmEditor).toBeTruthy()
                 // WHEN its content is changed
                 cmEditor.setValue(newContent)
@@ -67,14 +67,14 @@ test('load story, change editor content', (done) => {
             // AND the content has been saved
             mergeMap( () => editorState.saved$),
             mergeMap( (saved) =>{
-                // THEN the save operation is successful
+                // EXPECT the save operation is successful
                 expect(saved).toBeTruthy()
                 // WHEN the content is retrieved from the database
                 return Client.getContent$(storyId,'root-test-story')
             })
         )
         .subscribe((content:string) => {
-            // THEN the content is what expected
+            // EXPECT the content is what expected
             expect(content).toEqual(newContent)
             done()
         })
@@ -88,21 +88,21 @@ test('load story, expand root  node, select a document', (done) => {
     .subscribe( () => {
 
         // WHEN application is loaded ...
-        // THEN tree-view with node 'test-story' is displayed
+        // EXPECT tree-view with node 'test-story' is displayed
         let storyView = document.getElementById("test-story")        
         expect(storyView).toBeTruthy()
 
         // WHEN the test-story node is expanded
         storyView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN its children are displayed
+        // EXPECT its children are displayed
         let docViews = Array.from(document.querySelectorAll('.document'))
         expect(docViews.length).toEqual(2)
 
         // WHEN the first child is expanded (test-story-markdown)
         docViews[0].dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN the content of the code mirror editor displayed 'contentMarkdown'
+        // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
         let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
         expect(innerTextCodeMirror.trim()).toEqual(contentMarkdown.trim())
 
