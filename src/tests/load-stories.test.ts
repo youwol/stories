@@ -4,9 +4,10 @@ import { Client } from "../app/client/client"
 import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
 import { RenderView } from "../app/main-panels/document-editor/render/render.view"
 import { setupMockService } from "../app/utils/mock-service"
-import { contentMarkdown } from "./mock-data/test-story-markdown"
 import { contentRoot } from "./mock-data/test-story-root"
 import { CodeMirror, installMockPackages } from './mock-packages'
+import { contentYouwolView } from "./mock-data/test-story-youwol-view"
+import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 
 setupMockService()
 
@@ -85,7 +86,7 @@ test('load story, change editor content', (done) => {
 })
 
 
-test('load story, expand root  node, select a document', (done) => {
+test('load story, expand root  node, select a document with flux-views', (done) => {
     
     load$(storyId, document.body)
     .subscribe( () => {
@@ -100,15 +101,28 @@ test('load story, expand root  node, select a document', (done) => {
 
         // EXPECT its children are displayed
         let docViews = Array.from(document.querySelectorAll('.document'))
-        expect(docViews.length).toEqual(2)
+        expect(docViews.length).toEqual(3)
 
         // WHEN the first child is expanded (test-story-markdown)
-        docViews[0].dispatchEvent(new Event('click', {bubbles:true}))
+        docViews[2].dispatchEvent(new Event('click', {bubbles:true}))
 
         // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
         let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
-        expect(innerTextCodeMirror.trim()).toEqual(contentMarkdown.trim())
+        expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentYouwolView.trim())
 
-        done()
+        // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentYouwolView'
+        let renderView = document.getElementById("render-view") as any as RenderView
+        renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
+            // There is one correctly formatted code
+            let youwolView = element.querySelector("#test-youwol-view")
+            expect(youwolView).toBeTruthy()
+            expect(youwolView.innerHTML).toEqual("Test YouWol View")
+
+            // And another one with error
+            let errorView = element.querySelector(".youwol-view-error")
+            expect(errorView).toBeTruthy()
+
+            done()
+        })
     })
 })
