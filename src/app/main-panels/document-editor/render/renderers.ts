@@ -70,14 +70,12 @@ export class YouwolRenderer implements RenderableTrait {
             let vDOM
             try {
                 let code = sanitizeCodeScript(fluxAppBlock.innerHTML)
-                console.log(code)
                 vDOM = new Function(code)()({
                     youwol: { FluxAppView },
                     documentScope
                 })
             }
             catch (error) {
-                console.log(error)
                 let errorView = new ErrorView({
                     message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerText}`
                 })

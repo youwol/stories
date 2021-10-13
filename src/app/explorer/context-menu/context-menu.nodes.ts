@@ -123,7 +123,6 @@ export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
         )
             .subscribe((document: Document) => {
                 let childNode = new DocumentNode({ story: this.parentNode.story, document })
-                console.log("Add node", childNode)
                 this.explorerState.addChild(this.parentNode, childNode)
             })
     }
