@@ -38,9 +38,12 @@ test('load story, make sure everything is displayed', (done) => {
         
         // AND : its content has been processed by 'marked' & 'mathjax'
         renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
-            let innerHtmlRenderView = element.outerHTML
-            let target = `<div is="fv-div" class="w-100 mathjax"><div class="marked"> ${contentRoot} </div></div>`
-            expect(innerHtmlRenderView.trim()).toEqual(target.trim())
+            // MathJax mock include 'mathjax' in class list 
+            expect(element.classList.contains('mathjax')).toBeTruthy()
+            let heading1 = element.querySelector('h1')
+            // Marked is not mocked, 
+            expect(heading1).toBeTruthy()
+            expect(heading1.innerHTML.trim()).toEqual(contentRoot.replace("#","").trim())
             done()
         })
     })

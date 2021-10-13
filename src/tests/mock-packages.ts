@@ -27,9 +27,7 @@ export function installMockPackages(){
     EditorState.debounceTime = 0
     
     window['CodeMirror'] = (elem, content) => new CodeMirror(elem,content)
-    window['marked'] = (innerHTML) => {
-        return  `<div class='marked' > ${innerHTML} </div>` 
-    }
+    
     window['MathJax'] = {
         typesetPromise : (elements: HTMLElement[]) => {
             elements.forEach( elem => elem.classList.add('mathjax'))
