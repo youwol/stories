@@ -1,5 +1,5 @@
-import { of } from "rxjs"
-import { EditorState, EditorView } from "../app/main-panels/document-editor/editor/editor.view"
+//import { EditorState } from "../app/main-panels/document-editor/editor/editor.view"
+
 
 export class CodeMirror{
     
@@ -23,8 +23,18 @@ export class CodeMirror{
 }
 
 export function installMockPackages(){
-    EditorState.codeMirror$ = () => of(CodeMirror) 
-    EditorState.debounceTime = 0
+
+    window['@youwol/cdn-client'] = {
+        fetchBundles: () => {
+            return Promise.resolve({})
+        },
+        fetchStyleSheets: () => {
+            return Promise.resolve({})
+        },
+        fetchJavascriptAddOn: () => {
+            return Promise.resolve({})
+        },
+    }
     
     window['CodeMirror'] = (elem, content) => new CodeMirror(elem,content)
     

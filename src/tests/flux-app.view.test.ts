@@ -1,5 +1,9 @@
+
+import { installMockPackages } from './mock-packages'
+installMockPackages()
+
 import { render } from "@youwol/flux-view"
-import { skip, take } from "rxjs/operators"
+import { take } from "rxjs/operators"
 import { FluxAppView, RenderMode } from "../app/main-panels/document-editor/render/youwol-views/flux-app.view"
 
 
@@ -149,6 +153,7 @@ test('flux-app.view, request open url', (done) => {
             expect(url).toEqual(`/ui/flux-runner/?id=${projectId}`)
             expect(mode).toEqual('_blank')
             done()
+            window['focus'] = () => {}
             return window
         }
     })

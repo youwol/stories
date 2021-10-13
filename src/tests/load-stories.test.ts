@@ -1,3 +1,7 @@
+
+import { installMockPackages, CodeMirror } from './mock-packages'
+installMockPackages()
+
 import { mergeMap, tap } from "rxjs/operators"
 import { load$ } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
@@ -9,11 +13,11 @@ import { CodeMirror, installMockPackages } from './mock-packages'
 import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 
-setupMockService()
 
-installMockPackages()
+setupMockService(storiesUnitTests)
 
 let storyId = 'test-story'
+EditorState.debounceTime = 0
 
 test('load story, make sure everything is displayed', (done) => {
     
