@@ -14,7 +14,7 @@ type CodeMirrorEditor = any
  export class EditorState implements VirtualDOM {
 
     static debounceTime = 1000
-    static codeMirror$ = fetchCodeMirror$
+    static codeMirror$ = fetchCodeMirror$()
 
     public readonly node : DocumentNode
     public readonly appState: AppState
@@ -81,7 +81,7 @@ export class EditorView implements VirtualDOM {
                 children: [
                     child$(
                         forkJoin([
-                            EditorState.codeMirror$(),
+                            EditorState.codeMirror$,
                             Client.getContent$(
                                 this.editorState.node.story.storyId, 
                                 this.editorState.node.document.documentId)
