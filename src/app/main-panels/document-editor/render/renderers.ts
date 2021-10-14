@@ -1,7 +1,17 @@
 import { render, VirtualDOM } from '@youwol/flux-view';
-import { parse } from 'marked'
+import { parse, setOptions } from 'marked'
 import { FluxAppView } from './youwol-views/flux-app.view';
 import { ModuleSettingsView } from './youwol-views/module-settings.view'
+import hljs from "highlight.js";
+
+setOptions({
+    langPrefix: "hljs language-",
+    highlight: function(code, lang) {
+      if(lang=='youwol-view')
+        return code
+      return hljs.highlightAuto(code, [lang]).value;
+    }
+  });
 
 export interface RenderableTrait {
 
