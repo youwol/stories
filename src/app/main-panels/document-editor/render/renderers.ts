@@ -89,7 +89,7 @@ export class YouwolRenderer implements RenderableTrait {
             }
             catch (error) {
                 let errorView = new ErrorView({
-                    message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerText}`
+                    message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerHTML}`
                 })
                 fluxAppBlock.replaceWith(render(errorView))
                 return
