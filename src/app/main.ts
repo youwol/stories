@@ -7,6 +7,7 @@ let cdn = window['@youwol/cdn-client']
 let stylesFutures = cdn.fetchStyleSheets([
     "bootstrap#4.4.1~bootstrap.min.css",
     "fontawesome#5.12.1~css/all.min.css",
+    "highlight.js#11.2.0~styles/default.min.css",
     "@youwol/fv-widgets#0.0.3~dist/assets/styles/style.youwol.css"
 ])
 
@@ -24,7 +25,8 @@ let bundlesFutures = cdn.fetchBundles(
         "@youwol/fv-context-menu": "latest",
         "@youwol/flux-fv-widgets": "latest",
         "marked": "latest",
-        "mathjax": "latest"
+        "mathjax": "latest",
+        "highlight.js": "11.2.0"
     },
     window
 )
