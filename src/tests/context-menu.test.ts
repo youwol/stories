@@ -202,8 +202,15 @@ test('load story, select story, display context menu, add child', (done) => {
         expect(addDoc).toBeTruthy()
         expect(addDoc.innerText).toEqual("new document")
 
-        // WHEN add document is triggered
+        // WHEN add document is selected
         addDoc.dispatchEvent(new Event('click', {bubbles:true}))
+
+        // THEN WHEN create empty document is selected
+        let newEmpty = document.querySelector("#node-add-document-empty span") as HTMLSpanElement
+        expect(newEmpty).toBeTruthy()
+        expect(newEmpty.innerText).toEqual("empty document")
+
+        newEmpty.dispatchEvent(new Event('click', {bubbles:true}))
 
         // EXPECT database is updated
         Client.getChildren$(
@@ -244,8 +251,15 @@ test('load story, select document, display context menu, add child', (done) => {
         expect(newDoc).toBeTruthy()
         expect(newDoc.innerText).toEqual("new document")
 
-        // WHEN add document is triggered
+        // WHEN add document is selected
         newDoc.dispatchEvent(new Event('click', {bubbles:true}))
+
+        // THEN WHEN create empty document is selected
+        let newEmpty = document.querySelector("#node-add-document-empty span") as HTMLSpanElement
+        expect(newEmpty).toBeTruthy()
+        expect(newEmpty.innerText).toEqual("empty document")
+
+        newEmpty.dispatchEvent(new Event('click', {bubbles:true}))
 
         // EXPECT database is updated
         Client.getChildren$(
