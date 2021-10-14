@@ -45,4 +45,8 @@ In a document we can display snippets of different languages:
 *    Javascript
 *    Python
 *    etc
+
+\`\`\`javascript
+let a = 0
+\`\`\`
 `

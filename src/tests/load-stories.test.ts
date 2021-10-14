@@ -12,6 +12,7 @@ import { contentRoot } from "./mock-data/test-story-root"
 import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 import { storiesUnitTests } from './mock-data/database'
+import { contentMarkdown } from './mock-data/test-story-markdown'
 
 
 setupMockService(storiesUnitTests)
@@ -54,6 +55,48 @@ test('load story, make sure everything is displayed', (done) => {
             // Marked is not mocked, 
             expect(heading1).toBeTruthy()
             expect(heading1.innerHTML.trim()).toEqual(contentRoot.replace("#","").trim())
+            done()
+        })
+    })
+})
+
+
+test('load story, expand root  node, select markdown document', (done) => {
+    
+    load$(storyId, document.body)
+    .subscribe( () => {
+
+        // WHEN application is loaded ...
+        // EXPECT tree-view with node 'test-story' is displayed
+        let storyView = document.getElementById("test-story")        
+        expect(storyView).toBeTruthy()
+
+        // WHEN the test-story node is expanded
+        storyView.dispatchEvent(new Event('click', {bubbles:true}))
+
+        // EXPECT its children are displayed
+        let docViews = Array.from(document.querySelectorAll('.document'))
+        expect(docViews.length).toEqual(3)
+
+        // WHEN a child is expanded (contentMarkdown)
+        docViews[0].dispatchEvent(new Event('click', {bubbles:true}))
+
+        // EXPECT - 1: the content of the code mirror editor displayed 'contentMarkdown'
+        let editorView = document.getElementById("editor-view") as any as EditorView
+        expect(editorView).toBeTruthy()
+
+        editorView.editorState.codeMirrorEditor$.subscribe(() => {
+            let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
+            expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentMarkdown.trim())
+        })
+        
+        // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentMarkdown'
+        let renderView = document.getElementById("render-view") as any as RenderView
+        renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
+            // The code snippet is included with syntax coloring
+            let codeSnippet = element.querySelector("code.hljs")
+            expect(codeSnippet).toBeTruthy()
+
             done()
         })
     })
