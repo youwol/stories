@@ -1,4 +1,5 @@
 // (index.html is handled by HtmlWebpackPlugin)
+require('./style.css')
 export{}
 
 let cdn = window['@youwol/cdn-client']
