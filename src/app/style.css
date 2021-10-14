@@ -14,6 +14,14 @@ pre{
     word-break: break-word;
 }
 
+#render-view blockquote{
+    background-color: dimgray;
+    padding: 0.5em;
+}
+#render-view hr{
+    border-top: 1px !important;
+    border-style: solid !important;
+}
 /*
 .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{
     z-index: 0 !important;
