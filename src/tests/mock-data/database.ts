@@ -3,6 +3,7 @@ import { contentLatex } from "./test-story-latex"
 import { contentMarkdown } from "./test-story-markdown"
 import { contentMarkdownCode } from "./test-story-markdown-code"
 import { contentRoot } from "./test-story-root"
+import { contentYouwolView } from "./test-story-youwol-view"
 
 export let storiesUnitTests : {
     stories: ScyllaDb.Story[],
@@ -43,6 +44,14 @@ export let storiesUnitTests : {
         },
         { 
             storyId: "test-story",
+            documentId: "test-story-youwol-view", 
+            title: "Youwol View", 
+            parentDocumentId: "root-test-story",
+            orderIndex: 3,
+            complexityOrder: 0
+        },
+        { 
+            storyId: "test-story",
             documentId: "test-story-markdown-code", 
             title: "Code snippets", 
             parentDocumentId: "test-story-markdown",
@@ -54,6 +63,7 @@ export let storiesUnitTests : {
         "root-test-story":  contentRoot,
         "test-story-markdown": contentMarkdown,
         "test-story-latex": contentLatex,
-        "test-story-markdown-code": contentMarkdownCode
+        "test-story-markdown-code": contentMarkdownCode,
+        "test-story-youwol-view": contentYouwolView
     }
 }

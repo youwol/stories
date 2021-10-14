@@ -2,6 +2,7 @@ import { load$ } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
 import { installMockPackages } from './mock-packages'
 import { setupMockService } from "../app/utils/mock-service"
+import { storiesUnitTests } from "./mock-data/database"
 
 
 setupMockService()
@@ -18,7 +19,7 @@ test('load story, display context menu', (done) => {
         // WHEN application is loaded ...
         let storyView = document.getElementById("test-story")
 
-        // THEN story node is displayed
+        // EXPECT story node is displayed
         expect(storyView).toBeTruthy()
         let storyNodeView =  document.querySelector("#test-story span") as HTMLSpanElement
         expect(storyNodeView.innerText).toEqual("Test story")
@@ -28,7 +29,7 @@ test('load story, display context menu', (done) => {
         event.initEvent('contextmenu', true, false);
         storyView.dispatchEvent(event)
 
-        // THEN it appears
+        // EXPECT it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
         done()
@@ -47,11 +48,11 @@ test('load story, select story, display context menu, rename story', (done) => {
         event.initEvent('contextmenu', true, false);
         storyView.dispatchEvent(event)
 
-        // THEN - 1 : it appears
+        // EXPECT - 1 : it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
 
-        // THEN - 2 : rename story action is available
+        // EXPECT - 2 : rename story action is available
         let renameView = document.querySelector("#node-rename-story span") as HTMLSpanElement
         expect(renameView).toBeTruthy()
         expect(renameView.innerText).toEqual("rename story")
@@ -59,7 +60,7 @@ test('load story, select story, display context menu, rename story', (done) => {
         // WHEN rename story triggered ...
         renameView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN text input is displayed in selected node
+        // EXPECT text input is displayed in selected node
         let textInputView =  document.querySelector("#node-test-story input") as HTMLInputElement
         expect(textInputView).toBeTruthy()
 
@@ -74,11 +75,11 @@ test('load story, select story, display context menu, rename story', (done) => {
         textInputView.dispatchEvent(new KeyboardEvent('keydown', {key: 'd'}))
         textInputView.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter',}))
 
-        // THEN - 1 : node name is updated (somehow the consecutive keypresses do not store 'renamed')
+        // EXPECT - 1 : node name is updated (somehow the consecutive keypresses do not store 'renamed')
         storyView =  document.querySelector("#test-story span") as HTMLSpanElement
         expect(storyView.innerText).toEqual("")
 
-        // THEN - 2 : new name is saved in the database
+        // EXPECT - 2 : new name is saved in the database
         Client.getStory$(storyId).subscribe( (story) => {
             expect(story.title).toEqual("")
             done()
@@ -95,7 +96,7 @@ test('load story, select document, display context menu, rename document', (done
         let storyView = document.getElementById("test-story")
         storyView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN markdown node is displayed in the tree view
+        // EXPECT markdown node is displayed in the tree view
         let markdownView = document.getElementById("test-story-markdown")
         expect(markdownView).toBeTruthy()
 
@@ -104,11 +105,11 @@ test('load story, select document, display context menu, rename document', (done
         event.initEvent('contextmenu', true, false);
         markdownView.dispatchEvent(event)
         
-        // THEN - 1 : it appears
+        // EXPECT - 1 : it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
 
-        // THEN - 2 : rename document action is available
+        // EXPECT - 2 : rename document action is available
         let renameView = document.querySelector("#node-rename-document span") as HTMLSpanElement
         expect(renameView).toBeTruthy()
         expect(renameView.innerText).toEqual("rename document")
@@ -116,18 +117,18 @@ test('load story, select document, display context menu, rename document', (done
         // WHEN rename document triggered ...
         renameView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN text input is displayed in selected node
+        // EXPECT text input is displayed in selected node
         let textInputView =  document.querySelector("#node-test-story-markdown input") as HTMLInputElement
         expect(textInputView).toBeTruthy()
 
         // WHEN new name is provided ...
         textInputView.dispatchEvent(new KeyboardEvent('keydown', {key: 'Enter',}))
 
-        // THEN - 1 : node name is updated         
+        // EXPECT - 1 : node name is updated         
         markdownView =  document.querySelector("#test-story-markdown span") as HTMLSpanElement
         expect(markdownView.innerText).toEqual("")
         
-        // THEN - 2 : new name is saved in the database
+        // EXPECT - 2 : new name is saved in the database
         Client.getDocument$(storyId, "test-story-markdown")
         .subscribe( (document) => {
             expect(document.title).toEqual("")
@@ -145,7 +146,7 @@ test('load story, select document, display context menu, delete document', (done
         let storyView = document.getElementById("test-story")
         storyView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN markdown document appears
+        // EXPECT markdown document appears
         let markdownView = document.getElementById("test-story-markdown")
         expect(markdownView).toBeTruthy()
 
@@ -154,11 +155,11 @@ test('load story, select document, display context menu, delete document', (done
         event.initEvent('contextmenu', true, false);
         markdownView.dispatchEvent(event)
         
-        // THEN - 1 : it appears
+        // EXPECT - 1 : it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
 
-        // THEN - 2 : delete document action is available
+        // EXPECT - 2 : delete document action is available
         let deleteView = document.querySelector("#node-delete-document span") as HTMLSpanElement
         expect(deleteView).toBeTruthy()
         expect(deleteView.innerText).toEqual("delete document")
@@ -166,15 +167,15 @@ test('load story, select document, display context menu, delete document', (done
         // WHEN delete triggered ...
         deleteView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN - 1 : node is deleted in the tree view
+        // EXPECT - 1 : node is deleted in the tree view
         markdownView = document.getElementById("test-story-markdown")
         expect(markdownView).toBeFalsy()
 
-        // THEN - 2 : database is updated
+        // EXPECT - 2 : database is updated
         Client.getChildren$(
             storyId, { parentDocumentId: "root-test-story" })
         .subscribe( (documents) => {
-            expect(documents.length).toEqual(1)
+            expect(documents.length).toEqual(2)
             expect(documents[0].title).toEqual("Latex")
             done()
         })
@@ -192,11 +193,11 @@ test('load story, select story, display context menu, add child', (done) => {
         event.initEvent('contextmenu', true, false);
         storyView.dispatchEvent(event)
         
-        // THEN - 1 : it appears
+        // EXPECT - 1 : it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
 
-        // THEN - 2 : add document action is available
+        // EXPECT - 2 : add document action is available
         let addDoc = document.querySelector("#node-add-document span") as HTMLSpanElement
         expect(addDoc).toBeTruthy()
         expect(addDoc.innerText).toEqual("new document")
@@ -204,12 +205,12 @@ test('load story, select story, display context menu, add child', (done) => {
         // WHEN add document is triggered
         addDoc.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN database is updated
+        // EXPECT database is updated
         Client.getChildren$(
             storyId, { parentDocumentId: "root-test-story" })
         .subscribe( (documents) => {
-            expect(documents.length).toEqual(2)
-            expect(documents[1].title).toEqual("New document")
+            expect(documents.length).toEqual(3)
+            expect(documents[2].title).toEqual("New document")
             done()
         })
     })
@@ -225,7 +226,7 @@ test('load story, select document, display context menu, add child', (done) => {
         let storyView = document.getElementById("test-story")
         storyView.dispatchEvent(new Event('click', {bubbles:true}))
  
-        // THEN latex document appears
+        // EXPECT latex document appears
         let latexView = document.getElementById("test-story-latex")
         expect(latexView).toBeTruthy()
 
@@ -234,11 +235,11 @@ test('load story, select document, display context menu, add child', (done) => {
         event.initEvent('contextmenu', true, false);
         latexView.dispatchEvent(event)
         
-        // THEN - 1 : it appears
+        // EXPECT - 1 : it appears
         let contextMenuView = document.getElementById("context-menu-view")
         expect(contextMenuView).toBeTruthy()
 
-        // THEN - 2 : add document action is available
+        // EXPECT - 2 : add document action is available
         let newDoc = document.querySelector("#node-add-document span") as HTMLSpanElement
         expect(newDoc).toBeTruthy()
         expect(newDoc.innerText).toEqual("new document")
@@ -246,7 +247,7 @@ test('load story, select document, display context menu, add child', (done) => {
         // WHEN add document is triggered
         newDoc.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN database is updated
+        // EXPECT database is updated
         Client.getChildren$(
             storyId, { parentDocumentId: "test-story-latex" })
         .subscribe( (documents) => {

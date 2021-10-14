@@ -3,6 +3,8 @@ import { merge, Observable, ReplaySubject } from "rxjs";
 import { debounceTime, skip, take } from "rxjs/operators";
 import { AppState } from "../../../main-app/app-state";
 import { DocumentNode, ExplorerNode } from "../../../explorer/nodes"
+import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } from "./renderers";
+
 
 /**
  *Logic side of [[RenderView]]
@@ -13,10 +15,14 @@ import { DocumentNode, ExplorerNode } from "../../../explorer/nodes"
     public readonly node: DocumentNode
     public readonly appState: AppState
     public readonly renderedElement$ = new ReplaySubject<HTMLElement>(1)
-    /**
-     * see https://docs.mathjax.org/en/latest/web/typeset.html
-     */ 
-    private promise : any = Promise.resolve()
+
+    public documentScope = {}
+
+    public readonly renderers = [
+        new MarkDownRenderer(),
+        new MathJaxRenderer(),
+        new YouwolRenderer()
+    ]
 
     constructor(params: {
         node: ExplorerNode,
@@ -26,16 +32,15 @@ import { DocumentNode, ExplorerNode } from "../../../explorer/nodes"
         Object.assign(this, params)
     }
 
-    renderMarkdown(htmlElement: HTMLElement, content: string){
-        htmlElement.innerHTML = window['marked'](content);
-    }
-    
-    renderMathJax(htmlElement: HTMLElement){
-        this.promise = this.promise
-        .then( () =>{
-            window['MathJax'].typesetPromise([htmlElement])
-            this.renderedElement$.next(htmlElement)
-        })
+    async render(htmlElement: HTMLElement){
+
+        await this.renderers.reduce(
+            async (accHtmlElement: Promise<HTMLElement>, renderer: RenderableTrait) => {
+                return renderer.render( await accHtmlElement, this.documentScope )
+            },
+            Promise.resolve(htmlElement)
+        )
+        this.renderedElement$.next(htmlElement)
     }
 }
 
@@ -49,6 +54,7 @@ export class RenderView implements VirtualDOM {
     public readonly children: Array<VirtualDOM>
 
     public readonly renderState: RenderState
+
     constructor(params: {
         renderState: RenderState
         class
@@ -63,8 +69,8 @@ export class RenderView implements VirtualDOM {
                         this.renderState.content$.pipe( take(1)) ,
                         this.renderState.content$.pipe( skip(1), debounceTime(500))
                     ).subscribe( (content) => {
-                        this.renderState.renderMarkdown(htmlElement, content)
-                        this.renderState.renderMathJax(htmlElement)
+                        htmlElement.innerHTML = content 
+                        this.renderState.render(htmlElement)
                     })
                     htmlElement.ownSubscriptions(sub)
                 }

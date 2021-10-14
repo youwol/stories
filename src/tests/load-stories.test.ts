@@ -4,9 +4,10 @@ import { Client } from "../app/client/client"
 import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
 import { RenderView } from "../app/main-panels/document-editor/render/render.view"
 import { setupMockService } from "../app/utils/mock-service"
-import { contentMarkdown } from "./mock-data/test-story-markdown"
 import { contentRoot } from "./mock-data/test-story-root"
 import { CodeMirror, installMockPackages } from './mock-packages'
+import { contentYouwolView } from "./mock-data/test-story-youwol-view"
+import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 
 setupMockService()
 
@@ -20,11 +21,11 @@ test('load story, make sure everything is displayed', (done) => {
     .subscribe( () => {
         
         // WHEN application is loaded ...
-        // THEN - 1 : tree-view with node 'test-story' is displayed
+        // EXPECT - 1 : tree-view with node 'test-story' is displayed
         let storyView = document.getElementById("test-story")
         expect(storyView).toBeTruthy()
 
-        // THEN - 2 : editor view is displayed
+        // EXPECT - 2 : editor view is displayed
         let codeMirrorView = document.getElementById("CodeMirror")
         expect(codeMirrorView).toBeTruthy()
 
@@ -32,15 +33,18 @@ test('load story, make sure everything is displayed', (done) => {
         let innerTextCodeMirror = codeMirrorView.innerHTML
         expect(innerTextCodeMirror.trim()).toEqual(contentRoot.trim())
 
-        // THEN - 3 : render view is displayed
+        // EXPECT - 3 : render view is displayed
         let renderView = document.getElementById("render-view") as any as RenderView
         expect(renderView).toBeTruthy();
         
         // AND : its content has been processed by 'marked' & 'mathjax'
         renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
-            let innerHtmlRenderView = element.outerHTML
-            let target = `<div is="fv-div" class="w-100 mathjax"><div class="marked"> ${contentRoot} </div></div>`
-            expect(innerHtmlRenderView.trim()).toEqual(target.trim())
+            // MathJax mock include 'mathjax' in class list 
+            expect(element.classList.contains('mathjax')).toBeTruthy()
+            let heading1 = element.querySelector('h1')
+            // Marked is not mocked, 
+            expect(heading1).toBeTruthy()
+            expect(heading1.innerHTML.trim()).toEqual(contentRoot.replace("#","").trim())
             done()
         })
     })
@@ -59,7 +63,7 @@ test('load story, change editor content', (done) => {
         // WHEN the code mirror editor is ready
         editorState.codeMirrorEditor$.pipe(
             tap( (cmEditor: CodeMirror) => {
-                // THEN the code mirror editor is available
+                // EXPECT the code mirror editor is available
                 expect(cmEditor).toBeTruthy()
                 // WHEN its content is changed
                 cmEditor.setValue(newContent)
@@ -67,14 +71,14 @@ test('load story, change editor content', (done) => {
             // AND the content has been saved
             mergeMap( () => editorState.saved$),
             mergeMap( (saved) =>{
-                // THEN the save operation is successful
+                // EXPECT the save operation is successful
                 expect(saved).toBeTruthy()
                 // WHEN the content is retrieved from the database
                 return Client.getContent$(storyId,'root-test-story')
             })
         )
         .subscribe((content:string) => {
-            // THEN the content is what expected
+            // EXPECT the content is what expected
             expect(content).toEqual(newContent)
             done()
         })
@@ -82,30 +86,43 @@ test('load story, change editor content', (done) => {
 })
 
 
-test('load story, expand root  node, select a document', (done) => {
+test('load story, expand root  node, select a document with flux-views', (done) => {
     
     load$(storyId, document.body)
     .subscribe( () => {
 
         // WHEN application is loaded ...
-        // THEN tree-view with node 'test-story' is displayed
+        // EXPECT tree-view with node 'test-story' is displayed
         let storyView = document.getElementById("test-story")        
         expect(storyView).toBeTruthy()
 
         // WHEN the test-story node is expanded
         storyView.dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN its children are displayed
+        // EXPECT its children are displayed
         let docViews = Array.from(document.querySelectorAll('.document'))
-        expect(docViews.length).toEqual(2)
+        expect(docViews.length).toEqual(3)
 
         // WHEN the first child is expanded (test-story-markdown)
-        docViews[0].dispatchEvent(new Event('click', {bubbles:true}))
+        docViews[2].dispatchEvent(new Event('click', {bubbles:true}))
 
-        // THEN the content of the code mirror editor displayed 'contentMarkdown'
+        // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
         let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
-        expect(innerTextCodeMirror.trim()).toEqual(contentMarkdown.trim())
+        expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentYouwolView.trim())
 
-        done()
+        // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentYouwolView'
+        let renderView = document.getElementById("render-view") as any as RenderView
+        renderView.renderState.renderedElement$.subscribe( (element: HTMLDivElement) => {
+            // There is one correctly formatted code
+            let youwolView = element.querySelector("#test-youwol-view")
+            expect(youwolView).toBeTruthy()
+            expect(youwolView.innerHTML).toEqual("Test YouWol View")
+
+            // And another one with error
+            let errorView = element.querySelector(".youwol-view-error")
+            expect(errorView).toBeTruthy()
+
+            done()
+        })
     })
 })

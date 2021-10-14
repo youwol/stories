@@ -46,6 +46,7 @@ module.exports = {
         {  
           "lodash": "_",
           "rxjs": "rxjs",
+          "marked": "marked",
           "rxjs/operators": "window['rxjs']['operators']",
           "@youwol/cdn-client": "window['@youwol/cdn-client']",
           "@youwol/flux-core": "window['@youwol/flux-core']",
