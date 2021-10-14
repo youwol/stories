@@ -23,8 +23,7 @@ export class MarkDownRenderer implements RenderableTrait {
 
     render(htmlElement: HTMLElement): Promise<HTMLElement> {
 
-        htmlElement.innerHTML = parse(htmlElement.innerHTML)
-
+        htmlElement.innerHTML = parse(sanitizeCodeScript(htmlElement.innerHTML))
         return Promise.resolve(htmlElement);
     }
 }
