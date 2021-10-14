@@ -155,7 +155,7 @@ test('load story, expand root  node, select a document with flux-views', (done) 
         let docViews = Array.from(document.querySelectorAll('.document'))
         expect(docViews.length).toEqual(3)
 
-        // WHEN the first child is expanded (test-story-markdown)
+        // WHEN a child is expanded (contentYouWol)
         docViews[2].dispatchEvent(new Event('click', {bubbles:true}))
 
         // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
