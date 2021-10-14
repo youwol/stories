@@ -5,7 +5,7 @@ import { ExplorerView } from "../explorer/explorer.view";
 import { ExplorerNode } from "../explorer/nodes";
 import { panelsFactory } from "../main-panels/panels.factory";
 import { topBannerView } from "../top-banner/top-banner.view";
-import { map, tap } from "rxjs/operators"
+import { distinctUntilChanged, map, tap } from "rxjs/operators"
 
 /**
  * 
@@ -70,7 +70,9 @@ export class AppView implements VirtualDOM{
                 children: [
                     new ExplorerView({ appState: this.state }),
                     child$(
-                        this.state.selectedNode$,
+                        this.state.selectedNode$.pipe(
+                            distinctUntilChanged()
+                        ),
                         (node: ExplorerNode) => panelsFactory({
                             node,
                             appState: this.state,
