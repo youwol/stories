@@ -5,6 +5,7 @@ import { load$ } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
 import { setupMockService } from "../app/utils/mock-service"
 import { storiesUnitTests } from './mock-data/database'
+import { TextInput } from '@youwol/fv-input'
 
 
 setupMockService(storiesUnitTests)
@@ -269,5 +270,79 @@ test('load story, select document, display context menu, add child', (done) => {
             expect(documents[0].title).toEqual("New document")
             done()
         })
+    })
+})
+
+
+test('load story, select document, display context menu, add flux-module child', (done) => {
+    window["TestToolbox"] = {
+        TestModule:{
+            displayName: 'test module',
+            packId:'TestToolBox',
+            id:'TestModule',
+            resources: {
+                youwol: "youwol.platform.com"
+            }
+        }
+    }
+
+    load$(storyId, document.body)
+    .subscribe( () => {
+        
+        // WHEN story node is expanded ...
+        let storyView = document.getElementById("test-story")
+        storyView.dispatchEvent(new Event('click', {bubbles:true}))
+ 
+        // EXPECT latex document appears
+        let latexView = document.getElementById("test-story-latex")
+        expect(latexView).toBeTruthy()
+
+        // WHEN context menu triggered on latex node ...
+        let event = document.createEvent('HTMLEvents');
+        event.initEvent('contextmenu', true, false);
+        latexView.dispatchEvent(event)
+        
+        // EXPECT - 1 : it appears
+        let contextMenuView = document.getElementById("context-menu-view")
+        expect(contextMenuView).toBeTruthy()
+
+        // EXPECT - 2 : add document action is available
+        let newDoc = document.querySelector("#node-add-document span") as HTMLSpanElement
+        expect(newDoc).toBeTruthy()
+        expect(newDoc.innerText).toEqual("new document")
+
+        // WHEN add document is selected
+        newDoc.dispatchEvent(new Event('click', {bubbles:true}))
+
+        // THEN WHEN create brick template document is selected
+        let newTemplateMdleFlux = document.querySelector("#node-add-document-template-brick span") as HTMLSpanElement
+        expect(newTemplateMdleFlux).toBeTruthy()
+        expect(newTemplateMdleFlux.innerText).toEqual("brick template")
+
+        newTemplateMdleFlux.dispatchEvent(new Event('click', {bubbles:true}))
+        
+        // EXPECT modal to pick module is selected
+        let modalView = document.querySelector("#modal-select-module")
+        expect(modalView).toBeTruthy()
+
+        let inputToolboxIdView = document.querySelector("#toolbox-id input") as any as TextInput.View
+        expect(inputToolboxIdView).toBeTruthy()
+        inputToolboxIdView.state.value$.next("TestToolbox")
+        let inputBrickIdView = document.querySelector("#brick-id input") as any as TextInput.View
+        expect(inputBrickIdView).toBeTruthy()
+        inputBrickIdView.state.value$.next("TestModule")
+
+        let okBtn = document.querySelector("#modal-select-module button")
+        expect(okBtn).toBeTruthy()
+
+        okBtn.dispatchEvent(new Event('click', {bubbles:true}))
+        /*Client.getChildren$(
+            storyId, { parentDocumentId: "test-story-latex" })
+        .subscribe( (documents) => {
+            expect(documents.length).toEqual(1)
+            expect(documents[0].title).toEqual("New document")
+            done()
+        })*/
+        done()
     })
 })

@@ -1,8 +1,13 @@
+import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
+import { map, mergeMap } from 'rxjs/operators'
 import { Client, Document } from '../../client/client'
+import { popupSelectModuleView$ } from '../../modals/select-module.modal'
+import { fetchResources$ } from '../../utils/cdn-fetch'
 import { ExplorerState } from '../explorer.view'
 import { StoryNode, DocumentNode, SignalType, ExplorerNode } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
+import { templateFluxModule } from './page-templates/flux-module.template'
 
 /**
  * Factory of available actions in the
@@ -95,6 +100,7 @@ export class AddDocumentNode extends ContextTreeNode {
             id: 'add-document',
             children: [
                 new EmptyDocNode(params),
+                new BrickTemplateNode(params),
             ],
             name: 'new document',
             faIcon: 'fas fa-plus'
@@ -134,11 +140,53 @@ export class AddDocumentNode extends ContextTreeNode {
         })
     }
 }
+
+
+ export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode {
+
+    public readonly explorerState: ExplorerState
+    public readonly parentNode: DocumentNode | StoryNode
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        parentNode: DocumentNode
+    }) {
+        super({
+            id: 'add-document-template-brick',
+            children: undefined,
+            name: 'brick template',
+            faIcon: 'fas fa-puzzle-piece'
+        })
+        Object.assign(this, params)
+    }
+
+    execute(
+        state: ContextMenuState
+    ) {
+        popupSelectModuleView$().pipe(
+            mergeMap(({toolboxId, brickId}) => {
+                return fetchResources$({
+                    bundles: {
+                        [toolboxId] : "latest"
+                    },
+                    urlsCss: [],
+                    urlsJsAddOn:[]
+                }).pipe(
+                    map( () => { 
+                        return window[toolboxId][brickId] 
+                    }),
+                )
+            }),
         )
-            .subscribe((document: Document) => {
-                let childNode = new DocumentNode({ story: this.parentNode.story, document })
-                this.explorerState.addChild(this.parentNode, childNode)
+        .subscribe( (factory: Factory) => {
+            let content = templateFluxModule(factory)
+            createDocument({
+                parentNode: this.parentNode,
+                explorerState: this.explorerState,
+                content,
+                name:factory.displayName
             })
+        })
     }
 }
 
