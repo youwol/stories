@@ -4,51 +4,51 @@ import { map } from "rxjs/operators";
 
 
 
-export class Author implements ClientApi.Author{
+export class Author implements ClientApi.Author {
 
     authorId: string
 
-    constructor({authorId} : ClientApi.Author){
+    constructor({ authorId }: ClientApi.Author) {
         this.authorId = authorId
     }
 }
 
 
-export class Document implements ClientApi.Document{
+export class Document implements ClientApi.Document {
 
     storyId: string
     documentId: string
     title: string
     contentId: string
-    orderIndex: number   
+    orderIndex: number
 
-    constructor({documentId, title}: ClientApi.Document){
+    constructor({ documentId, title }: ClientApi.Document) {
         this.documentId = documentId
         this.title = title
     }
 }
 
-export class Story implements ClientApi.Story{
+export class Story implements ClientApi.Story {
 
     storyId: string
     rootDocumentId: string
     authors: Author[]
     title: string
-    
-    constructor({storyId, title, authors}: ClientApi.Story){
+
+    constructor({ storyId, title, authors }: ClientApi.Story) {
         this.storyId = storyId
         this.title = title
         this.rootDocumentId = storyId
-        this.authors = authors.map( (author) => new Author(author))
+        this.authors = authors.map((author) => new Author(author))
     }
 }
 
 
-export class Client{
+export class Client {
 
-    static service : ClientApi.ServiceInterface
+    static service: ClientApi.ServiceInterface
 
-    static getStory$( storyId: string) : Observable<Story>{
+    static getStory$(storyId: string): Observable<Story> {
 
         return Client.service.getStory$(storyId).pipe(
             map((story) => {
@@ -58,51 +58,51 @@ export class Client{
     }
 
     static getDocument$(
-        storyId: string, 
+        storyId: string,
         documentId: string
-        ) : Observable<Document>{
+    ): Observable<Document> {
 
         return Client.service.getDocument$(storyId, documentId).pipe(
-            map( (document) => {
+            map((document) => {
                 return new Document(document)
             })
         )
     }
 
     static putDocument$(
-        storyId: string, 
-        body: { parentDocumentId: string, title: string, content: string}
-        ) : Observable<Document>{
+        storyId: string,
+        body: { parentDocumentId: string, title: string, content: string }
+    ): Observable<Document> {
 
         return Client.service.putDocument$(storyId, body).pipe(
-            map( (document) => {
+            map((document) => {
                 return new Document(document)
             })
         )
     }
 
     static postDocument$(
-        storyId: string, 
+        storyId: string,
         documentId: string,
-        body: { title: string}
-        ) : Observable<Document>{
+        body: { title: string }
+    ): Observable<Document> {
 
-        return Client.service.postDocument$(storyId,documentId, body).pipe(
-            map( (document) => {
+        return Client.service.postDocument$(storyId, documentId, body).pipe(
+            map((document) => {
                 return new Document(document)
             })
         )
     }
 
     static deleteDocument$(
-        assetId: string, 
+        assetId: string,
         documentId: string
-        ) : Observable<boolean>{
+    ): Observable<boolean> {
 
         return Client.service.deleteDocument$(assetId, documentId)
     }
 
-    static getContent$(storyId: string, documentId: string) : Observable<string> {
+    static getContent$(storyId: string, documentId: string): Observable<string> {
 
         return Client.service.getContent$(storyId, documentId)
     }
@@ -111,33 +111,33 @@ export class Client{
         return Client.service.postContent$(storyId, documentId, content)
     }
 
-    static getChildren$( 
-        storyId: string, 
+    static getChildren$(
+        storyId: string,
         body: {
             parentDocumentId: string,
             fromIndex?: number,
             count?: number
-        }) : Observable<Document[]>{
+        }): Observable<Document[]> {
 
-            let count = body.count || 1000
-            let fromIndex = body.fromIndex || -Infinity
-            return Client.service.getChildren$(
-                storyId,
-                body.parentDocumentId,
-                fromIndex,
-                count
-            ).pipe(
-                map( (docs: ClientApi.Document[]) => {
+        let count = body.count || 1000
+        let fromIndex = body.fromIndex || -Infinity
+        return Client.service.getChildren$(
+            storyId,
+            body.parentDocumentId,
+            fromIndex,
+            count
+        ).pipe(
+            map((docs: ClientApi.Document[]) => {
 
-                    return docs.map( doc => {
-                        return new Document({
-                            documentId:doc.documentId,
-                            storyId: doc.storyId,
-                            title: doc.title,
-                            orderIndex: doc.orderIndex
-                        })
+                return docs.map(doc => {
+                    return new Document({
+                        documentId: doc.documentId,
+                        storyId: doc.storyId,
+                        title: doc.title,
+                        orderIndex: doc.orderIndex
                     })
                 })
-            )
-        }
+            })
+        )
+    }
 }

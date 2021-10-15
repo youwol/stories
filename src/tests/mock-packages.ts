@@ -6,7 +6,7 @@ export class CodeMirror{
     events = {
     }
     value: string
-    constructor(elem: HTMLDivElement, content: {value: string}){
+    constructor(public readonly elem: HTMLDivElement, content: {value: string}){
         elem.innerHTML = `<div id='CodeMirror'> ${content.value} </div>`
         this.value = content.value
     }
@@ -15,6 +15,7 @@ export class CodeMirror{
     }
     setValue(content){
         this.value = content
+        this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
         this.events["changes"]()
     }
     getValue(){
