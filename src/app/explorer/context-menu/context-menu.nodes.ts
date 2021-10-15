@@ -3,6 +3,7 @@ import { ImmutableTree } from '@youwol/fv-tree'
 import { map, mergeMap } from 'rxjs/operators'
 import { Client, Document } from '../../client/client'
 import { popupSelectModuleView$ } from '../../modals/select-module.modal'
+import { popupSelectToolboxView$ } from '../../modals/select-toolbox.modal'
 import { fetchResources$ } from '../../utils/cdn-fetch'
 import { ExplorerState } from '../explorer.view'
 import { StoryNode, DocumentNode, SignalType, ExplorerNode } from '../nodes'
@@ -43,6 +44,14 @@ export let ALL_ACTIONS = {
         createNode: (node: DocumentNode, explorerState: ExplorerState) =>
             new RenameNode<DocumentNode>({
                 node,
+                explorerState
+            })
+    },
+    setFromTemplate: {
+        applicable: (selectedNode) => selectedNode instanceof StoryNode,
+        createNode: (parentNode: StoryNode, explorerState: ExplorerState) =>
+            new SetFromTemplateNode({
+                parentNode,
                 explorerState
             })
     }
@@ -189,7 +198,78 @@ export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode
             })
     }
 }
+
+export class SetFromTemplateNode extends ContextTreeNode {
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        parentNode: StoryNode
+    }) {
+        super({
+            id: 'set-from-template',
+            children: [
+                new SetFromTemplateToolboxNode(params)
+            ],
+            name: 'Set from template',
+            faIcon: 'fas fa-book-open'
         })
+        Object.assign(this, params)
+    }
+}
+
+
+export class SetFromTemplateToolboxNode extends ContextTreeNode implements ExecutableNode {
+
+    explorerState: ExplorerState
+    parentNode: StoryNode
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        parentNode: StoryNode
+    }) {
+        super({
+            id: 'set-from-template-toolbox',
+            children: undefined,
+            name: 'Toolbox',
+            faIcon: 'fas fa-toolbox'
+        })
+        Object.assign(this, params)
+    }
+
+    execute(
+        state: ContextMenuState
+    ) {
+        popupSelectToolboxView$().pipe(
+            mergeMap(({ toolboxId }) => {
+                return fetchResources$({
+                    bundles: {
+                        [toolboxId]: "latest"
+                    },
+                    urlsCss: [],
+                    urlsJsAddOn: []
+                }).pipe(
+                    map(() => {
+                        return window[toolboxId].pack.modules
+                    }),
+                )
+            }),
+        )
+            .subscribe((factories: Factory[]) => {
+
+                Object.values(factories).forEach((factory) => {
+
+                    let content = templateFluxModule(factory)
+                    createDocument({
+                        // At each loop the parentNode actually changes => getNode is used
+                        parentNode: this.explorerState.getNode(this.parentNode.id) as StoryNode,
+                        explorerState: this.explorerState,
+                        content,
+                        name: factory.displayName
+                    })
+                })
+
+            })
+
     }
 }
 
