@@ -1,32 +1,24 @@
-import { child$, VirtualDOM } from "@youwol/flux-view";
-import { debounceTime, mergeMap } from "rxjs/operators";
-import { AppState } from "../../../main-app/app-state";
-import { Client } from "../../../client/client";
-import { DocumentNode } from "../../../explorer/nodes"
-import { forkJoin, ReplaySubject, Subject } from "rxjs";
+import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
+import { filter } from "rxjs/operators";
+import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
+import { Document } from "../../../client/client"
+import { ReplaySubject } from "rxjs";
 import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
 
 type CodeMirrorEditor = any
 
 /**
- * Logic side of [[EditorView]]
+ * Editor view
  */
- export class EditorState implements VirtualDOM {
+export class EditorView implements VirtualDOM {
 
-    static debounceTime = 1000
     static codeMirror$ = fetchCodeMirror$()
 
-    public readonly node : DocumentNode
     public readonly appState: AppState
-
-    public readonly content$ : ReplaySubject<string>
-    public readonly saved$ = new Subject<boolean>() 
-
-    /**
-     * This editor gets initialized after the required assets
-     * have been fetched from the CDN
-     */
-    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
+    public readonly document: Document
+    public readonly id = "editor-view"
+    public readonly class: string
+    public readonly children: Array<VirtualDOM>
 
     public readonly configurationCodeMirror = {
         value: "",
@@ -36,73 +28,52 @@ type CodeMirrorEditor = any
         lineWrapping: true
     }
 
-    constructor( params: {
-        node: DocumentNode,
+    /**
+     * This editor gets initialized after the required assets
+     * have been fetched from the CDN
+     */
+    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
+
+
+    constructor(params: {
         appState: AppState,
-        content$: ReplaySubject<string>
-    }) {
-        Object.assign(this, params)
-
-        this.content$.pipe(
-            debounceTime(EditorState.debounceTime),
-            mergeMap( (content) => Client.postContent$(this.node.story.storyId, this.node.document.documentId, content) )
-        ).subscribe( (content) => {
-            this.saved$.next(true)
-        })
-    }
-
-    setContent( content: string) {
-        this.content$.next(content)
-    }
-
-    setCodeMirrorEditor( editor: CodeMirrorEditor ) {
-        this.codeMirrorEditor$.next(editor)
-    }
-}
-
-/**
- * Editor view
- */
-export class EditorView implements VirtualDOM {
-
-    public readonly editorState: EditorState
-    public readonly id = "editor-view"
-    public readonly class: string
-    public readonly children: Array<VirtualDOM>
-
-    constructor( params: {
-        editorState: EditorState,
+        document: Document,
         class: string
     }) {
         Object.assign(this, params)
-        
+
         this.children = [
             {
                 class: 'w-100 h-100',
                 children: [
                     child$(
-                        forkJoin([
-                            EditorState.codeMirror$,
-                            Client.getContent$(
-                                this.editorState.node.story.storyId, 
-                                this.editorState.node.document.documentId)
-                        ]),
-                        ([_, content]) => {
+                        EditorView.codeMirror$,
+                        () => {
                             return {
                                 id: 'code-mirror-editor',
                                 class: 'w-100 h-100',
-                                connectedCallback: (elem) => {
-                                    let config = {
-                                        ...this.editorState.configurationCodeMirror, 
-                                        value: content
-                                    }
-                                    let editor = window['CodeMirror'](elem, config)
-                                    this.editorState.setContent(content)
+                                connectedCallback: (elem: HTMLElement$) => {
 
-                                    editor.on("changes", () => {
-                                        this.editorState.setContent(editor.getValue())
+                                    let config = {
+                                        ...this.configurationCodeMirror,
+                                        value: ""
+                                    }
+
+                                    let editor = window['CodeMirror'](elem, config)
+                                    editor.on("changes", (changes) => {
+                                        this.appState.setContent(this.document, editor.getValue(), ContentChangedOrigin.editor)
                                     })
-                                    this.editorState.setCodeMirrorEditor(editor)
+
+                                    let sub = this.appState.page$.pipe(
+                                        filter(({ document }) => document == this.document)
+                                    )
+                                        .subscribe(({ content, originId }) => {
+                                            if (originId != 'editor')
+                                                editor.setValue(content)
+                                        })
+
+                                    this.codeMirrorEditor$.next(editor)
+                                    elem.ownSubscriptions(sub)
                                 }
                             }
                         }

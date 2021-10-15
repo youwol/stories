@@ -22,7 +22,7 @@ interface NodeSignal{
 /**
  * Base class of explorer's node
  */
-export class ExplorerNode extends ImmutableTree.Node{
+export abstract class ExplorerNode extends ImmutableTree.Node{
 
     name: string
 
@@ -32,6 +32,8 @@ export class ExplorerNode extends ImmutableTree.Node{
         super({id, children})
         this.name = name
     }
+
+    abstract getDocument() : Document
 }
 
 /**
@@ -53,6 +55,10 @@ export class StoryNode extends ExplorerNode{
         })
         this.story = story
         this.rootDocument = rootDocument
+    }
+
+    getDocument() {
+        return this.rootDocument
     }
 }
 
@@ -76,6 +82,10 @@ export class DocumentNode extends ExplorerNode{
         })
         this.story = story
         this.document = document
+    }
+
+    getDocument() {
+        return this.document
     }
 }
 

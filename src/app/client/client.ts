@@ -51,19 +51,7 @@ export class Client{
     static getStory$( storyId: string) : Observable<Story>{
 
         return Client.service.getStory$(storyId).pipe(
-            map( (story) => {
-                return new Story(story)
-            })
-        )
-    }
-
-    static postStory$(
-        storyId: string, 
-        body: { title: string}
-        ) : Observable<Story>{
-
-        return Client.service.postStory$(storyId, body).pipe(
-            map( (story) => {
+            map((story) => {
                 return new Story(story)
             })
         )
