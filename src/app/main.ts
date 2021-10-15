@@ -1,8 +1,36 @@
-require('./style.css');
+// (index.html is handled by HtmlWebpackPlugin)
+require('./style.css')
+export{}
 
-import { load$ } from './main-app/app-state';
-import { setupMockService } from './utils/mock-service';
+let cdn = window['@youwol/cdn-client']
 
-setupMockService()
+let stylesFutures = cdn.fetchStyleSheets([
+    "bootstrap#4.4.1~bootstrap.min.css",
+    "fontawesome#5.12.1~css/all.min.css",
+    "@youwol/fv-widgets#0.0.3~dist/assets/styles/style.youwol.css"
+])
 
-load$("test-story", document.getElementById("content") ).subscribe()
+let bundlesFutures = cdn.fetchBundles(
+    {
+        'lodash': '4.17.15',
+        "rxjs": '6.5.5',
+        "@youwol/flux-core": 'latest',
+        '@youwol/flux-view': 'latest',
+        "@youwol/fv-group": "latest",
+        "@youwol/fv-button": "latest",
+        "@youwol/fv-tree": "latest",
+        "@youwol/fv-tabs": "latest",
+        "@youwol/fv-input": "latest",
+        "@youwol/fv-context-menu": "latest",
+        "@youwol/flux-fv-widgets": "latest",
+        "marked": "latest",
+        "mathjax": "latest"
+    },
+    window
+)
+
+await Promise.all([stylesFutures, bundlesFutures])
+
+await import('./load-app')
+
+

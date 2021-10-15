@@ -1,10 +1,13 @@
 import { attr$, child$, VirtualDOM } from "@youwol/flux-view"
 import { BehaviorSubject, ReplaySubject } from "rxjs"
 
+/**
+ * Option of rendering mode
+ */
 export enum RenderMode{
-    Runner = "runner",
-    Workflow = "workflow",
-    Builder = "builder"
+    Runner = "runner",      //!< only the running application
+    Workflow = "workflow",  //!< only the workflow
+    Builder = "builder"     //!< builder mode
 }
 
 let RenderModeUrls = {
@@ -61,6 +64,13 @@ function toolBarButton( params :{
     }
 }
 
+/**
+ * Flux application view
+ * 
+ * It displays the a flux application in either running mode, builder mode or
+ * workflow mode. A toolbar allows to switch between the modes. Options
+ * for full-screen mode as well as opening in new tab are provided.
+ */
 export class FluxAppView implements VirtualDOM{
 
     static defaultClass = 'w-100 overflow-auto'

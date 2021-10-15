@@ -1,13 +1,13 @@
+import { installMockPackages } from './mock-packages'
+installMockPackages()
+
 import { load$ } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
-import { installMockPackages } from './mock-packages'
 import { setupMockService } from "../app/utils/mock-service"
-import { storiesUnitTests } from "./mock-data/database"
+import { storiesUnitTests } from './mock-data/database'
 
 
-setupMockService()
-
-installMockPackages()
+setupMockService(storiesUnitTests)
 
 let storyId = 'test-story'
 

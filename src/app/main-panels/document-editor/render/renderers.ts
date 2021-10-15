@@ -1,7 +1,7 @@
 import { render, VirtualDOM } from '@youwol/flux-view';
 import { parse } from 'marked'
 import { FluxAppView } from './youwol-views/flux-app.view';
-
+import { ModuleSettingsView } from './youwol-views/module-settings.view'
 
 export interface RenderableTrait {
 
@@ -70,14 +70,15 @@ export class YouwolRenderer implements RenderableTrait {
             let vDOM
             try {
                 let code = sanitizeCodeScript(fluxAppBlock.innerHTML)
-                console.log(code)
                 vDOM = new Function(code)()({
-                    youwol: { FluxAppView },
+                    youwol: { 
+                        FluxAppView,
+                        ModuleSettingsView
+                    },
                     documentScope
                 })
             }
             catch (error) {
-                console.log(error)
                 let errorView = new ErrorView({
                     message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerText}`
                 })
@@ -91,7 +92,14 @@ export class YouwolRenderer implements RenderableTrait {
 }
 
 
-
+/**
+ * When marked parse some script, some characters are encoded 
+ * differently; e.g. '>' becomes '/&gt;/g'.
+ * This function convert back to the original text.
+ * 
+ * @param text the text to sanitize
+ * @returns original text
+ */
 export function sanitizeCodeScript(text: string) {
     return text.replace(/&gt;/g, '>').replace(/&amp;gt;/g,">")
 }
