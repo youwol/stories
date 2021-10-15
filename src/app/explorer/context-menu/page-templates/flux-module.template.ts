@@ -16,42 +16,6 @@ return `
 
 Provide here a short abstract of the purpose of the module.
 
-### A couple of usefull markdown tricks:
-
-I just love **bold text**.
-
-Italicized text is the *cat's meow*.
-
-This text is ***really important***.
-
-***
-
-> Dorothy followed her through many of the beautiful rooms in her castle.
-
-> #### The quarterly results look great!
->
-> - Revenue was off the chart.
-> - Profits were higher than ever.
->
->  *Everything* is going according to **plan**.
-
-***
-
-1. First item
-2. Second item
-
-- First item
-- Second item
-- Third item
-- Fourth item
-
-***
-
-At the command prompt, type \`nano\`.
-
-\`\`\`javascript
-console.log("Hello world")
-\`\`\`
 
 ### Illustrative example
 
@@ -74,8 +38,7 @@ return ({youwol, documentScope}) =>{
 
 ## Configuration
 
-Below is the configuration's settings of the module, they are persisted 
-with the workflow:
+Below is the configuration's settings of the module, they are persisted with the workflow:
 
 \`\`\`youwol-view
 return ({youwol, documentScope}) =>{
