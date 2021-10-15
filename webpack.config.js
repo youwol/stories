@@ -90,11 +90,10 @@ module.exports = {
     },
     devtool: 'cheap-module-source-map',
     devServer: {
-        contentBase: path.resolve(__dirname, "./src"),
+        //contentBase: path.resolve(__dirname, "./src"),
         historyApiFallback: true,
-        inline: true,
         open: false,
-        port:3001,
+        port: 3001,
     }
 };
 
