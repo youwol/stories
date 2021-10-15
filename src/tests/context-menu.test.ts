@@ -353,4 +353,85 @@ test('load story, select document, display context menu, add flux-module child',
                     }), 0)
         })
 })
+
+test('load story, select document, display context menu, set flux-pack template', (done) => {
+    window["TestToolbox"] = {
+        pack: {
+            modules: {
+                TestModule0: {
+                    displayName: 'test module 0',
+                    packId: 'TestToolBox0',
+                    id: 'TestModule',
+                    resources: {
+                        youwol: "youwol.platform.com"
+                    }
+                },
+                TestModule1: {
+                    displayName: 'test module 1',
+                    packId: 'TestToolBox1',
+                    id: 'TestModule',
+                    resources: {
+                        youwol: "youwol.platform.com"
+                    }
+                }
+            }
+        }
+    }
+
+    load$(storyId, document.body)
+        .subscribe(() => {
+
+            // WHEN story node is expanded ...
+            let storyView = document.getElementById("test-story")
+            storyView.dispatchEvent(new Event('click', { bubbles: true }))
+
+            // WHEN context menu triggered on latex node ...
+            let event = document.createEvent('HTMLEvents');
+            event.initEvent('contextmenu', true, false);
+            storyView.dispatchEvent(event)
+
+            // EXPECT - 1 : it appears
+            let contextMenuView = document.getElementById("context-menu-view")
+            expect(contextMenuView).toBeTruthy()
+
+            // EXPECT - 2 : set from template action is available
+            let newDoc = document.querySelector("#node-set-from-template span") as HTMLSpanElement
+            expect(newDoc).toBeTruthy()
+            expect(newDoc.innerText).toEqual("Set from template")
+
+            // WHEN add document is selected
+            newDoc.dispatchEvent(new Event('click', { bubbles: true }))
+
+            // THEN WHEN create brick template document is selected
+            let newTemplateToolbox = document.querySelector("#node-set-from-template-toolbox span") as HTMLSpanElement
+            expect(newTemplateToolbox).toBeTruthy()
+            expect(newTemplateToolbox.innerText).toEqual("Toolbox")
+
+            newTemplateToolbox.dispatchEvent(new Event('click', { bubbles: true }))
+
+            // EXPECT modal to pick module is selected
+            let modalView = document.querySelector("#modal-select-module")
+            expect(modalView).toBeTruthy()
+
+            let inputToolboxIdView = document.querySelector("#toolbox-id input") as any as TextInput.View
+            expect(inputToolboxIdView).toBeTruthy()
+            inputToolboxIdView.state.value$.next("TestToolbox")
+
+            let okBtn = document.querySelector("#modal-select-module button")
+            expect(okBtn).toBeTruthy()
+            okBtn.dispatchEvent(new Event('click', { bubbles: true }))
+
+            // EXPECT new children added for 'test module 0' & 'test module 1'
+            // setTimeout to put the check at the very end of the remaining coroutines list
+            setTimeout(
+                () => Client.getChildren$(
+                    storyId,
+                    { parentDocumentId: "root-test-story" })
+                    .subscribe((documents) => {
+                        expect(documents.length).toEqual(5)
+                        expect(documents[3].title).toEqual("test module 0")
+                        expect(documents[4].title).toEqual("test module 1")
+                        done()
+                    }), 0)
+        })
 })
