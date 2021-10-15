@@ -1,6 +1,6 @@
 import { HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { merge, ReplaySubject } from "rxjs";
-import { debounceTime, filter } from "rxjs/operators";
+import { debounceTime, filter, skip } from "rxjs/operators";
 import { Document } from '../../../client/client'
 import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } from "./renderers";
@@ -45,6 +45,7 @@ export class RenderView implements VirtualDOM {
             filter(({ document, originId }) => {
                 return document == this.document && originId == ContentChangedOrigin.editor
             }),
+            skip(1),
             debounceTime(RenderView.debounceTime)
         )
         this.children = [
