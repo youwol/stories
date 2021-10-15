@@ -1,7 +1,17 @@
 import { render, VirtualDOM } from '@youwol/flux-view';
-import { parse } from 'marked'
+import { parse, setOptions } from 'marked'
 import { FluxAppView } from './youwol-views/flux-app.view';
 import { ModuleSettingsView } from './youwol-views/module-settings.view'
+import hljs from "highlight.js";
+
+setOptions({
+    langPrefix: "hljs language-",
+    highlight: function(code, lang) {
+      if(lang=='youwol-view')
+        return code
+      return hljs.highlightAuto(code, [lang]).value;
+    }
+  });
 
 export interface RenderableTrait {
 
@@ -13,8 +23,7 @@ export class MarkDownRenderer implements RenderableTrait {
 
     render(htmlElement: HTMLElement): Promise<HTMLElement> {
 
-        htmlElement.innerHTML = parse(htmlElement.innerHTML)
-
+        htmlElement.innerHTML = parse(sanitizeCodeScript(htmlElement.innerHTML))
         return Promise.resolve(htmlElement);
     }
 }
@@ -80,7 +89,7 @@ export class YouwolRenderer implements RenderableTrait {
             }
             catch (error) {
                 let errorView = new ErrorView({
-                    message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerText}`
+                    message: `An error ocurred while parsing the configuration:\n${fluxAppBlock.innerHTML}`
                 })
                 fluxAppBlock.replaceWith(render(errorView))
                 return

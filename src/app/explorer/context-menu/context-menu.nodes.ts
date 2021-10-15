@@ -1,8 +1,13 @@
+import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
+import { map, mergeMap } from 'rxjs/operators'
 import { Client, Document } from '../../client/client'
+import { popupSelectModuleView$ } from '../../modals/select-module.modal'
+import { fetchResources$ } from '../../utils/cdn-fetch'
 import { ExplorerState } from '../explorer.view'
 import { StoryNode, DocumentNode, SignalType, ExplorerNode } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
+import { templateFluxModule } from './page-templates/flux-module.template'
 
 /**
  * Factory of available actions in the
@@ -85,7 +90,28 @@ export class ContextRootNode extends ContextTreeNode {
 /**
  * Add document node type of the context-menu's tree-view
  */
-export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
+export class AddDocumentNode extends ContextTreeNode {
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        parentNode: DocumentNode
+    }) {
+        super({
+            id: 'add-document',
+            children: [
+                new EmptyDocNode(params),
+                new BrickTemplateNode(params),
+            ],
+            name: 'new document',
+            faIcon: 'fas fa-plus'
+        })
+        Object.assign(this, params)
+    }
+
+}
+
+
+ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
 
     public readonly explorerState: ExplorerState
     public readonly parentNode: DocumentNode | StoryNode
@@ -95,9 +121,9 @@ export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
         parentNode: DocumentNode
     }) {
         super({
-            id: 'add-document',
+            id: 'add-document-empty',
             children: undefined,
-            name: 'new document',
+            name: 'empty document',
             faIcon: 'fas fa-file'
         })
         Object.assign(this, params)
@@ -106,25 +132,61 @@ export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
     execute(
         state: ContextMenuState
     ) {
-        let body = this.parentNode instanceof StoryNode
-            ? {
-                parentDocumentId: this.parentNode.rootDocument.documentId,
-                title: "New document",
-                content: ""
-            }
-            : {
-                parentDocumentId: this.parentNode.document.documentId,
-                title: "New document",
-                content: ""
-            }
-        Client.putDocument$(
-            this.parentNode.story.storyId,
-            body
+        createDocument({
+            parentNode: this.parentNode,
+            explorerState: this.explorerState,
+            content: "",
+            name:"New document"
+        })
+    }
+}
+
+
+ export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode {
+
+    public readonly explorerState: ExplorerState
+    public readonly parentNode: DocumentNode | StoryNode
+
+    constructor(params: {
+        explorerState: ExplorerState,
+        parentNode: DocumentNode
+    }) {
+        super({
+            id: 'add-document-template-brick',
+            children: undefined,
+            name: 'brick template',
+            faIcon: 'fas fa-puzzle-piece'
+        })
+        Object.assign(this, params)
+    }
+
+    execute(
+        state: ContextMenuState
+    ) {
+        popupSelectModuleView$().pipe(
+            mergeMap(({toolboxId, brickId}) => {
+                return fetchResources$({
+                    bundles: {
+                        [toolboxId] : "latest"
+                    },
+                    urlsCss: [],
+                    urlsJsAddOn:[]
+                }).pipe(
+                    map( () => { 
+                        return window[toolboxId][brickId] 
+                    }),
+                )
+            }),
         )
-            .subscribe((document: Document) => {
-                let childNode = new DocumentNode({ story: this.parentNode.story, document })
-                this.explorerState.addChild(this.parentNode, childNode)
+        .subscribe( (factory: Factory) => {
+            let content = templateFluxModule(factory)
+            createDocument({
+                parentNode: this.parentNode,
+                explorerState: this.explorerState,
+                content,
+                name:factory.displayName
             })
+        })
     }
 }
 
@@ -184,4 +246,32 @@ export class DeleteDocumentNode extends ContextTreeNode implements ExecutableNod
             this.explorerState.removeNode(this.deletedNode)
         })
     }
+}
+
+
+function createDocument({parentNode, explorerState, content, name}:{
+    parentNode : StoryNode | DocumentNode,
+    explorerState: ExplorerState,
+    content: string,
+    name: string
+}){
+    let body = parentNode instanceof StoryNode
+        ? {
+            parentDocumentId: parentNode.rootDocument.documentId,
+            title: name,
+            content: content
+        }
+        : {
+            parentDocumentId: parentNode.document.documentId,
+            title: name,
+            content: content
+        }
+    Client.putDocument$(
+        parentNode.story.storyId,
+        body
+    )
+        .subscribe((document: Document) => {
+            let childNode = new DocumentNode({ story: parentNode.story, document })
+            explorerState.addChild(parentNode, childNode)
+        })
 }

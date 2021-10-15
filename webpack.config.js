@@ -60,6 +60,7 @@ module.exports = {
           "@youwol/fv-context-menu": "window['@youwol/fv-context-menu']",
           "@youwol/flux-youwol-essentials": "window['@youwol/flux-youwol-essentials']",
           "@youwol/flux-fv-widgets": "window['@youwol/flux-fv-widgets']",
+          "highlight.js": "hljs",
         }
       ],
     module: {
