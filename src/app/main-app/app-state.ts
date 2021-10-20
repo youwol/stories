@@ -22,14 +22,15 @@ export function load$(storyId: string, container: HTMLElement) {
         Client.getStory$(storyId),
         Client.getChildren$(storyId, { parentDocumentId: storyId, count: 1 }).pipe(
             map(docs => docs[0])
-        )]).pipe(
-            map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
-                let appState = new AppState({ story, rootDocument })
-                let appView = new AppView({ state: appState })
-                return { appState, appView }
-            }),
-            tap(({ appView }) => container.appendChild(render(appView)))
         )
+    ]).pipe(
+        map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
+            let appState = new AppState({ story, rootDocument })
+            let appView = new AppView({ state: appState })
+            return { appState, appView }
+        }),
+        tap(({ appView }) => container.appendChild(render(appView)))
+    )
 }
 
 export enum SavingStatus {

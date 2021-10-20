@@ -1,6 +1,6 @@
 
 
-import {ImmutableTree} from '@youwol/fv-tree'
+import { ImmutableTree } from '@youwol/fv-tree'
 import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { Client, Story, Document } from '../client/client'
@@ -8,14 +8,14 @@ import { Client, Story, Document } from '../client/client'
 /**
  * Node's signal's type enum
  */
-export enum SignalType{
+export enum SignalType {
     Rename = "Rename"
 }
 
 /**
  * Node's signal data-structure
  */
-interface NodeSignal{
+interface NodeSignal {
     type: SignalType
 }
 
@@ -98,14 +98,14 @@ export class DocumentNode extends ExplorerNode{
  * @returns the list of children node
  */
 function getChildrenOfDocument$(
-    story: Story, 
+    story: Story,
     parentDocumentId: string
-    ) : Observable<DocumentNode[]> {
+): Observable<DocumentNode[]> {
 
-    return Client.getChildren$(story.storyId, {parentDocumentId}).pipe(
-        map( (documents: Document[]) => {
-            return documents.map( (document:Document) => {
-                return new DocumentNode({story, document})
+    return Client.getChildren$(story.storyId, { parentDocumentId }).pipe(
+        map((documents: Document[]) => {
+            return documents.map((document: Document) => {
+                return new DocumentNode({ story, document })
             })
         })
     )
