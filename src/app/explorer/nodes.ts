@@ -49,9 +49,9 @@ export class StoryNode extends ExplorerNode{
         children?}
         ){
         super({
-            id: story.storyId, 
             name: story.title, 
             children: children || getChildrenOfDocument$(story, rootDocument.documentId) 
+            id: rootDocument.documentId,
         })
         this.story = story
         this.rootDocument = rootDocument

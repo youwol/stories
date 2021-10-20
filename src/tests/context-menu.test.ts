@@ -62,7 +62,7 @@ test('load story, select story, display context menu, rename story', (done) => {
             renameView.dispatchEvent(new Event('click', { bubbles: true }))
 
             // EXPECT text input is displayed in selected node
-            let textInputView = document.querySelector("#node-test-story input") as HTMLInputElement
+            let textInputView = document.querySelector("#node-root-test-story input") as HTMLInputElement
             expect(textInputView).toBeTruthy()
 
             // WHEN new name is provided ...
