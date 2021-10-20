@@ -34,7 +34,6 @@ export class EditorView implements VirtualDOM {
      */
     public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
 
-
     constructor(params: {
         appState: AppState,
         document: Document,
@@ -60,7 +59,9 @@ export class EditorView implements VirtualDOM {
                                     }
 
                                     let editor = window['CodeMirror'](elem, config)
-                                    editor.on("changes", (changes) => {
+                                    editor.on("changes", (_, changeObj) => {
+                                        if (changeObj.length == 1 && changeObj[0].origin == "setValue")
+                                            return
                                         this.appState.setContent(this.document, editor.getValue(), ContentChangedOrigin.editor)
                                     })
 
@@ -68,7 +69,7 @@ export class EditorView implements VirtualDOM {
                                         filter(({ document }) => document == this.document)
                                     )
                                         .subscribe(({ content, originId }) => {
-                                            if (originId != 'editor')
+                                            if (originId != ContentChangedOrigin.editor)
                                                 editor.setValue(content)
                                         })
 

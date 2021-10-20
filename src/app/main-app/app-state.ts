@@ -4,7 +4,7 @@ import { Story, Document, Client } from "../client/client";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
 import { topBannerView } from "../top-banner/top-banner.view";
-import { debounceTime, distinctUntilChanged, map, mergeMap, tap } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
 import { DocumentEditorView } from "../main-panels/document-editor/document-editor.view";
 
 /**
@@ -40,7 +40,7 @@ export enum SavingStatus {
 
 export enum ContentChangedOrigin {
     editor = "editor",
-    nodeLoad = ""
+    nodeLoad = "loaded"
 }
 /**
  * Global application state, logic side of [[AppView]]
@@ -86,6 +86,9 @@ export class AppState {
             })
 
         this.page$.pipe(
+            filter(({ originId }) => {
+                return originId == ContentChangedOrigin.editor
+            }),
             tap(({ document }) => {
                 this.save$.next({ document, status: SavingStatus.started })
             }),
