@@ -2,7 +2,7 @@
 import { installMockPackages, CodeMirror } from './mock-packages'
 installMockPackages()
 
-import { filter, mergeMap, share, shareReplay, skip, take, tap } from "rxjs/operators"
+import { filter, mergeMap, tap } from "rxjs/operators"
 import { AppState, load$, SavingStatus } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
 import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
@@ -13,7 +13,6 @@ import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 import { storiesUnitTests } from './mock-data/database'
 import { contentMarkdown } from './mock-data/test-story-markdown'
-import { merge } from 'rxjs'
 
 
 setupMockService(storiesUnitTests)
@@ -121,8 +120,8 @@ test('load story, change editor content', (done) => {
                 tap((cmEditor: CodeMirror) => {
                     // EXPECT the code mirror editor is available
                     expect(cmEditor).toBeTruthy()
-                    // WHEN its content is changed
-                    cmEditor.setValue(newContent)
+                    // WHEN its content is changed; this method is only available in the mock
+                    cmEditor.changeValue(newContent)
                 }),
                 mergeMap(() => appState.save$),
                 filter(({ status }) => status == SavingStatus.done),
