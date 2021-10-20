@@ -13,12 +13,17 @@ export class CodeMirror {
     on(changeType, callback) {
         this.events[changeType] = callback
     }
-    setValue(content){
+    setValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
-        this.events["changes"]()
+        this.events["changes"](undefined, [{ origin: "setValue" }])
     }
-    getValue(){
+    changeValue(content) {
+        this.value = content
+        this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
+        this.events["changes"](undefined, [{ origin: "changeValue" }])
+    }
+    getValue() {
         return this.value
     }
 }
