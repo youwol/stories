@@ -326,11 +326,7 @@ export class DeleteDocumentNode extends ContextTreeNode implements ExecutableNod
     execute(
         state: ContextMenuState
     ) {
-        Client
-            .deleteDocument$(this.deletedNode.story.storyId, this.deletedNode.document.documentId)
-            .subscribe(() => {
-                this.explorerState.removeNode(this.deletedNode)
-            })
+        this.explorerState.appState.deleteDocument(this.deletedNode.document)
     }
 }
 

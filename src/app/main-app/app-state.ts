@@ -52,6 +52,8 @@ export class AppState {
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
     public readonly page$ = new ReplaySubject<{ document: Document, content: string, originId: ContentChangedOrigin }>(1)
 
+    public readonly deletedDocument$ = new ReplaySubject<Document>(1)
+
     public readonly save$ = new Subject<{ document: Document, status: SavingStatus }>()
     public readonly story: Story
     public readonly rootDocument: Document
@@ -123,6 +125,14 @@ export class AppState {
                         node,
                         { story: new Story({ ...node.story, title: newName }) })
             })
+    }
+
+
+    deleteDocument(document: Document) {
+        this.deletedDocument$.next(document)
+        Client
+            .deleteDocument$(document.storyId, document.documentId)
+            .subscribe(() => { })
     }
 
 }

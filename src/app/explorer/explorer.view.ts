@@ -26,6 +26,10 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
         })
         this.appState = appState
         appState.selectNode(rootNode)
+        appState.deletedDocument$.subscribe((document) => {
+            this.removeNode(document.documentId)
+            this.selectedNode$.next(this.getNode(rootNode.id))
+        })
     }
 }
 
