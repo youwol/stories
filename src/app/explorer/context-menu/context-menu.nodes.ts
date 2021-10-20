@@ -1,7 +1,7 @@
 import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { map, mergeMap } from 'rxjs/operators'
-import { Client, Document } from '../../client/client'
+import { Client, Document, Story } from '../../client/client'
 import { popupSelectModuleView$ } from '../../modals/select-module.modal'
 import { popupSelectToolboxView$ } from '../../modals/select-toolbox.modal'
 import { fetchResources$ } from '../../utils/cdn-fetch'
@@ -141,12 +141,13 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
     execute(
         state: ContextMenuState
     ) {
-        createDocument({
-            parentNode: this.parentNode,
-            explorerState: this.explorerState,
-            content: "",
-            name: "New document"
-        })
+        this.explorerState.appState.addDocument(
+            this.parentNode.id,
+            {
+                content: "",
+                title: "New document"
+            }
+        )
     }
 }
 
@@ -189,12 +190,13 @@ export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode
         )
             .subscribe((factory: Factory) => {
                 let content = templateFluxModule(factory)
-                createDocument({
-                    parentNode: this.parentNode,
-                    explorerState: this.explorerState,
-                    content,
-                    name: factory.displayName
-                })
+                this.explorerState.appState.addDocument(
+                    this.parentNode.id,
+                    {
+                        content,
+                        title: factory.displayName
+                    }
+                )
             })
     }
 }
@@ -259,13 +261,13 @@ export class SetFromTemplateToolboxNode extends ContextTreeNode implements Execu
                 Object.values(factories).forEach((factory) => {
 
                     let content = templateFluxModule(factory)
-                    createDocument({
-                        // At each loop the parentNode actually changes => getNode is used
-                        parentNode: this.explorerState.getNode(this.parentNode.id) as StoryNode,
-                        explorerState: this.explorerState,
-                        content,
-                        name: factory.displayName
-                    })
+                    this.explorerState.appState.addDocument(
+                        this.parentNode.id,
+                        {
+                            content,
+                            title: factory.displayName
+                        }
+                    )
                 })
 
             })
@@ -328,32 +330,4 @@ export class DeleteDocumentNode extends ContextTreeNode implements ExecutableNod
     ) {
         this.explorerState.appState.deleteDocument(this.deletedNode.document)
     }
-}
-
-
-function createDocument({ parentNode, explorerState, content, name }: {
-    parentNode: StoryNode | DocumentNode,
-    explorerState: ExplorerState,
-    content: string,
-    name: string
-}) {
-    let body = parentNode instanceof StoryNode
-        ? {
-            parentDocumentId: parentNode.rootDocument.documentId,
-            title: name,
-            content: content
-        }
-        : {
-            parentDocumentId: parentNode.document.documentId,
-            title: name,
-            content: content
-        }
-    Client.putDocument$(
-        parentNode.story.storyId,
-        body
-    )
-        .subscribe((document: Document) => {
-            let childNode = new DocumentNode({ story: parentNode.story, document })
-            explorerState.addChild(parentNode, childNode)
-        })
 }
