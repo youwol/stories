@@ -64,7 +64,12 @@ test('load story, make sure everything is displayed', (done) => {
 test('load story, expand root  node, select markdown document', (done) => {
 
     load$(storyId, document.body)
-        .subscribe(() => {
+        .subscribe(({ appState }) => {
+
+            // EXPECT nothing to be saved within this test
+            appState.save$.subscribe((d) => {
+                expect(true).toBeFalsy()
+            })
 
             // WHEN application is loaded ...
             // EXPECT tree-view with node 'test-story' is displayed
