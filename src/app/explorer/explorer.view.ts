@@ -22,7 +22,7 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
         super({
             rootNode,
             selectedNode: appState.selectedNode$,
-            expandedNodes: ['library']
+            expandedNodes: [appState.story.storyId]
         })
         this.appState = appState
         appState.selectNode(rootNode)
