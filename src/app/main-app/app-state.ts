@@ -151,7 +151,9 @@ export class AppState {
         this.deletedDocument$.next(document)
         Client
             .deleteDocument$(document.storyId, document.documentId)
-            .subscribe(() => { })
+            .subscribe(() => {
+                // This is intentional: make the request happening
+            })
     }
 
 }

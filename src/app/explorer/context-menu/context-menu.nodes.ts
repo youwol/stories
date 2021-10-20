@@ -1,7 +1,6 @@
 import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { map, mergeMap } from 'rxjs/operators'
-import { Client, Document, Story } from '../../client/client'
 import { popupSelectModuleView$ } from '../../modals/select-module.modal'
 import { popupSelectToolboxView$ } from '../../modals/select-toolbox.modal'
 import { fetchResources$ } from '../../utils/cdn-fetch'
@@ -151,6 +150,20 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
     }
 }
 
+function addBrickTemplate({ factory, explorerState, parentNode }: {
+    factory: Factory,
+    explorerState: ExplorerState,
+    parentNode: ExplorerNode
+}) {
+    let content = templateFluxModule(factory)
+    explorerState.appState.addDocument(
+        parentNode.id,
+        {
+            content,
+            title: factory.displayName
+        }
+    )
+}
 
 export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode {
 
@@ -189,14 +202,11 @@ export class BrickTemplateNode extends ContextTreeNode implements ExecutableNode
             }),
         )
             .subscribe((factory: Factory) => {
-                let content = templateFluxModule(factory)
-                this.explorerState.appState.addDocument(
-                    this.parentNode.id,
-                    {
-                        content,
-                        title: factory.displayName
-                    }
-                )
+                addBrickTemplate({
+                    factory,
+                    explorerState: this.explorerState,
+                    parentNode: this.parentNode
+                })
             })
     }
 }
@@ -256,21 +266,15 @@ export class SetFromTemplateToolboxNode extends ContextTreeNode implements Execu
                 )
             }),
         )
-            .subscribe((factories: Factory[]) => {
-
-                Object.values(factories).forEach((factory) => {
-
-                    let content = templateFluxModule(factory)
-                    this.explorerState.appState.addDocument(
-                        this.parentNode.id,
-                        {
-                            content,
-                            title: factory.displayName
-                        }
-                    )
-                })
-
-            })
+            .subscribe((factories: Factory[]) =>
+                Object.values(factories).forEach((factory) =>
+                    addBrickTemplate({
+                        factory,
+                        explorerState: this.explorerState,
+                        parentNode: this.parentNode
+                    })
+                )
+            )
 
     }
 }
