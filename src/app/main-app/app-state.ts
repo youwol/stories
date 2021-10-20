@@ -89,7 +89,7 @@ export class AppState {
                 return Client.postContent$(
                     document.storyId,
                     document.documentId,
-                    content
+                    { content }
                 ).pipe(map(() => ({ content, document })))
             })
         ).subscribe(({ document, content }) => {

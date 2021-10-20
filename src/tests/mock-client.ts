@@ -24,13 +24,13 @@ export namespace ScyllaDb{
      * 
      * secondary index : 
      * -    partition_key documentId
-     */ 
-     export interface Document{
+     */
+    export interface Document {
         documentId: string
         storyId: string //< indirectly gather info on permissions
         title: string,
         parentDocumentId: string
-        orderIndex: number
+        position: number
         complexityOrder: number
     }
 
@@ -59,21 +59,21 @@ export namespace ScyllaDb{
      */
     export function queryDocumentChildren(
         documents: Document[],
-        query : {
+        query: {
             parentDocumentId: string,
             fromIndex?: number,
             count?: number
         }
-    ){
+    ) {
         let filtered = documents
-        .filter( doc => doc.parentDocumentId == query.parentDocumentId )
-        .sort()
-        let start = query.fromIndex 
-            ? filtered.findIndex( doc => doc.orderIndex >= query.fromIndex )
+            .filter(doc => doc.parentDocumentId == query.parentDocumentId)
+            .sort()
+        let start = query.fromIndex != undefined
+            ? filtered.findIndex(doc => doc.position >= query.fromIndex)
             : 1000
         let end = query.count ? query.count : filtered.length
 
-        return filtered.slice( start, end )
+        return filtered.slice(start, end)
     }
 
     /**
@@ -175,11 +175,11 @@ export class MockService implements ClientApi.ServiceInterface{
         }
         let document: ScyllaDb.Document = {
             documentId: uid,
-            storyId:uid,
+            storyId: uid,
             title: body.title,
             parentDocumentId: uid,
-            orderIndex:0,
-            complexityOrder:0
+            position: 0,
+            complexityOrder: 0
         }
         let content = ""
         this.data.stories.push(story)
@@ -232,31 +232,31 @@ export class MockService implements ClientApi.ServiceInterface{
         return of(document)
     }
 
-     
-    getChildren$( 
-        storyId: string, 
+
+    getChildren$(
+        storyId: string,
         parentDocumentId: string,
         fromIndex: number = -Infinity,
         count: number = 1000
-        ) : Observable<ClientApi.Document[]> {
+    ): Observable<{ documents: ClientApi.Document[] }> {
 
 
         let documents = ScyllaDb.queryDocumentChildren(
-            this.data.documents, 
-            { 
+            this.data.documents,
+            {
                 parentDocumentId,
                 fromIndex,
                 count
             })
-        let children = documents.map( (doc) => {
+        let children = documents.map((doc) => {
             return {
                 title: doc.title,
                 storyId: storyId,
                 documentId: doc.documentId,
-                orderIndex: doc.orderIndex
+                position: doc.position
             }
         })
-        return of(children)
+        return of({ documents: children })
     }
 
     putDocument$(
@@ -324,9 +324,9 @@ export class MockService implements ClientApi.ServiceInterface{
         return of(this.data.contents[documentId])
     }
 
-    postContent$(storyId: string, documentId: string, content: string) : Observable<boolean>{
+    postContent$(storyId: string, documentId: string, body: { content: string }): Observable<boolean> {
 
-        this.data.contents[documentId] = content
+        this.data.contents[documentId] = body.content
         this.persist(this.data)
         return of(true)
     }

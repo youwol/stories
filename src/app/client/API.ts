@@ -22,7 +22,7 @@ export namespace ClientApi {
 
         documentId: string
         title: string
-        orderIndex: number
+        position: number
         storyId: string
     }
 
@@ -94,7 +94,7 @@ export namespace ClientApi {
          * @returns document
          */
         getDocument$(storyId: string, documentId: string): Observable<ClientApi.Document>
-  
+
         /**
          * Retrieve children document of parent's document
          * 
@@ -106,12 +106,12 @@ export namespace ClientApi {
          * @param count maximum number of child to return
          * @returns list of children
          */
-         getChildren$(
+        getChildren$(
             storyId: string,
             parentDocumentId: string,
             fromIndex: number,
             count: number
-        ): Observable<ClientApi.Document[]>
+        ): Observable<{ documents: ClientApi.Document[] }>
 
         /**
          * Create a new document
@@ -178,7 +178,7 @@ export namespace ClientApi {
          * @param content content
          * @returns 
          */
-        postContent$(storyId: string, documentId: string, content: string): Observable<boolean>
+        postContent$(storyId: string, documentId: string, body: { content: string }): Observable<boolean>
     }
 
 }
