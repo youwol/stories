@@ -9,7 +9,7 @@
     </a>
 </p>
 
-Front end side of the Flux runner application
+Front end side of the Stories service
 
 
 ## Installation, Build & Test 

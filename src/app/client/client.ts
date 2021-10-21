@@ -20,11 +20,10 @@ export class Document implements ClientApi.Document {
     documentId: string
     title: string
     contentId: string
-    orderIndex: number
+    position: number
 
-    constructor({ documentId, title }: ClientApi.Document) {
-        this.documentId = documentId
-        this.title = title
+    constructor(params: ClientApi.Document) {
+        Object.assign(this, params)
     }
 }
 
@@ -107,9 +106,9 @@ export class Client {
         return Client.service.getContent$(storyId, documentId)
     }
 
-    static postContent$(storyId: string, documentId: string, content: string) {
-        return Client.service.postContent$(storyId, documentId, content)
-    }
+    static postContent$(storyId: string, documentId: string, body: { content: string }) {
+        return Client.service.postContent$(storyId, documentId, body)
+    } nodeLoad
 
     static getChildren$(
         storyId: string,
@@ -120,21 +119,20 @@ export class Client {
         }): Observable<Document[]> {
 
         let count = body.count || 1000
-        let fromIndex = body.fromIndex || -Infinity
+        let fromIndex = body.fromIndex || 0
         return Client.service.getChildren$(
             storyId,
             body.parentDocumentId,
             fromIndex,
             count
         ).pipe(
-            map((docs: ClientApi.Document[]) => {
-
-                return docs.map(doc => {
+            map(({ documents }: { documents: ClientApi.Document[] }) => {
+                return documents.map(doc => {
                     return new Document({
                         documentId: doc.documentId,
                         storyId: doc.storyId,
                         title: doc.title,
-                        orderIndex: doc.orderIndex
+                        position: doc.position
                     })
                 })
             })

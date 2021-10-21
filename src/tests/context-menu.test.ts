@@ -62,7 +62,7 @@ test('load story, select story, display context menu, rename story', (done) => {
             renameView.dispatchEvent(new Event('click', { bubbles: true }))
 
             // EXPECT text input is displayed in selected node
-            let textInputView = document.querySelector("#node-test-story input") as HTMLInputElement
+            let textInputView = document.querySelector("#node-root-test-story input") as HTMLInputElement
             expect(textInputView).toBeTruthy()
 
             // WHEN new name is provided ...
@@ -424,14 +424,22 @@ test('load story, select document, display context menu, set flux-pack template'
             // EXPECT new children added for 'test module 0' & 'test module 1'
             // setTimeout to put the check at the very end of the remaining coroutines list
             setTimeout(
-                () => Client.getChildren$(
-                    storyId,
-                    { parentDocumentId: "root-test-story" })
-                    .subscribe((documents) => {
-                        expect(documents.length).toEqual(5)
-                        expect(documents[3].title).toEqual("test module 0")
-                        expect(documents[4].title).toEqual("test module 1")
-                        done()
-                    }), 0)
+                () => {
+                    let spans = Array.from(document.querySelectorAll("span"))
+                        .map(s => s.innerText)
+                        .filter(text => text.includes("test module"))
+
+                    expect(spans).toEqual(['test module 0', 'test module 1'])
+
+                    Client.getChildren$(
+                        storyId,
+                        { parentDocumentId: "root-test-story" })
+                        .subscribe((documents) => {
+                            expect(documents.length).toEqual(5)
+                            expect(documents[3].title).toEqual("test module 0")
+                            expect(documents[4].title).toEqual("test module 1")
+                            done()
+                        }), 0
+                })
         })
 })

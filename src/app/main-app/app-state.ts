@@ -4,7 +4,7 @@ import { Story, Document, Client } from "../client/client";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
 import { topBannerView } from "../top-banner/top-banner.view";
-import { debounceTime, distinctUntilChanged, map, mergeMap, tap } from "rxjs/operators"
+import { debounceTime, distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
 import { DocumentEditorView } from "../main-panels/document-editor/document-editor.view";
 
 /**
@@ -22,14 +22,15 @@ export function load$(storyId: string, container: HTMLElement) {
         Client.getStory$(storyId),
         Client.getChildren$(storyId, { parentDocumentId: storyId, count: 1 }).pipe(
             map(docs => docs[0])
-        )]).pipe(
-            map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
-                let appState = new AppState({ story, rootDocument })
-                let appView = new AppView({ state: appState })
-                return { appState, appView }
-            }),
-            tap(({ appView }) => container.appendChild(render(appView)))
         )
+    ]).pipe(
+        map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
+            let appState = new AppState({ story, rootDocument })
+            let appView = new AppView({ state: appState })
+            return { appState, appView }
+        }),
+        tap(({ appView }) => container.appendChild(render(appView)))
+    )
 }
 
 export enum SavingStatus {
@@ -39,7 +40,7 @@ export enum SavingStatus {
 
 export enum ContentChangedOrigin {
     editor = "editor",
-    nodeLoad = ""
+    nodeLoad = "loaded"
 }
 /**
  * Global application state, logic side of [[AppView]]
@@ -50,6 +51,10 @@ export class AppState {
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
     public readonly page$ = new ReplaySubject<{ document: Document, content: string, originId: ContentChangedOrigin }>(1)
+
+
+    public readonly addedDocument$ = new ReplaySubject<{ document: Document, parentDocumentId: string }>(1)
+    public readonly deletedDocument$ = new ReplaySubject<Document>(1)
 
     public readonly save$ = new Subject<{ document: Document, status: SavingStatus }>()
     public readonly story: Story
@@ -81,6 +86,9 @@ export class AppState {
             })
 
         this.page$.pipe(
+            filter(({ originId }) => {
+                return originId == ContentChangedOrigin.editor
+            }),
             tap(({ document }) => {
                 this.save$.next({ document, status: SavingStatus.started })
             }),
@@ -89,7 +97,7 @@ export class AppState {
                 return Client.postContent$(
                     document.storyId,
                     document.documentId,
-                    content
+                    { content }
                 ).pipe(map(() => ({ content, document })))
             })
         ).subscribe(({ document, content }) => {
@@ -121,6 +129,30 @@ export class AppState {
                     : this.explorerState.replaceAttributes(
                         node,
                         { story: new Story({ ...node.story, title: newName }) })
+            })
+    }
+
+    addDocument(parentDocumentId: string, { title, content }: { title: string, content: string }) {
+
+        Client.putDocument$(
+            this.story.storyId,
+            {
+                parentDocumentId: parentDocumentId,
+                title,
+                content
+            }
+        )
+            .subscribe((document: Document) => {
+                this.addedDocument$.next({ parentDocumentId, document })
+            })
+    }
+
+    deleteDocument(document: Document) {
+        this.deletedDocument$.next(document)
+        Client
+            .deleteDocument$(document.storyId, document.documentId)
+            .subscribe(() => {
+                // This is intentional: make the request happening
             })
     }
 

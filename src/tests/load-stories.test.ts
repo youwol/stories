@@ -2,7 +2,7 @@
 import { installMockPackages, CodeMirror } from './mock-packages'
 installMockPackages()
 
-import { filter, mergeMap, share, shareReplay, skip, take, tap } from "rxjs/operators"
+import { filter, mergeMap, tap } from "rxjs/operators"
 import { AppState, load$, SavingStatus } from "../app/main-app/app-state"
 import { Client } from "../app/client/client"
 import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
@@ -13,7 +13,6 @@ import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 import { storiesUnitTests } from './mock-data/database'
 import { contentMarkdown } from './mock-data/test-story-markdown'
-import { merge } from 'rxjs'
 
 
 setupMockService(storiesUnitTests)
@@ -65,7 +64,12 @@ test('load story, make sure everything is displayed', (done) => {
 test('load story, expand root  node, select markdown document', (done) => {
 
     load$(storyId, document.body)
-        .subscribe(() => {
+        .subscribe(({ appState }) => {
+
+            // EXPECT nothing to be saved within this test
+            appState.save$.subscribe((d) => {
+                expect(true).toBeFalsy()
+            })
 
             // WHEN application is loaded ...
             // EXPECT tree-view with node 'test-story' is displayed
@@ -121,8 +125,8 @@ test('load story, change editor content', (done) => {
                 tap((cmEditor: CodeMirror) => {
                     // EXPECT the code mirror editor is available
                     expect(cmEditor).toBeTruthy()
-                    // WHEN its content is changed
-                    cmEditor.setValue(newContent)
+                    // WHEN its content is changed; this method is only available in the mock
+                    cmEditor.changeValue(newContent)
                 }),
                 mergeMap(() => appState.save$),
                 filter(({ status }) => status == SavingStatus.done),

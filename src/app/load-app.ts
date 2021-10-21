@@ -1,11 +1,8 @@
-import { storiesUnitTests } from '../tests/mock-data/database';
+import { Client } from './client/client';
+import { StoryBackend } from './client/stories-backend';
 import { load$ } from './main-app/app-state';
-import { setupMockService } from './utils/mock-service';
 
-setupMockService(
-    localStorage.getItem("stories-storage")
-            ? JSON.parse(localStorage.getItem("stories-storage"))
-            : storiesUnitTests
-)
+Client.service = new StoryBackend()
 
-load$("test-story", document.getElementById("content") ).subscribe()
+let storyId = new URLSearchParams(window.location.search).get("id")
+load$(storyId, document.getElementById("content")).subscribe()

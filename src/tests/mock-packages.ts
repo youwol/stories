@@ -1,29 +1,34 @@
 //import { EditorState } from "../app/main-panels/document-editor/editor/editor.view"
 
 
-export class CodeMirror{
-    
+export class CodeMirror {
+
     events = {
     }
     value: string
-    constructor(public readonly elem: HTMLDivElement, content: {value: string}){
+    constructor(public readonly elem: HTMLDivElement, content: { value: string }) {
         elem.innerHTML = `<div id='CodeMirror'> ${content.value} </div>`
         this.value = content.value
     }
-    on( changeType, callback){
+    on(changeType, callback) {
         this.events[changeType] = callback
     }
-    setValue(content){
+    setValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
-        this.events["changes"]()
+        this.events["changes"](undefined, [{ origin: "setValue" }])
     }
-    getValue(){
+    changeValue(content) {
+        this.value = content
+        this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
+        this.events["changes"](undefined, [{ origin: "changeValue" }])
+    }
+    getValue() {
         return this.value
     }
 }
 
-export function installMockPackages(){
+export function installMockPackages() {
 
     window['@youwol/cdn-client'] = {
         fetchBundles: () => {
@@ -36,12 +41,12 @@ export function installMockPackages(){
             return Promise.resolve({})
         },
     }
-    
-    window['CodeMirror'] = (elem, content) => new CodeMirror(elem,content)
-    
+
+    window['CodeMirror'] = (elem, content) => new CodeMirror(elem, content)
+
     window['MathJax'] = {
-        typesetPromise : (elements: HTMLElement[]) => {
-            elements.forEach( elem => elem.classList.add('mathjax'))
+        typesetPromise: (elements: HTMLElement[]) => {
+            elements.forEach(elem => elem.classList.add('mathjax'))
             return Promise.resolve()
         }
     }

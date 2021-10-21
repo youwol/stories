@@ -22,10 +22,18 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
         super({
             rootNode,
             selectedNode: appState.selectedNode$,
-            expandedNodes: ['library']
+            expandedNodes: [appState.story.storyId]
         })
         this.appState = appState
         appState.selectNode(rootNode)
+        appState.deletedDocument$.subscribe((document) => {
+            this.removeNode(document.documentId)
+            this.selectedNode$.next(this.getNode(rootNode.id))
+        })
+        appState.addedDocument$.subscribe(({ parentDocumentId, document }) => {
+            let childNode = new DocumentNode({ story: this.appState.story, document })
+            this.addChild(parentDocumentId, childNode)
+        })
     }
 }
 

@@ -19,20 +19,19 @@ export class DocumentEditorView implements VirtualDOM {
         appState: AppState
     }) {
         Object.assign(this, params)
+        let document$ = this.appState.page$.pipe(
+            map(({ document }) => document),
+            distinctUntilChanged()
+        )
+
         this.children = [
             child$(
-                this.appState.page$.pipe(
-                    map(({ document }) => document),
-                    distinctUntilChanged()
-                ),
+                document$,
                 (document) =>
                     new EditorView({ document, appState: this.appState, class: this.innerClass }),
             ),
             child$(
-                this.appState.page$.pipe(
-                    map(({ document }) => document),
-                    distinctUntilChanged()
-                ),
+                document$,
                 (document) =>
                     new RenderView({ document, appState: this.appState, class: this.innerClass }),
             )
