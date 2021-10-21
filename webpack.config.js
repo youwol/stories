@@ -1,7 +1,7 @@
 const path = require('path');
 const webpack = require('webpack');
-const ROOT = path.resolve( __dirname, 'src/app' );
-const DESTINATION = path.resolve( __dirname, 'dist' );
+const ROOT = path.resolve(__dirname, 'src/app');
+const DESTINATION = path.resolve(__dirname, 'dist');
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
@@ -18,18 +18,18 @@ module.exports = {
         topLevelAwait: true
     },
     plugins: [
-        new MiniCssExtractPlugin( {
-            filename:"style.[contenthash].css",
+        new MiniCssExtractPlugin({
+            filename: "style.[contenthash].css",
             insert: "#css-anchor"
-        } ),
+        }),
         new HtmlWebpackPlugin({
             //hash: true,
-            title: 'Flux Builder', 
+            title: 'Flux Builder',
             template: './index.html',
-            filename: './index.html' 
+            filename: './index.html'
         }),
         //new BundleAnalyzerPlugin()
-   ],
+    ],
     output: {
         filename: '[name].[contenthash].js',
         path: DESTINATION
@@ -42,27 +42,27 @@ module.exports = {
             'node_modules'
         ]
     },
-    externals : [
-        {  
-          "lodash": "_",
-          "rxjs": "rxjs",
-          "marked": "marked",
-          "rxjs/operators": "window['rxjs']['operators']",
-          "@youwol/cdn-client": "window['@youwol/cdn-client']",
-          "@youwol/flux-core": "window['@youwol/flux-core']",
-          "@youwol/flux-view": "window['@youwol/flux-view']",
-          "@youwol/flux-files": "window['@youwol/flux-files']",
-          "@youwol/fv-group": "window['@youwol/fv-group']",
-          "@youwol/fv-input": "window['@youwol/fv-input']",
-          "@youwol/fv-tree": "window['@youwol/fv-tree']",
-          "@youwol/fv-tabs": "window['@youwol/fv-tabs']",
-          "@youwol/fv-button": "window['@youwol/fv-button']",
-          "@youwol/fv-context-menu": "window['@youwol/fv-context-menu']",
-          "@youwol/flux-youwol-essentials": "window['@youwol/flux-youwol-essentials']",
-          "@youwol/flux-fv-widgets": "window['@youwol/flux-fv-widgets']",
-          "highlight.js": "hljs",
+    externals: [
+        {
+            "lodash": "_",
+            "rxjs": "rxjs",
+            "marked": "marked",
+            "rxjs/operators": "window['rxjs']['operators']",
+            "@youwol/cdn-client": "window['@youwol/cdn-client']",
+            "@youwol/flux-core": "window['@youwol/flux-core']",
+            "@youwol/flux-view": "window['@youwol/flux-view']",
+            "@youwol/flux-files": "window['@youwol/flux-files']",
+            "@youwol/fv-group": "window['@youwol/fv-group']",
+            "@youwol/fv-input": "window['@youwol/fv-input']",
+            "@youwol/fv-tree": "window['@youwol/fv-tree']",
+            "@youwol/fv-tabs": "window['@youwol/fv-tabs']",
+            "@youwol/fv-button": "window['@youwol/fv-button']",
+            "@youwol/fv-context-menu": "window['@youwol/fv-context-menu']",
+            "@youwol/flux-youwol-essentials": "window['@youwol/flux-youwol-essentials']",
+            "@youwol/flux-fv-widgets": "window['@youwol/flux-fv-widgets']",
+            "highlight.js": "hljs",
         }
-      ],
+    ],
     module: {
         rules: [
             /****************
@@ -79,22 +79,21 @@ module.exports = {
             *****************/
             {
                 test: /\.ts$/,
-                exclude: [ /node_modules/ ],
+                exclude: [/node_modules/],
                 use: 'ts-loader'
-            }, 
+            },
             {
                 test: /\.css$/i,
-                use: [  MiniCssExtractPlugin.loader, 'css-loader' ]
+                use: [MiniCssExtractPlugin.loader, 'css-loader']
             }
         ]
     },
     devtool: 'cheap-module-source-map',
     devServer: {
-        contentBase: path.resolve(__dirname, "./src"),
+        //contentBase: path.resolve(__dirname, "./src"),
         historyApiFallback: true,
-        inline: true,
         open: false,
-        port:3001,
+        port: 3001,
     }
 };
 

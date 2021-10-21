@@ -3,7 +3,7 @@ import { map } from "rxjs/operators"
 import { rowView, simpleModal } from "./commons.view"
 
 
-export function popupSelectModuleView$({
+export function popupSelectToolboxView$({
     ok$
 }: {
     ok$?: Subject<MouseEvent>
@@ -11,19 +11,16 @@ export function popupSelectModuleView$({
 ) {
 
     let fluxPackName$ = new BehaviorSubject<string>("@youwol/flux-three")
-    let moduleId$ = new BehaviorSubject<string>("ModuleSphere")
+
     let modalState = simpleModal({
-        rows: [
-            rowView("Toolbox id", fluxPackName$, "toolbox-id"),
-            rowView("Brick id", moduleId$, "brick-id")
-        ],
+        rows: [rowView("Toolbox id", fluxPackName$, "toolbox-id")],
         ok$
     })
+
     return modalState.ok$.pipe(
         map(() => {
             return {
-                toolboxId: fluxPackName$.getValue(),
-                brickId: moduleId$.getValue()
+                toolboxId: fluxPackName$.getValue()
             }
         })
     )

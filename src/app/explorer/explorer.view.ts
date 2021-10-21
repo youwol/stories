@@ -1,8 +1,8 @@
-import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
+import { attr$, child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { ImmutableTree } from "@youwol/fv-tree"
-import { filter } from "rxjs/operators";
-import { AppState } from "../main-app/app-state";
-import { Client, Story, Document } from "../client/client";
+import { filter, map } from "rxjs/operators";
+import { AppState, SavingStatus } from "../main-app/app-state";
+import { Document } from "../client/client";
 import { ContextMenuState } from "./context-menu/context-menu.view";
 import { ContextMenu } from '@youwol/fv-context-menu'
 import { DocumentNode, ExplorerNode, StoryNode, SignalType } from "./nodes"
@@ -12,47 +12,20 @@ import { DocumentNode, ExplorerNode, StoryNode, SignalType } from "./nodes"
  */
 export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
 
-    constructor({story, rootDocument, selectedNode$}:{
-        story: Story,
-        rootDocument: Document
-        selectedNode$
-    }){
-        let rootNode = new StoryNode({story, rootDocument})
+    public readonly appState: AppState
+
+    constructor({ rootDocument, appState }: {
+        rootDocument: Document,
+        appState: AppState
+    }) {
+        let rootNode = new StoryNode({ story: appState.story, rootDocument })
         super({
             rootNode,
-            selectedNode: selectedNode$,
-            expandedNodes:['library']
+            selectedNode: appState.selectedNode$,
+            expandedNodes: ['library']
         })
-        selectedNode$.next(rootNode)
-    }
-
-
-    rename( node: DocumentNode | StoryNode, newName: string ){
-
-        if( node instanceof DocumentNode) {
-
-            let document = node.document
-            let body = {
-                documentId: document.documentId,
-                title: newName
-            }
-            Client.postDocument$(document.storyId, document.documentId, body)
-                .subscribe((newDoc: Document) => {
-                    this.replaceAttributes(node, { document: newDoc})
-                })
-        }
-        if( node instanceof StoryNode) {
-            
-            let story = node.story
-            let body = {
-                storyId: story.storyId,
-                title: newName
-            }
-            Client.postStory$(story.storyId, body)
-                .subscribe((newStory: Story ) => {
-                    this.replaceAttributes(node, { story: newStory})
-                })
-        }
+        this.appState = appState
+        appState.selectNode(rootNode)
     }
 }
 
@@ -60,7 +33,7 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode>{
  * View of a story's tree structure
  */
 export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
-    
+
     public readonly appState: AppState
 
     public readonly style = {
@@ -68,27 +41,22 @@ export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
     }
     public readonly class = 'p-2 border fv-color-primary'
 
-    constructor({appState}: {
-        appState: AppState
-    }){
+    constructor({ explorerState }: {
+        explorerState: ExplorerState
+    }) {
         super({
-            state: new ExplorerState({
-                story: appState.story,
-                rootDocument: appState.rootDocument,
-                selectedNode$: appState.selectedNode$
-            }),
+            state: explorerState,
             headerView
         } as any)
 
-        this.appState = appState
+        this.appState = explorerState.appState
         this.connectedCallback = (explorerDiv: HTMLElement$ & HTMLDivElement) => {
             let contextState = new ContextMenuState({
-                appState, 
-                explorerState: this.state as ExplorerState, 
+                appState: this.appState,
+                explorerState: this.state as ExplorerState,
                 explorerDiv
             })
-            // This 
-            return new ContextMenu.View({state:contextState, class:"fv-bg-background border fv-color-primary"} as any)
+            return new ContextMenu.View({ state: contextState, class: "fv-bg-background border fv-color-primary" } as any)
         }
     }
 }
@@ -101,23 +69,23 @@ export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
  * @returns the view
  */
 function headerRenamed(
-    node: DocumentNode | StoryNode, 
+    node: DocumentNode | StoryNode,
     explorerState: ExplorerState
-    ) : VirtualDOM {
+): VirtualDOM {
 
     return {
-        tag: 'input', 
-        type: 'text', 
-        autofocus: true, 
-        style: { 
-            zIndex: 200 
-        }, 
-        class: "mx-2", 
+        tag: 'input',
+        type: 'text',
+        autofocus: true,
+        style: {
+            zIndex: 200
+        },
+        class: "mx-2",
         data: node.name,
         onclick: (ev) => ev.stopPropagation(),
         onkeydown: (ev) => {
-            if (ev.key === 'Enter'){
-                explorerState.rename(node, ev.target.value)
+            if (ev.key === 'Enter') {
+                explorerState.appState.rename(node, ev.target.value)
             }
         }
     }
@@ -131,44 +99,63 @@ function headerRenamed(
  * @returns the view
  */
 function headerView(
-    state:ExplorerState, 
+    state: ExplorerState,
     node: ExplorerNode
-    ) : VirtualDOM {
+): VirtualDOM {
 
     let faClass = ""
-    let id = "" 
+    let id = ""
     let nodeClass = ""
-    if(node instanceof StoryNode){
+    if (node instanceof StoryNode) {
         faClass = "fas fa-book-open"
         id = node.story.storyId
         nodeClass = "story"
     }
-    if(node instanceof DocumentNode){
+    if (node instanceof DocumentNode) {
         faClass = "fas fa-file"
         id = node.document.documentId
         nodeClass = "document"
     }
-    
+
     return {
         id,
-        class:`d-flex align-items-center fv-pointer fv-hover-bg-background-alt w-100 ${nodeClass}`,
-        children:[
+        class: `d-flex align-items-center fv-pointer fv-hover-bg-background-alt w-100 ${nodeClass}`,
+        children: [
             {
-                class:faClass + " px-2",
+                class: faClass + " px-2",
             },
             child$(
                 node.signal$.pipe(
-                    filter( (signal) => signal.type == SignalType.Rename )
+                    filter((signal) => signal.type == SignalType.Rename)
                 ),
                 () => {
                     return headerRenamed(node as any, state)
                 },
-                { untilFirst:  {
-                    tag:'span',
-                    innerText: node.name
+                {
+                    untilFirst: {
+                        tag: 'span',
+                        innerText: node.name
                     } as any
-                } 
-            )
+                }
+            ),
+            {
+                class: attr$(
+                    state.appState.save$.pipe(
+                        filter(({ document }) =>
+                            document.documentId == node.getDocument().documentId
+                        ),
+                        map(({ status }) => status)
+                    ),
+                    (status) => {
+                        return status == SavingStatus.started
+                            ? 'fas fa-circle px-2'
+                            : ''
+                    }
+                ),
+                style: {
+                    transform: 'scale(0.5)'
+                }
+            }
         ]
     }
 }

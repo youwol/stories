@@ -1,22 +1,28 @@
 import { HTMLElement$, VirtualDOM } from "@youwol/flux-view";
-import { merge, Observable, ReplaySubject } from "rxjs";
-import { debounceTime, skip, take } from "rxjs/operators";
-import { AppState } from "../../../main-app/app-state";
-import { DocumentNode, ExplorerNode } from "../../../explorer/nodes"
+import { merge, ReplaySubject } from "rxjs";
+import { debounceTime, filter, skip } from "rxjs/operators";
+import { Document } from '../../../client/client'
+import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } from "./renderers";
 
 
 /**
- *Logic side of [[RenderView]]
+ * Render view
  */
- export class RenderState implements VirtualDOM {
+export class RenderView implements VirtualDOM {
 
-    public readonly content$: Observable<string>
-    public readonly node: DocumentNode
+    static debounceTime = 500
+    public readonly id = "render-view"
+    public readonly class: string
+    public readonly children: Array<VirtualDOM>
+
+    public readonly document: Document
     public readonly appState: AppState
-    public readonly renderedElement$ = new ReplaySubject<HTMLElement>(1)
 
-    public documentScope = {}
+    public readonly renderedElement$ = new ReplaySubject<{
+        document: Document,
+        htmlElement: HTMLDivElement
+    }>(1)
 
     public readonly renderers = [
         new MarkDownRenderer(),
@@ -25,56 +31,49 @@ import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } fr
     ]
 
     constructor(params: {
-        node: ExplorerNode,
+        document: Document,
         appState: AppState,
-        content$: Observable<string>
-    }) {
-        Object.assign(this, params)
-    }
-
-    async render(htmlElement: HTMLElement){
-
-        await this.renderers.reduce(
-            async (accHtmlElement: Promise<HTMLElement>, renderer: RenderableTrait) => {
-                return renderer.render( await accHtmlElement, this.documentScope )
-            },
-            Promise.resolve(htmlElement)
-        )
-        this.renderedElement$.next(htmlElement)
-    }
-}
-
-/**
- * Render view
- */
-export class RenderView implements VirtualDOM {
-
-    public readonly id = "render-view"
-    public readonly class : string
-    public readonly children: Array<VirtualDOM>
-
-    public readonly renderState: RenderState
-
-    constructor(params: {
-        renderState: RenderState
         class
     }) {
         Object.assign(this, params)
+        let firstNodeLoad$ = this.appState.page$.pipe(
+            filter(({ document, originId }) => {
+                return document == this.document && originId == ContentChangedOrigin.nodeLoad
+            })
+        )
+        let edition$ = this.appState.page$.pipe(
+            filter(({ document, originId }) => {
+                return document == this.document && originId == ContentChangedOrigin.editor
+            }),
+            skip(1),
+            debounceTime(RenderView.debounceTime)
+        )
         this.children = [
             {
                 class: 'w-100',
-                connectedCallback: (htmlElement: HTMLElement$) => {
-                    
+                connectedCallback: (htmlElement: HTMLElement$ & HTMLDivElement) => {
+
                     let sub = merge(
-                        this.renderState.content$.pipe( take(1)) ,
-                        this.renderState.content$.pipe( skip(1), debounceTime(500))
-                    ).subscribe( (content) => {
-                        htmlElement.innerHTML = content 
-                        this.renderState.render(htmlElement)
+                        firstNodeLoad$,
+                        edition$
+                    ).subscribe(({ document, content }) => {
+                        htmlElement.innerHTML = content
+                        this.render(htmlElement, document)
                     })
                     htmlElement.ownSubscriptions(sub)
                 }
             }
         ]
+    }
+
+    async render(htmlElement: HTMLDivElement, document: Document) {
+
+        await this.renderers.reduce(
+            async (accHtmlElement: Promise<HTMLElement>, renderer: RenderableTrait) => {
+                return renderer.render(await accHtmlElement, {})
+            },
+            Promise.resolve(htmlElement)
+        )
+        this.renderedElement$.next({ document, htmlElement })
     }
 }
