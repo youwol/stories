@@ -25,7 +25,8 @@ export class EditorView implements VirtualDOM {
         mode: 'markdown',
         lineNumbers: false,
         theme: 'blackboard',
-        lineWrapping: true
+        lineWrapping: true,
+        indentUnit: 4
     }
 
     /**
