@@ -1,5 +1,3 @@
-//import { EditorState } from "../app/main-panels/document-editor/editor/editor.view"
-
 
 export class CodeMirror {
 
@@ -50,4 +48,18 @@ export function installMockPackages() {
             return Promise.resolve()
         }
     }
+    let cdnScript = document.createElement('script')
+    cdnScript.src = "/fake-cdn-url-for-unit-tests"
+    cdnScript.id = "cdn-client"
+    let bootstrapLink = document.createElement('link')
+    bootstrapLink.id = "bootstrap"
+    let fvLink = document.createElement('link')
+    fvLink.id = "fv"
+    let faLink = document.createElement('link')
+    faLink.id = "fa"
+
+    document.head.appendChild(cdnScript)
+    document.head.appendChild(bootstrapLink)
+    document.head.appendChild(fvLink)
+    document.head.appendChild(faLink)
 }

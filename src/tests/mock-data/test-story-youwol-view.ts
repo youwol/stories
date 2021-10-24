@@ -1,18 +1,20 @@
 export let contentYouwolView = `
 ## A working example
 
-\`\`\`youwol-view
-return ({youwol, documentScope}) => ({
-	id:'test-youwol-view',
-  innerHTML:'Test YouWol View'
-})
+\`\`\`javascript
+//@story-view
+return () => {
+	let div =  document.createElement('div')
+	div.id = 'test-youwol-view'
+	div.innerHTML = 'Test YouWol View'
+	return div
+}
 \`\`\`
 
 ## With error (missing '}'):
 
-\`\`\`youwol-view
-return ({youwol, documentScope}) => ({
-	id:'test-youwol-view'
-)
+\`\`\`javascript
+//@story-view
+return () =>  ERROR!
 \`\`\`
 `
