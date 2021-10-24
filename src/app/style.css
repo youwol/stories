@@ -22,6 +22,11 @@ pre{
     border-top: 1px !important;
     border-style: solid !important;
 }
+#render-view .h1, .h2, .h3, .h4, .h5, .h6, h1, h2, h3, h4, h5, h6 {
+    margin-bottom: 1.5rem !important;
+    margin-top: 1.0rem !important;
+}
+
 /*
 .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{
     z-index: 0 !important;
