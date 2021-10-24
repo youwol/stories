@@ -88,7 +88,7 @@ export class StoryView implements VirtualDOM {
     constructor(public readonly code: string) {
         // test that the code is semantically OK to avoid latter failure
         // an error will be catch appropriately and the error view displayed
-        new Function(this.code)()
+        this.runCode()
 
         this.children = [
             this.menuView(),
@@ -104,6 +104,11 @@ export class StoryView implements VirtualDOM {
             }
         ]
     }
+
+    private runCode() {
+        return new Function(this.code)()
+    }
+
     menuView(): VirtualDOM {
         let classes = ' fas p-2 border rounded fv-pointer '
         return {
@@ -187,7 +192,7 @@ export class StoryView implements VirtualDOM {
 
     resolveView(executingWindow: Window, wrapper: HTMLElement): Promise<void> {
 
-        let userObjectOrPromise = new Function(this.code)()(executingWindow)
+        let userObjectOrPromise = this.runCode()(executingWindow)
 
         if (userObjectOrPromise instanceof executingWindow['Promise']) {
             let promise = userObjectOrPromise
