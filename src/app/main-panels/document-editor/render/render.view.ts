@@ -1,6 +1,6 @@
 import { HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { merge, ReplaySubject } from "rxjs";
-import { debounceTime, filter, skip, take } from "rxjs/operators";
+import { debounceTime, filter } from "rxjs/operators";
 import { Document } from '../../../client/client'
 import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } from "./renderers";
