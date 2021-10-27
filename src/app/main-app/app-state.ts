@@ -4,9 +4,9 @@ import { Story, Document, Client } from "../client/client";
 import { ClientApi } from "../client/API";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
-import { topBannerView } from "../top-banner/top-banner.view";
 import { debounceTime, distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
 import { DocumentEditorView } from "../main-panels/document-editor/document-editor.view";
+import { TopBannerState, TopBannerView } from "./top-banner";
 
 /**
  * 
@@ -49,10 +49,11 @@ export enum ContentChangedOrigin {
 export class AppState {
 
     static debounceTimeSave = 1000
+    public readonly topBannerState: TopBannerState
+
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
     public readonly page$ = new ReplaySubject<{ document: Document, content: string, originId: ContentChangedOrigin }>(1)
-
 
     public readonly addedDocument$ = new ReplaySubject<{ document: Document, parentDocumentId: string }>(1)
     public readonly deletedDocument$ = new ReplaySubject<Document>(1)
@@ -68,6 +69,8 @@ export class AppState {
         permissions
     }) {
         Object.assign(this, params)
+
+        this.topBannerState = new TopBannerState({ permissions: this.permissions })
 
         this.explorerState = new ExplorerState({
             rootDocument: this.rootDocument,
@@ -174,8 +177,9 @@ export class AppView implements VirtualDOM {
     constructor(params: { state: AppState }) {
 
         Object.assign(this, params)
+
         this.children = [
-            topBannerView(),
+            new TopBannerView(this.state.topBannerState),
             {
                 class: "d-flex flex-grow-1",
                 style: { minHeight: '0px' },

@@ -1,3 +1,10 @@
+/**
+ * Entry point of the bundle, fetch the dependencies then await [[load-app]]
+ * 
+ * 
+ * @module main
+ */
+
 // (index.html is handled by HtmlWebpackPlugin)
 require('./style.css')
 export { }
@@ -28,6 +35,7 @@ let bundlesFutures = cdn.fetchBundles(
         "@youwol/fv-input": "latest",
         "@youwol/fv-context-menu": "latest",
         "@youwol/flux-fv-widgets": "latest",
+        "@youwol/flux-youwol-essentials": "latest",
         "marked": "latest",
         "mathjax": "latest",
         "highlight.js": "11.2.0"
