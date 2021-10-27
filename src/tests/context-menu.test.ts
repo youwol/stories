@@ -81,7 +81,7 @@ test('load story, select story, display context menu, rename story', (done) => {
             expect(storyView.innerText).toEqual("")
 
             // EXPECT - 2 : new name is saved in the database
-            Client.getStory$(storyId).subscribe((story) => {
+            Client.getStory$(storyId).subscribe(({ story }) => {
                 expect(story.title).toEqual("")
                 done()
             })

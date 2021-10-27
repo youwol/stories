@@ -1,6 +1,7 @@
 import { VirtualDOM, render } from "@youwol/flux-view";
-import { ReplaySubject, forkJoin, Subject } from "rxjs";
+import { ReplaySubject, forkJoin, Subject, Observable } from "rxjs";
 import { Story, Document, Client } from "../client/client";
+import { ClientApi } from "../client/API";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
 import { topBannerView } from "../top-banner/top-banner.view";
@@ -24,8 +25,8 @@ export function load$(storyId: string, container: HTMLElement) {
             map(docs => docs[0])
         )
     ]).pipe(
-        map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
-            let appState = new AppState({ story, rootDocument })
+        map(([{ story, permissions }, rootDocument]: any) => {
+            let appState = new AppState({ story, rootDocument, permissions })
             let appView = new AppView({ state: appState })
             return { appState, appView }
         }),
@@ -59,10 +60,12 @@ export class AppState {
     public readonly save$ = new Subject<{ document: Document, status: SavingStatus }>()
     public readonly story: Story
     public readonly rootDocument: Document
+    public readonly permissions: ClientApi.Permissions
 
     constructor(params: {
         story: Story,
-        rootDocument: Document
+        rootDocument: Document,
+        permissions
     }) {
         Object.assign(this, params)
 

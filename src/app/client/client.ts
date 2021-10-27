@@ -1,4 +1,4 @@
-import { Observable } from "rxjs";
+import { forkJoin, Observable } from "rxjs";
 import { ClientApi } from "./API";
 import { map } from "rxjs/operators";
 
@@ -47,14 +47,19 @@ export class Client {
 
     static service: ClientApi.ServiceInterface
 
-    static getStory$(storyId: string): Observable<Story> {
+    static getStory$(storyId: string): Observable<{ story: Story, permissions }> {
 
-        return Client.service.getStory$(storyId).pipe(
-            map((story) => {
-                return new Story(story)
-            })
-        )
+        return forkJoin([
+            Client.service.getStory$(storyId),
+            Client.service.getPermissions$(storyId)
+        ])
+            .pipe(
+                map(([story, permissions]) => {
+                    return { story: new Story(story), permissions }
+                })
+            )
     }
+
 
     static getDocument$(
         storyId: string,

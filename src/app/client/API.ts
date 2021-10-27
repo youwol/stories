@@ -8,6 +8,14 @@ import { Observable } from "rxjs";
 export namespace ClientApi {
 
     /**
+     * Permissions on the story
+     */
+    export interface Permissions {
+        read: boolean
+        write: boolean
+    }
+
+    /**
      * Authors are associated to stories
      */
     export interface Author {
@@ -51,6 +59,15 @@ export namespace ClientApi {
          * @returns story
          */
         getStory$(assetId: string): Observable<ClientApi.Story>
+
+        /**
+         * Retrieve permissions over a story
+         * 
+         * @param storyId id of the story
+         * @returns permission
+         */
+        getPermissions$(assetId: string): Observable<ClientApi.Permissions>
+
 
         /**
         * Create a new story

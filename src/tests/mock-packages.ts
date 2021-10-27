@@ -4,9 +4,12 @@ export class CodeMirror {
     events = {
     }
     value: string
-    constructor(public readonly elem: HTMLDivElement, content: { value: string }) {
+    readonly: boolean
+
+    constructor(public readonly elem: HTMLDivElement, content: { value: string, readOnly: boolean }) {
         elem.innerHTML = `<div id='CodeMirror'> ${content.value} </div>`
         this.value = content.value
+        this.readonly = content.readOnly
     }
     on(changeType, callback) {
         this.events[changeType] = callback
