@@ -65,7 +65,8 @@ export class EditorView implements VirtualDOM {
 
                                     let config = {
                                         ...this.configurationCodeMirror,
-                                        value: ""
+                                        value: "",
+                                        readOnly: !this.appState.permissions.write
                                     }
 
                                     let editor = window['CodeMirror'](elem, config)
