@@ -12,11 +12,9 @@ import { TopBannerState, TopBannerView } from "./top-banner";
  * 
  * @param storyId id of the story to load
  * @param container where to insert the main view
- * @returns {appState, appView} :
- * -    appState application state 
- * -    appView application view
+ * @returns application state & application view
  */
-export function load$(storyId: string, container: HTMLElement) {
+export function load$(storyId: string, container: HTMLElement): Observable<{ appState: AppState, appView: AppView }> {
     container.innerHTML = ""
 
     return forkJoin([
@@ -43,6 +41,8 @@ export enum ContentChangedOrigin {
     editor = "editor",
     nodeLoad = "loaded"
 }
+
+
 /**
  * Global application state, logic side of [[AppView]]
  */
