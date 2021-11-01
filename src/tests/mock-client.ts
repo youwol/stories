@@ -133,6 +133,7 @@ export class MockService implements ClientApi.ServiceInterface {
 
     persist: (db: StoriesDb) => void
 
+    readonly: boolean
     /**
      * 
      * @param params the parameters:
@@ -141,10 +142,15 @@ export class MockService implements ClientApi.ServiceInterface {
      * in the database
      */
     constructor(params: {
+        readonly: boolean,
         data: StoriesDb,
         persist: (db: StoriesDb) => void
     }) {
         Object.assign(this, params)
+    }
+
+    getPermissions$() {
+        return of({ write: !this.readonly, read: true })
     }
 
     getStory$(storyId: string): Observable<ClientApi.Story> {
@@ -329,6 +335,11 @@ export class MockService implements ClientApi.ServiceInterface {
         this.data.contents[documentId] = body.content
         this.persist(this.data)
         return of(true)
+    }
+
+    getEmojis$(category: string) {
+
+        return of({ emojis: ['😀', '😃', '😄', '😁', '😆', '🤣'] })
     }
 
 }

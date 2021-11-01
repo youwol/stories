@@ -1,5 +1,6 @@
 import { createObservableFromFetch } from "@youwol/flux-core"
 import { Observable } from "rxjs"
+import { map } from "rxjs/operators"
 import { ClientApi } from "./API"
 
 
@@ -11,6 +12,14 @@ export class StoryBackend implements ClientApi.ServiceInterface {
 
         return createObservableFromFetch(
             new Request(`${StoryBackend.urlBase}/${assetId}`)
+        )
+    }
+
+    getPermissions$(storyId: string): Observable<ClientApi.Permissions> {
+        return createObservableFromFetch(
+            new Request(`/api/assets-gateway/assets/${btoa(storyId)}/access`)
+        ).pipe(
+            map(({ consumerInfo }) => consumerInfo.permissions)
         )
     }
 
@@ -83,5 +92,15 @@ export class StoryBackend implements ClientApi.ServiceInterface {
 
     getDocument$(storyId: string, documentId: string): Observable<ClientApi.Document> {
         throw new Error("Method not implemented.");
+    }
+
+
+    getEmojis$(category: string) {
+
+        return createObservableFromFetch(
+            new Request(
+                `/api/assets-gateway/misc/emojis/${category}`
+            ))
+
     }
 }

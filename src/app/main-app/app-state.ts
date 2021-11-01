@@ -1,21 +1,20 @@
 import { VirtualDOM, render } from "@youwol/flux-view";
-import { ReplaySubject, forkJoin, Subject } from "rxjs";
+import { ReplaySubject, forkJoin, Subject, Observable } from "rxjs";
 import { Story, Document, Client } from "../client/client";
+import { ClientApi } from "../client/API";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
-import { topBannerView } from "../top-banner/top-banner.view";
 import { debounceTime, distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
 import { DocumentEditorView } from "../main-panels/document-editor/document-editor.view";
+import { TopBannerState, TopBannerView } from "./top-banner";
 
 /**
  * 
  * @param storyId id of the story to load
  * @param container where to insert the main view
- * @returns {appState, appView} :
- * -    appState application state 
- * -    appView application view
+ * @returns application state & application view
  */
-export function load$(storyId: string, container: HTMLElement) {
+export function load$(storyId: string, container: HTMLElement): Observable<{ appState: AppState, appView: AppView }> {
     container.innerHTML = ""
 
     return forkJoin([
@@ -24,8 +23,8 @@ export function load$(storyId: string, container: HTMLElement) {
             map(docs => docs[0])
         )
     ]).pipe(
-        map(([story, rootDocument]: [story: Story, rootDocument: Document]) => {
-            let appState = new AppState({ story, rootDocument })
+        map(([{ story, permissions }, rootDocument]: any) => {
+            let appState = new AppState({ story, rootDocument, permissions })
             let appView = new AppView({ state: appState })
             return { appState, appView }
         }),
@@ -42,16 +41,19 @@ export enum ContentChangedOrigin {
     editor = "editor",
     nodeLoad = "loaded"
 }
+
+
 /**
  * Global application state, logic side of [[AppView]]
  */
 export class AppState {
 
     static debounceTimeSave = 1000
+    public readonly topBannerState: TopBannerState
+
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
     public readonly page$ = new ReplaySubject<{ document: Document, content: string, originId: ContentChangedOrigin }>(1)
-
 
     public readonly addedDocument$ = new ReplaySubject<{ document: Document, parentDocumentId: string }>(1)
     public readonly deletedDocument$ = new ReplaySubject<Document>(1)
@@ -59,12 +61,16 @@ export class AppState {
     public readonly save$ = new Subject<{ document: Document, status: SavingStatus }>()
     public readonly story: Story
     public readonly rootDocument: Document
+    public readonly permissions: ClientApi.Permissions
 
     constructor(params: {
         story: Story,
-        rootDocument: Document
+        rootDocument: Document,
+        permissions
     }) {
         Object.assign(this, params)
+
+        this.topBannerState = new TopBannerState({ permissions: this.permissions })
 
         this.explorerState = new ExplorerState({
             rootDocument: this.rootDocument,
@@ -171,8 +177,9 @@ export class AppView implements VirtualDOM {
     constructor(params: { state: AppState }) {
 
         Object.assign(this, params)
+
         this.children = [
-            topBannerView(),
+            new TopBannerView(this.state.topBannerState),
             {
                 class: "d-flex flex-grow-1",
                 style: { minHeight: '0px' },

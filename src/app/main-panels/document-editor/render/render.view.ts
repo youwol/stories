@@ -1,6 +1,6 @@
 import { HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { merge, ReplaySubject } from "rxjs";
-import { debounceTime, filter, skip } from "rxjs/operators";
+import { debounceTime, filter } from "rxjs/operators";
 import { Document } from '../../../client/client'
 import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { MarkDownRenderer, MathJaxRenderer, RenderableTrait, YouwolRenderer } from "./renderers";
@@ -36,30 +36,40 @@ export class RenderView implements VirtualDOM {
         class
     }) {
         Object.assign(this, params)
-        let firstNodeLoad$ = this.appState.page$.pipe(
-            filter(({ document, originId }) => {
-                return document == this.document && originId == ContentChangedOrigin.nodeLoad
+
+        let thisPage$ = this.appState.page$.pipe(
+            filter(({ document }) => {
+                return document == this.document
             })
         )
-        let edition$ = this.appState.page$.pipe(
-            filter(({ document, originId }) => {
-                return document == this.document && originId == ContentChangedOrigin.editor
+
+        let firstNodeLoad$ = thisPage$.pipe(
+            filter(({ originId }) => {
+                return originId == ContentChangedOrigin.nodeLoad
+            })
+        )
+        let edition$ = thisPage$.pipe(
+            filter(({ originId }) => {
+                return originId == ContentChangedOrigin.editor
             }),
-            skip(1),
             debounceTime(RenderView.debounceTime)
+        )
+
+        let reloadContent$ = merge(
+            //thisPage$.pipe(take(1)),
+            firstNodeLoad$,
+            edition$
         )
         this.children = [
             {
                 class: 'w-100',
                 connectedCallback: (htmlElement: HTMLElement$ & HTMLDivElement) => {
 
-                    let sub = merge(
-                        firstNodeLoad$,
-                        edition$
-                    ).subscribe(({ document, content }) => {
-                        htmlElement.innerHTML = content
-                        this.render(htmlElement, document)
-                    })
+                    let sub = reloadContent$
+                        .subscribe(({ document, content }) => {
+                            htmlElement.innerHTML = content
+                            this.render(htmlElement, document)
+                        })
                     htmlElement.ownSubscriptions(sub)
                 }
             }

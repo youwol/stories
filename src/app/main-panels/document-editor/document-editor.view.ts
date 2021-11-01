@@ -3,6 +3,8 @@ import { AppState } from "../../main-app/app-state";
 import { EditorView } from "./editor/editor.view";
 import { RenderView } from "./render/render.view";
 import { distinctUntilChanged, map } from "rxjs/operators";
+import { combineLatest } from "rxjs";
+import { ViewMode } from "../../main-app/top-banner";
 
 /**
  * Document editors view, encapsulates [[EditorView]] and [[RenderView]]
@@ -13,7 +15,7 @@ export class DocumentEditorView implements VirtualDOM {
     public readonly children: VirtualDOM[]
     public readonly appState: AppState
     public readonly style = { minWidth: '0px' }
-    public readonly innerClass = 'd-flex flex-column fv-bg-background w-50 h-100 mr-1 ml-2 p-2 overflow-auto'
+    public readonly innerClass = 'd-flex flex-column fv-bg-background w-100 h-100 mr-1 ml-2 p-2 overflow-auto'
 
     constructor(params: {
         appState: AppState
@@ -23,17 +25,26 @@ export class DocumentEditorView implements VirtualDOM {
             map(({ document }) => document),
             distinctUntilChanged()
         )
+        let obs$ = combineLatest([document$, this.appState.topBannerState.viewMode$])
 
         this.children = [
             child$(
-                document$,
-                (document) =>
-                    new EditorView({ document, appState: this.appState, class: this.innerClass }),
+                obs$,
+                ([document, mode]) => {
+
+                    return mode == ViewMode.editOnly || mode == ViewMode.simultaneous
+                        ? new EditorView({ document, appState: this.appState, class: this.innerClass })
+                        : {}
+                }
             ),
             child$(
-                document$,
-                (document) =>
-                    new RenderView({ document, appState: this.appState, class: this.innerClass }),
+                obs$,
+                ([document, mode]) => {
+
+                    return mode == ViewMode.renderOnly || mode == ViewMode.simultaneous
+                        ? new RenderView({ document, appState: this.appState, class: this.innerClass })
+                        : {}
+                }
             )
         ]
     }

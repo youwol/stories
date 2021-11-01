@@ -1,15 +1,26 @@
+/**
+ * Entry point of the bundle, fetch the dependencies then await [[load-app]]
+ * 
+ * 
+ * @module main
+ */
+
 // (index.html is handled by HtmlWebpackPlugin)
 require('./style.css')
-export{}
+export { }
 
 let cdn = window['@youwol/cdn-client']
 
 let stylesFutures = cdn.fetchStyleSheets([
     "bootstrap#4.4.1~bootstrap.min.css",
     "fontawesome#5.12.1~css/all.min.css",
-    "highlight.js#11.2.0~styles/default.min.css",
-    "@youwol/fv-widgets#0.0.3~dist/assets/styles/style.youwol.css"
-])
+    "@youwol/fv-widgets#0.0.3~dist/assets/styles/style.youwol.css",
+    "highlight.js#11.2.0~styles/default.min.css"
+]).then(([bootstrap, fa, fvWidgets]) => {
+    bootstrap.id = 'bootstrap'
+    fa.id = 'fa'
+    fvWidgets.id = 'fv'
+})
 
 let bundlesFutures = cdn.fetchBundles(
     {
@@ -24,6 +35,7 @@ let bundlesFutures = cdn.fetchBundles(
         "@youwol/fv-input": "latest",
         "@youwol/fv-context-menu": "latest",
         "@youwol/flux-fv-widgets": "latest",
+        "@youwol/flux-youwol-essentials": "latest",
         "marked": "latest",
         "mathjax": "latest",
         "highlight.js": "11.2.0"

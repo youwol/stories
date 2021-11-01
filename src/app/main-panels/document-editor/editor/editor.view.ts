@@ -1,9 +1,10 @@
 import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
-import { filter } from "rxjs/operators";
+import { filter, take } from "rxjs/operators";
 import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { Document } from "../../../client/client"
-import { ReplaySubject } from "rxjs";
+import { merge, ReplaySubject } from "rxjs";
 import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
+import { popupEmojisBrowserModal } from "../../../modals/emojis-picker.view";
 
 type CodeMirrorEditor = any
 
@@ -20,12 +21,15 @@ export class EditorView implements VirtualDOM {
     public readonly class: string
     public readonly children: Array<VirtualDOM>
 
+    public readonly emojis$ = new ReplaySubject<string>(1)
+
     public readonly configurationCodeMirror = {
         value: "",
         mode: 'markdown',
         lineNumbers: false,
         theme: 'blackboard',
-        lineWrapping: true
+        lineWrapping: true,
+        indentUnit: 4
     }
 
     /**
@@ -41,7 +45,17 @@ export class EditorView implements VirtualDOM {
     }) {
         Object.assign(this, params)
 
+        let reloadContent$ = merge(
+            this.appState.page$.pipe(
+                filter(({ document }) => document == this.document),
+                take(1)),
+            this.appState.page$.pipe(
+                filter(({ document }) => document == this.document),
+                filter(({ content, originId }) => originId != ContentChangedOrigin.editor)
+            )
+        )
         this.children = [
+            this.headerView(),
             {
                 class: 'w-100 h-100',
                 children: [
@@ -55,7 +69,8 @@ export class EditorView implements VirtualDOM {
 
                                     let config = {
                                         ...this.configurationCodeMirror,
-                                        value: ""
+                                        value: "",
+                                        readOnly: !this.appState.permissions.write
                                     }
 
                                     let editor = window['CodeMirror'](elem, config)
@@ -65,16 +80,17 @@ export class EditorView implements VirtualDOM {
                                         this.appState.setContent(this.document, editor.getValue(), ContentChangedOrigin.editor)
                                     })
 
-                                    let sub = this.appState.page$.pipe(
-                                        filter(({ document }) => document == this.document)
-                                    )
-                                        .subscribe(({ content, originId }) => {
-                                            if (originId != ContentChangedOrigin.editor)
-                                                editor.setValue(content)
+                                    elem.ownSubscriptions(
+                                        reloadContent$.subscribe(({ content, originId }) => {
+                                            editor.setValue(content)
+                                        }),
+                                        this.emojis$.subscribe((text) => {
+                                            var doc = editor.getDoc();
+                                            var cursor = doc.getCursor();
+                                            doc.replaceRange(text, cursor);
                                         })
-
+                                    )
                                     this.codeMirrorEditor$.next(editor)
-                                    elem.ownSubscriptions(sub)
                                 }
                             }
                         }
@@ -82,5 +98,23 @@ export class EditorView implements VirtualDOM {
                 ]
             }
         ]
+    }
+
+    headerView() {
+
+        return {
+            children: [
+                {
+                    class: 'd-flex w-100 align-items-center',
+                    children: [
+                        {
+                            tag: 'i',
+                            class: 'fv-pointer rounded m-1 fas fa-smile editor-view-header-emoji',
+                            onclick: () => popupEmojisBrowserModal(this.emojis$)
+                        }
+                    ]
+                },
+            ]
+        }
     }
 }
