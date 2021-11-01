@@ -3,7 +3,7 @@ import { HTMLElement$, render, VirtualDOM } from "@youwol/flux-view"
 import { Button } from "@youwol/fv-button"
 import { Modal } from "@youwol/fv-group"
 import { TextInput } from "@youwol/fv-input"
-import { BehaviorSubject, merge, Subject } from "rxjs"
+import { BehaviorSubject, merge, scheduled, Subject } from "rxjs"
 
 export function okButtonView() {
     return new Button.View({
@@ -90,7 +90,8 @@ export function modalView(selection$, contentView: VirtualDOM) {
         },
         connectedCallback: (elem: HTMLDivElement & HTMLElement$) => {
             elem.children[0].classList.add("w-100")
-            let sub = merge([modalState.cancel$, modalState.ok$, selection$]).subscribe(() => {
+            // https://stackoverflow.com/questions/63719149/merge-deprecation-warning-confusion
+            let sub = merge(...[modalState.cancel$, modalState.ok$, selection$]).subscribe(() => {
                 modalDiv.remove()
             })
             elem.ownSubscriptions(sub)
