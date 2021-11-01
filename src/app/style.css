@@ -30,6 +30,24 @@ pre{
     margin-top: 1.0rem !important;
 }
 
+/* to include in @youwol/fv-widgets */
+.fv-opacity-50{
+    opacity: 0.5;
+}
+.fv-hover-opacity-50:hover{
+    opacity: 0.5;
+}
+.fv-opacity-100{
+    opacity: 1;
+}
+.fv-hover-opacity-100:hover{
+    opacity: 1;
+}
+.fv-opacity-transition-500{
+    transition: opacity 0.5s;
+}
+
+
 /*
 .CodeMirror pre.CodeMirror-line, .CodeMirror pre.CodeMirror-line-like{
     z-index: 0 !important;

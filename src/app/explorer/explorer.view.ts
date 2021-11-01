@@ -1,6 +1,6 @@
-import { attr$, child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
+import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { ImmutableTree } from "@youwol/fv-tree"
-import { filter, map } from "rxjs/operators";
+import { filter } from "rxjs/operators";
 import { AppState, SavingStatus } from "../main-app/app-state";
 import { Document } from "../client/client";
 import { ContextMenuState } from "./context-menu/context-menu.view";
@@ -146,24 +146,28 @@ function headerView(
                     } as any
                 }
             ),
-            {
-                class: attr$(
-                    state.appState.save$.pipe(
-                        filter(({ document }) =>
-                            document.documentId == node.getDocument().documentId
-                        ),
-                        map(({ status }) => status)
+            child$(
+                state.appState.save$.pipe(
+                    filter(({ document }) =>
+                        document.documentId == node.getDocument().documentId
                     ),
-                    (status) => {
-                        return status == SavingStatus.started
-                            ? 'fas fa-circle px-2'
-                            : ''
-                    }
                 ),
-                style: {
-                    transform: 'scale(0.5)'
+                ({ document, content, status }: { document: Document, content: string, status: SavingStatus }) => {
+                    switch (status) {
+                        case SavingStatus.modified:
+                            return {
+                                class: 'fas fa-save p-1 ml-auto fv-pointer fv-hover-opacity-100 fv-opacity-50 fv-opacity-transition-500 explorer-save-item',
+                                onclick: () => state.appState.save(document, content)
+                            }
+                        case SavingStatus.started:
+                            return {
+                                class: 'fas fa-spinner fa-spin p-1 ml-auto '
+                            }
+                        default:
+                            return {}
+                    }
                 }
-            }
+            )
         ]
     }
 }

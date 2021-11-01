@@ -70,7 +70,10 @@ export class EditorView implements VirtualDOM {
                                     let config = {
                                         ...this.configurationCodeMirror,
                                         value: "",
-                                        readOnly: !this.appState.permissions.write
+                                        readOnly: !this.appState.permissions.write,
+                                        extraKeys: {
+                                            "Ctrl-S": (cm) => this.appState.save(this.document, cm.getValue())
+                                        }
                                     }
 
                                     let editor = window['CodeMirror'](elem, config)
@@ -79,7 +82,6 @@ export class EditorView implements VirtualDOM {
                                             return
                                         this.appState.setContent(this.document, editor.getValue(), ContentChangedOrigin.editor)
                                     })
-
                                     elem.ownSubscriptions(
                                         reloadContent$.subscribe(({ content, originId }) => {
                                             editor.setValue(content)

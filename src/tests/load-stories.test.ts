@@ -13,6 +13,7 @@ import { contentYouwolView } from "./mock-data/test-story-youwol-view"
 import { sanitizeCodeScript } from "../app/main-panels/document-editor/render/renderers"
 import { storiesUnitTests } from './mock-data/database'
 import { contentMarkdown } from './mock-data/test-story-markdown'
+import { combineLatest } from 'rxjs'
 
 
 setupMockService(storiesUnitTests)
@@ -110,7 +111,7 @@ test('load story, expand root  node, select markdown document', (done) => {
 })
 
 
-test('load story, change editor content', (done) => {
+test('load story, change editor content and check savings', (done) => {
 
     let newContent = "New content :)"
 
@@ -119,17 +120,28 @@ test('load story, change editor content', (done) => {
 
             let editorView = document.getElementById("editor-view") as any as EditorView
 
-            //let editorState = editorView.editorState
-            // WHEN the code mirror editor is ready
-            let save$ = editorView.codeMirrorEditor$.pipe(
-                tap((cmEditor: CodeMirror) => {
-                    // EXPECT the code mirror editor is available
-                    expect(cmEditor).toBeTruthy()
-                    // WHEN its content is changed; this method is only available in the mock
-                    cmEditor.changeValue(newContent)
-                }),
-                mergeMap(() => appState.save$),
-                filter(({ status }) => status == SavingStatus.done),
+            let modified$ = appState.save$.pipe(
+                filter((save) => {
+                    return save.status == SavingStatus.modified
+                })
+            )
+            modified$.subscribe((save) => {
+                let saveView = document.querySelector('.explorer-save-item')
+                expect(saveView).toBeTruthy()
+                saveView.dispatchEvent(new MouseEvent('click', { bubbles: true }))
+                //appState.save(save.document, save.content)
+            })
+            let start$ = appState.save$.pipe(
+                filter((save) => {
+                    return save.status == SavingStatus.started
+                })
+            )
+            let saved$ = appState.save$.pipe(
+                filter((save) => {
+                    return save.status == SavingStatus.saved
+                })
+            )
+            combineLatest([modified$, start$, saved$]).pipe(
                 mergeMap(() => {
                     // WHEN the content is retrieved from the database
                     return Client.getContent$(storyId, 'root-test-story')
@@ -138,6 +150,18 @@ test('load story, change editor content', (done) => {
                 // EXPECT the content is what expected
                 expect(content).toEqual(newContent)
                 done()
+            })
+
+            //let editorState = editorView.editorState
+            // WHEN the code mirror editor is ready
+            editorView.codeMirrorEditor$.pipe(
+                tap((cmEditor: CodeMirror) => {
+                    // EXPECT the code mirror editor is available
+                    expect(cmEditor).toBeTruthy()
+                    // WHEN its content is changed; this method is only available in the mock
+                    cmEditor.changeValue(newContent)
+                })
+            ).subscribe(() => {
             })
         })
 })
