@@ -4,6 +4,7 @@ import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { Document } from "../../../client/client"
 import { merge, ReplaySubject } from "rxjs";
 import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
+import { popupEmojisBrowserModal } from "../../../modals/emojis-picker.view";
 
 type CodeMirrorEditor = any
 
