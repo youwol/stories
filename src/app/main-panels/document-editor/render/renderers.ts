@@ -2,7 +2,6 @@ import { attr$, child$, render, VirtualDOM } from '@youwol/flux-view';
 import { parse, setOptions } from 'marked'
 import hljs from "highlight.js";
 import { BehaviorSubject } from 'rxjs';
-import { filter } from 'rxjs/operators';
 
 setOptions({
     langPrefix: "hljs language-",
@@ -45,32 +44,53 @@ export class MathJaxRenderer implements RenderableTrait {
     }
 }
 
+enum Mode {
+    default = "default",
+    view = "view",
+    code = "code",
+    dual = "dual"
+}
 
-class ErrorView implements VirtualDOM {
+export interface Options {
 
-    class = "w-100 d-flex fv-text-error youwol-view-error"
-    children: VirtualDOM[]
+    wrapper?: {
+        style?: { [key: string]: string },
+        class?: string
+    },
+    defaultMode?: Mode
+}
 
-    constructor(params: {
-        message: string
-    }) {
 
-        this.children = [
-            {
-                class: "fas fa-error"
-            },
-            {
-                class: "message",
-                innerText: params.message
-            }
-        ]
+function storyViewComponent(definition: {
+    package: string,
+    view: string,
+    parameters: any,
+    options: Options
+}) {
+
+    return ({ cdn }) => {
+
+        return cdn
+            .install({
+                modules: [definition.package]
+            })
+            .then((window) => {
+                let vDOM = new window[definition.package][definition.view](definition.parameters)
+                return vDOM.renderStoryView(definition.options)
+            })
     }
 }
 
-enum Mode {
-    view = "view",
-    code = "code"
+let functionsCatalog = {
+
+    'installFluxView': (cdn) => cdn.install({
+        modules: ['@youwol/flux-view'],
+        aliases: {
+            fluxView: '@youwol/flux-view'
+        }
+    })
 }
+
 export class StoryView implements VirtualDOM {
 
     public readonly children: VirtualDOM[]
@@ -78,7 +98,7 @@ export class StoryView implements VirtualDOM {
     public readonly style: { [key: string]: string } = {}
     public readonly class: string = "w-100 d-flex story-view"
 
-    public readonly mode$ = new BehaviorSubject(Mode.view)
+    public readonly mode$ = new BehaviorSubject(Mode.default)
 
     public readonly cdnScript: HTMLScriptElement = document.head.querySelector("script#cdn-client")
     public readonly bootstrapCss: HTMLScriptElement = document.head.querySelector("link#bootstrap")
@@ -86,27 +106,38 @@ export class StoryView implements VirtualDOM {
     public readonly fvCss: HTMLScriptElement = document.head.querySelector("link#fv")
 
     constructor(public readonly code: string) {
-        // test that the code is semantically OK to avoid latter failure
-        // an error will be catch appropriately and the error view displayed
-        this.runCode()
 
         this.children = [
             this.menuView(),
-            {
-                class: 'flex-grow-1',
-                children: [
-                    this.iFrameView(),
-                    child$(
-                        this.mode$.pipe(filter(mode => mode == Mode.code)),
-                        () => this.codeView()
-                    )
-                ]
-            }
-        ]
-    }
+            child$(
+                this.mode$,
+                (mode: Mode) => {
+                    switch (mode) {
 
-    private runCode() {
-        return new Function(this.code)()
+                        case Mode.default:
+                            return this.iFrameView()
+                        case Mode.view:
+                            return this.iFrameView()
+                        case Mode.code:
+                            return this.codeView()
+                        case Mode.dual:
+                            return {
+                                class: "d-flex justify-content-around w-100",
+                                children: [
+                                    {
+                                        class: 'p-2 w-100',
+                                        children: [this.iFrameView()]
+                                    },
+                                    {
+                                        class: 'p-2 w-100',
+                                        children: [this.codeView()]
+                                    }
+                                ]
+                            }
+                    }
+                }
+            )
+        ]
     }
 
     menuView(): VirtualDOM {
@@ -129,6 +160,14 @@ export class StoryView implements VirtualDOM {
                         { wrapper: (d) => d + classes + 'fa-code mode-code', }
                     ),
                     onclick: () => this.mode$.next(Mode.code)
+                },
+                {
+                    class: attr$(
+                        this.mode$,
+                        (selected) => selected == Mode.dual ? 'fv-text-focus' : '',
+                        { wrapper: (d) => d + classes + 'fa-columns mode-dual', }
+                    ),
+                    onclick: () => this.mode$.next(Mode.dual)
                 }
             ]
         }
@@ -139,18 +178,14 @@ export class StoryView implements VirtualDOM {
         let config = {
             value: this.code,
             mode: 'javascript',
-            lineNumbers: false,
+            lineNumbers: true,
             theme: 'blackboard',
             lineWrapping: true,
             readOnly: true
         }
 
         return {
-            class: attr$(
-                this.mode$,
-                (mode) => mode == Mode.view ? "d-none" : "",
-                { wrapper: (d) => d + " w-100 h-100 code-view" }
-            ),
+            class: "w-100 h-100 code-view",
             style: {
                 maxHeight: '500px'
             },
@@ -165,11 +200,13 @@ export class StoryView implements VirtualDOM {
 
         return {
             tag: 'iframe',
-            class: attr$(
-                this.mode$,
-                (mode) => mode == Mode.code ? "d-none" : "",
-                { wrapper: (d) => d + " iframe-view" }
-            ),
+            style: {
+                width: "100%",
+                border: "none",
+                height: '50px',
+                overflow: "hidden"
+            },
+            class: "iframe-view",
             connectedCallback: (iframe: HTMLIFrameElement) => {
                 let window = iframe.contentWindow
                 let document = window.document
@@ -181,35 +218,56 @@ export class StoryView implements VirtualDOM {
                 let script = document.createElement("script") as any
                 script.src = this.cdnScript.src
                 script.async = true
-                script.addEventListener('load', () => {
+                script.onload = () => {
                     window['cdn'] = window['@youwol/cdn-client']
                     this.resolveView(window, iframe)
-                });
+                };
                 head.appendChild(script)
             }
         }
     }
 
-    resolveView(executingWindow: Window, wrapper: HTMLElement): Promise<void> {
+    resolveView(
+        executingWindow: Window,
+        wrapper: HTMLElement
+    ): Promise<void> {
 
-        let userObjectOrPromise = this.runCode()(executingWindow)
+        let userObjectOrPromise
+        try {
+            let definition = new executingWindow['Function'](
+                Object.keys(functionsCatalog),
+                this.code
+            )(...Object.values(functionsCatalog)
+            )
 
+            definition = (typeof (definition) == 'function')
+                ? definition
+                : storyViewComponent(definition)
+
+            userObjectOrPromise = definition(executingWindow)
+        }
+        catch (error) {
+            this.appendErrorView(error, executingWindow.document.body, wrapper)
+            return
+        }
         if (userObjectOrPromise instanceof executingWindow['Promise']) {
             let promise = userObjectOrPromise
             return promise.then((object) => {
-                this.appendView(object, wrapper, executingWindow.document.body)
+                this.appendView(object, executingWindow.document.body, wrapper)
+            }).catch((error) => {
+                this.appendErrorView(error, executingWindow.document.body, wrapper)
             })
         }
         else {
             let object = userObjectOrPromise
-            return Promise.resolve(this.appendView(object, wrapper, executingWindow.document.body))
+            return Promise.resolve(this.appendView(object, executingWindow.document.body, wrapper))
         }
     }
 
     appendView(
         userObject: HTMLElement | { view: HTMLElement, options: any },
-        wrapper: HTMLElement,
-        container: HTMLElement
+        container: HTMLElement,
+        wrapper
     ) {
         let view = (userObject as any).view ? (userObject as any).view : userObject
         let options = (userObject as any).options ? (userObject as any).options : {}
@@ -218,12 +276,60 @@ export class StoryView implements VirtualDOM {
         let classes = options['wrapper']?.class || ""
 
         Object.entries(style).forEach(([name, value]) => {
-            wrapper.style.setProperty(name, value as any)
+            container.style.setProperty(name, value as any)
         })
-        classes != "" && wrapper.classList.add(classes.split(" "))
+        classes != "" && container.classList.add(classes.split(" "))
 
         container.classList.add("fv-bg-background", "fv-text-primary")
         container.appendChild(view)
+
+        options.defaultMode
+            && Object.values(Mode).includes(options.defaultMode)
+            && this.mode$.getValue() == Mode.default
+            && this.mode$.next(options.defaultMode)
+
+        wrapper.style.setProperty('height', container.scrollHeight + 20 + "px");
+    }
+
+    appendErrorView(
+        error: Error,
+        container: HTMLElement,
+        wrapper,
+    ) {
+
+        let stackView = error.stack
+            ? {
+                tag: 'ul',
+                class: "message",
+                children: error.stack.split('\n').slice(1).map((line, i) => {
+                    let title = line.split('(')[0]
+                    let lineNbr = line.split('<anonymous>').slice(-1)[0].split(":")[1]
+                    return {
+                        tag: 'li',
+                        innerText: `${title} @line ${Number(lineNbr) - 2}`
+                    }
+                })
+            } :
+            {}
+
+        let view = {
+            error,
+            class: "w-100 fv-text-error story-view-error p-2",
+            children: [
+                {
+                    class: "fas fa-error"
+                },
+                {
+                    class: "message",
+                    innerText: error.message
+                },
+                stackView
+            ]
+        }
+        console.log(error)
+        container.appendChild(render(view))
+
+        wrapper.style.setProperty('height', container.scrollHeight + 20 + "px");
     }
 }
 
@@ -232,29 +338,20 @@ export class YouwolRenderer implements RenderableTrait {
 
     render(htmlElement: HTMLElement, documentScope: { [key: string]: unknown }): Promise<HTMLElement> {
 
-        let youwolViews = Array.from(htmlElement.querySelectorAll(".language-javascript"))
+        let jsSnippets = Array.from(htmlElement.querySelectorAll(".language-javascript"))
+        let storyViews = jsSnippets
             .filter((block: HTMLDivElement) => block.textContent.startsWith("//@story-view"))
 
-        youwolViews.forEach((fluxAppBlock: HTMLDivElement) => {
+        storyViews.forEach((fluxAppBlock: HTMLDivElement) => {
             type View = HTMLElement | VirtualDOM
-            let view: View | Promise<View>
 
             let code = sanitizeCodeScript(fluxAppBlock.textContent)
-            try {
-                view = new StoryView(code)
-            }
-            catch (error) {
-                let errorView = new ErrorView({
-                    message: `An error ocurred while parsing the configuration:\n${code}`
-                })
-                view = errorView
-            }
+            let view = new StoryView(code)
             fluxAppBlock.replaceWith(render(view))
         })
         return Promise.resolve(htmlElement)
     }
 }
-
 
 /**
  * The output of code mirror contains some encoded characters; 
