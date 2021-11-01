@@ -55,6 +55,9 @@ export function installMockPackages() {
         fetchJavascriptAddOn: () => {
             return Promise.resolve({})
         },
+        install: () => {
+            return Promise.resolve({})
+        }
     }
 
     window['CodeMirror'] = (elem, content) => new CodeMirror(elem, content)
