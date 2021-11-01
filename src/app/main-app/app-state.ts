@@ -1,10 +1,10 @@
 import { VirtualDOM, render } from "@youwol/flux-view";
-import { ReplaySubject, forkJoin, Subject, Observable } from "rxjs";
+import { ReplaySubject, forkJoin, Observable } from "rxjs";
 import { Story, Document, Client } from "../client/client";
 import { ClientApi } from "../client/API";
 import { ExplorerState, ExplorerView } from "../explorer/explorer.view";
 import { DocumentNode, ExplorerNode, StoryNode } from "../explorer/nodes";
-import { debounceTime, distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
+import { distinctUntilChanged, filter, map, mergeMap, tap } from "rxjs/operators"
 import { DocumentEditorView } from "../main-panels/document-editor/document-editor.view";
 import { TopBannerState, TopBannerView } from "./top-banner";
 
@@ -33,8 +33,9 @@ export function load$(storyId: string, container: HTMLElement): Observable<{ app
 }
 
 export enum SavingStatus {
+    modified = "Modified",
     started = "Started",
-    done = "Done"
+    saved = "Saved"
 }
 
 export enum ContentChangedOrigin {
@@ -58,7 +59,7 @@ export class AppState {
     public readonly addedDocument$ = new ReplaySubject<{ document: Document, parentDocumentId: string }>(1)
     public readonly deletedDocument$ = new ReplaySubject<Document>(1)
 
-    public readonly save$ = new Subject<{ document: Document, status: SavingStatus }>()
+    public readonly save$ = new ReplaySubject<{ document: Document, content: string, status: SavingStatus }>(1)
     public readonly story: Story
     public readonly rootDocument: Document
     public readonly permissions: ClientApi.Permissions
@@ -94,6 +95,14 @@ export class AppState {
         this.page$.pipe(
             filter(({ originId }) => {
                 return originId == ContentChangedOrigin.editor
+            })
+        ).subscribe(({ document, content }) => {
+            this.save$.next({ document, content, status: SavingStatus.modified })
+        })
+
+        /*this.page$.pipe(
+            filter(({ originId }) => {
+                return originId == ContentChangedOrigin.editor
             }),
             tap(({ document }) => {
                 this.save$.next({ document, status: SavingStatus.started })
@@ -108,6 +117,20 @@ export class AppState {
             })
         ).subscribe(({ document, content }) => {
             this.save$.next({ document, status: SavingStatus.done })
+        })
+        */
+    }
+
+    save(document: Document, content: string) {
+        this.save$.next({ document, content, status: SavingStatus.started })
+        Client.postContent$(
+            document.storyId,
+            document.documentId,
+            { content }
+        ).pipe(
+            map(() => ({ content, document }))
+        ).subscribe(() => {
+            this.save$.next({ document, content, status: SavingStatus.saved })
         })
     }
 
