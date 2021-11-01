@@ -93,4 +93,14 @@ export class StoryBackend implements ClientApi.ServiceInterface {
     getDocument$(storyId: string, documentId: string): Observable<ClientApi.Document> {
         throw new Error("Method not implemented.");
     }
+
+
+    getEmojis$(category: string) {
+
+        return createObservableFromFetch(
+            new Request(
+                `/api/assets-gateway/misc/emojis/${category}`
+            ))
+
+    }
 }

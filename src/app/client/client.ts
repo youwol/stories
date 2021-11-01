@@ -143,4 +143,8 @@ export class Client {
             })
         )
     }
+
+    static getEmojis$(category: string): Observable<{ emojis: string[] }> {
+        return Client.service.getEmojis$(category)
+    }
 }

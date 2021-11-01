@@ -74,3 +74,30 @@ export function simpleModal({ rows, ok$ }: {
     document.querySelector("body").appendChild(modalDiv)
     return modalState
 }
+
+
+export function modalView(selection$, contentView: VirtualDOM) {
+
+    let modalState = new Modal.State()
+    let view = new Modal.View({
+        state: modalState,
+        contentView: () => {
+            return {
+                class: 'p-3 rounded fv-color-primary fv-bg-background w-50',
+                style: { minWidth: '50%' },
+                children: [contentView]
+            }
+        },
+        connectedCallback: (elem: HTMLDivElement & HTMLElement$) => {
+            elem.children[0].classList.add("w-100")
+            let sub = merge([modalState.cancel$, modalState.ok$, selection$]).subscribe(() => {
+                modalDiv.remove()
+            })
+            elem.ownSubscriptions(sub)
+        }
+    } as any)
+    let modalDiv = render(view)
+    document.querySelector("body").appendChild(modalDiv)
+    return view
+}
+
