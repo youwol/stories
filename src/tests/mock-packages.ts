@@ -14,18 +14,32 @@ export class CodeMirror {
     on(changeType, callback) {
         this.events[changeType] = callback
     }
+
     setValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
         this.events["changes"](undefined, [{ origin: "setValue" }])
     }
+
     changeValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
         this.events["changes"](undefined, [{ origin: "changeValue" }])
     }
+
     getValue() {
         return this.value
+    }
+
+    replacedRanges = []
+
+    getDoc() {
+        return {
+            getCursor: () => 0,
+            replaceRange: (text, cursor) => {
+                this.replacedRanges.push({ text, cursor })
+            }
+        }
     }
 }
 
