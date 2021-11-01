@@ -196,6 +196,15 @@ export namespace ClientApi {
          * @returns 
          */
         postContent$(storyId: string, documentId: string, body: { content: string }): Observable<boolean>
+
+
+
+        /**
+         * Retrieve emojis list
+         * 
+         * @param category category
+         */
+        getEmojis$(category: string): Observable<{ emojis: string[] }>
     }
 
 }

@@ -20,6 +20,8 @@ export class EditorView implements VirtualDOM {
     public readonly class: string
     public readonly children: Array<VirtualDOM>
 
+    public readonly emojis$ = new ReplaySubject<string>(1)
+
     public readonly configurationCodeMirror = {
         value: "",
         mode: 'markdown',
@@ -52,6 +54,7 @@ export class EditorView implements VirtualDOM {
             )
         )
         this.children = [
+            this.headerView(),
             {
                 class: 'w-100 h-100',
                 children: [
@@ -76,12 +79,17 @@ export class EditorView implements VirtualDOM {
                                         this.appState.setContent(this.document, editor.getValue(), ContentChangedOrigin.editor)
                                     })
 
-                                    let sub = reloadContent$.subscribe(({ content, originId }) => {
-                                        editor.setValue(content)
-                                    })
-
+                                    elem.ownSubscriptions(
+                                        reloadContent$.subscribe(({ content, originId }) => {
+                                            editor.setValue(content)
+                                        }),
+                                        this.emojis$.subscribe((text) => {
+                                            var doc = editor.getDoc();
+                                            var cursor = doc.getCursor();
+                                            doc.replaceRange(text, cursor);
+                                        })
+                                    )
                                     this.codeMirrorEditor$.next(editor)
-                                    elem.ownSubscriptions(sub)
                                 }
                             }
                         }
@@ -89,5 +97,23 @@ export class EditorView implements VirtualDOM {
                 ]
             }
         ]
+    }
+
+    headerView() {
+
+        return {
+            children: [
+                {
+                    class: 'd-flex w-100 align-items-center',
+                    children: [
+                        {
+                            tag: 'i',
+                            class: 'fv-pointer rounded m-1 fas fa-smile editor-view-header-emoji',
+                            onclick: () => popupEmojisBrowserModal(this.emojis$)
+                        }
+                    ]
+                },
+            ]
+        }
     }
 }

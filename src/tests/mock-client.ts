@@ -337,4 +337,9 @@ export class MockService implements ClientApi.ServiceInterface {
         return of(true)
     }
 
+    getEmojis$(category: string) {
+
+        return of({ emojis: ['😀', '😃', '😄', '😁', '😆', '🤣'] })
+    }
+
 }
