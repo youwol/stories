@@ -1,12 +1,13 @@
 
 import { VirtualDOM } from "@youwol/flux-view"
-import { BehaviorSubject, of } from "rxjs"
+import { BehaviorSubject, from, of } from "rxjs"
 import {
-    BurgerMenu, BurgerMenuSection, ComboTogglesView, DashboardLink, FaIconToggleView,
-    LockerBadge,
-    Preferences, UserSettings, WorkspaceLink, YouwolBannerView
+    ComboTogglesView, defaultUserMenu, defaultYouWolMenu, FaIconToggleView,
+    LockerBadge, YouwolBannerState, YouwolBannerView
 } from "@youwol/flux-youwol-essentials"
 import { ClientApi } from "../client/API"
+import { fetchCodeMirror$ } from "../utils/cdn-fetch"
+import { map } from "rxjs/operators"
 
 
 
@@ -33,7 +34,7 @@ export enum ViewMode {
 /**
  * Encapsulates the state w/ top banner, see [[BannerActionsView]], [[TopBannerView]]
  */
-export class TopBannerState {
+export class TopBannerState extends YouwolBannerState {
 
     public readonly viewMode$: BehaviorSubject<ViewMode>
     public readonly permissions: ClientApi.Permissions
@@ -46,6 +47,7 @@ export class TopBannerState {
     constructor(parameters: {
         permissions: ClientApi.Permissions
     }) {
+        super({ cmEditorModule$: fetchCodeMirror$() })
         Object.assign(this, parameters)
 
         this.viewMode$ = new BehaviorSubject<ViewMode>(this.permissions.write
@@ -100,24 +102,14 @@ export class TopBannerView extends YouwolBannerView {
 
     constructor(state: TopBannerState) {
         super({
+            state,
             badgesView: new LockerBadge({ locked$: of(state.permissions.write) }),
             customActionsView: new BannerActionsView({ state }),
-            burgerMenuView: new BurgerMenu({
-                sections: [
-                    new BurgerMenuSection({
-                        items: [
-                            new DashboardLink(),
-                            new WorkspaceLink()
-                        ]
-                    }),
-                    new BurgerMenuSection({
-                        items: [
-                            new UserSettings(),
-                            new Preferences()
-                        ]
-                    }),
-                ]
-            })
+            userMenuView: defaultUserMenu(state),
+            youwolMenuView: defaultYouWolMenu(state),
+            signedIn$: from(fetch(new Request("/api/assets-gateway/healthz"))).pipe(
+                map(resp => resp.status == 200)
+            )
         })
     }
 }
