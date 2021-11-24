@@ -99,26 +99,6 @@ export class AppState {
         ).subscribe(({ document, content }) => {
             this.save$.next({ document, content, status: SavingStatus.modified })
         })
-
-        /*this.page$.pipe(
-            filter(({ originId }) => {
-                return originId == ContentChangedOrigin.editor
-            }),
-            tap(({ document }) => {
-                this.save$.next({ document, status: SavingStatus.started })
-            }),
-            debounceTime(AppState.debounceTimeSave),
-            mergeMap(({ document, content }) => {
-                return Client.postContent$(
-                    document.storyId,
-                    document.documentId,
-                    { content }
-                ).pipe(map(() => ({ content, document })))
-            })
-        ).subscribe(({ document, content }) => {
-            this.save$.next({ document, status: SavingStatus.done })
-        })
-        */
     }
 
     save(document: Document, content: string) {
