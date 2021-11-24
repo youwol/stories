@@ -20,6 +20,11 @@ export class MarkDownRenderer implements RenderableTrait {
 
     render(htmlElement: HTMLElement): Promise<HTMLElement> {
 
+        /**
+         * Not good as all innerHTML wil be sanitized while only code should be affected
+         * https://github.com/markedjs/marked/issues/160
+         * was not able to make it work
+         */
         htmlElement.innerHTML = parse(sanitizeCodeScript(htmlElement.innerHTML))
         return Promise.resolve(htmlElement);
     }
@@ -362,6 +367,6 @@ export class YouwolRenderer implements RenderableTrait {
  * @returns original text
  */
 export function sanitizeCodeScript(text: string) {
-    return text.replace(/&gt;/g, '>').replace(/&amp;gt;/g, ">")
+    return text.replace(/&gt;/g, '>').replace(/&lt;/g, "<").replace(/&amp;/g, '&')
 }
 
