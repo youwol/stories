@@ -2,7 +2,7 @@ import { child$, HTMLElement$, VirtualDOM } from "@youwol/flux-view";
 import { filter, take } from "rxjs/operators";
 import { AppState, ContentChangedOrigin } from "../../../main-app/app-state";
 import { Document } from "../../../client/client"
-import { merge, ReplaySubject } from "rxjs";
+import { merge, ReplaySubject, Subject } from "rxjs";
 import { fetchCodeMirror$ } from "../../../utils/cdn-fetch";
 import { popupEmojisBrowserModal } from "../../../modals/emojis-picker.view";
 
@@ -21,7 +21,7 @@ export class EditorView implements VirtualDOM {
     public readonly class: string
     public readonly children: Array<VirtualDOM>
 
-    public readonly emojis$ = new ReplaySubject<string>(1)
+    public readonly emojis$ = new Subject<string>()
 
     public readonly configurationCodeMirror = {
         value: "",
