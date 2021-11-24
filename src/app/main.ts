@@ -11,6 +11,8 @@ export { }
 
 let cdn = window['@youwol/cdn-client']
 
+let loadingScreen = new cdn.LoadingScreenView({ container: document.body, mode: 'svg' })
+loadingScreen.render()
 let stylesFutures = cdn.fetchStyleSheets([
     "bootstrap#4.4.1~bootstrap.min.css",
     "fontawesome#5.12.1~css/all.min.css",
@@ -40,11 +42,17 @@ let bundlesFutures = cdn.fetchBundles(
         "mathjax": "latest",
         "highlight.js": "11.2.0"
     },
-    window
-)
+    window,
+    (event) => {
+        loadingScreen.next(event)
+    }
+).catch((error) => {
+    loadingScreen.error(error)
+})
 
 await Promise.all([stylesFutures, bundlesFutures])
 
+loadingScreen.done()
 await import('./load-app')
 
 
