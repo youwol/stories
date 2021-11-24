@@ -1,5 +1,5 @@
 import { attr$, child$, render, VirtualDOM } from '@youwol/flux-view';
-import { parse, setOptions } from 'marked'
+import marked, { parse, setOptions } from 'marked'
 import hljs from "highlight.js";
 import { BehaviorSubject } from 'rxjs';
 
@@ -9,6 +9,7 @@ setOptions({
         return hljs.highlightAuto(code, [lang]).value;
     }
 });
+
 
 export interface RenderableTrait {
 
@@ -283,7 +284,7 @@ export class StoryView implements VirtualDOM {
         Object.entries(style).forEach(([name, value]) => {
             container.style.setProperty(name, value as any)
         })
-        classes != "" && container.classList.add(classes.split(" "))
+        classes != "" && container.classList.add(...classes.split(" ").filter(item => item != ""))
 
         container.classList.add("fv-bg-background", "fv-text-primary")
         container.appendChild(view)
@@ -348,10 +349,7 @@ export class YouwolRenderer implements RenderableTrait {
             .filter((block: HTMLDivElement) => block.textContent.startsWith("//@story-view"))
 
         storyViews.forEach((fluxAppBlock: HTMLDivElement) => {
-            type View = HTMLElement | VirtualDOM
-
-            let code = sanitizeCodeScript(fluxAppBlock.textContent)
-            let view = new StoryView(code)
+            let view = new StoryView(fluxAppBlock.textContent)
             fluxAppBlock.replaceWith(render(view))
         })
         return Promise.resolve(htmlElement)
