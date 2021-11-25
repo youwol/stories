@@ -38,7 +38,7 @@ let bundlesFutures = cdn.fetchBundles(
         "@youwol/fv-input": "latest",
         "@youwol/fv-context-menu": "latest",
         "@youwol/flux-fv-widgets": "latest",
-        "@youwol/flux-youwol-essentials": "latest",
+        "@youwol/platform-essentials": "latest",
         "marked": "latest",
         "mathjax": "latest",
         "highlight.js": "11.2.0"
