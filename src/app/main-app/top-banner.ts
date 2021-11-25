@@ -4,7 +4,7 @@ import { BehaviorSubject, from, of } from "rxjs"
 import {
     ComboTogglesView, defaultUserMenu, defaultYouWolMenu, FaIconToggleView,
     LockerBadge, YouwolBannerState, YouwolBannerView
-} from "@youwol/flux-youwol-essentials"
+} from "@youwol/platform-essentials"
 import { ClientApi } from "../client/API"
 import { fetchCodeMirror$ } from "../utils/cdn-fetch"
 import { map } from "rxjs/operators"

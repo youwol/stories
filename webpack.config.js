@@ -58,7 +58,7 @@ module.exports = {
             "@youwol/fv-tabs": "window['@youwol/fv-tabs']",
             "@youwol/fv-button": "window['@youwol/fv-button']",
             "@youwol/fv-context-menu": "window['@youwol/fv-context-menu']",
-            "@youwol/flux-youwol-essentials": "window['@youwol/flux-youwol-essentials']",
+            "@youwol/platform-essentials": "window['@youwol/platform-essentials']",
             "@youwol/flux-fv-widgets": "window['@youwol/flux-fv-widgets']",
             "highlight.js": "hljs",
         }

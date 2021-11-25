@@ -6,7 +6,7 @@ import { AppState, load$ } from "../app/main-app/app-state"
 import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
 import { setupMockService } from "../app/utils/mock-service"
 import { storiesUnitTests } from './mock-data/database'
-import { YouwolBannerView } from '@youwol/flux-youwol-essentials'
+import { YouwolBannerView } from '@youwol/platform-essentials'
 import { RenderView } from '../app/main-panels/document-editor/render/render.view'
 import { ViewMode } from '../app/main-app/top-banner'
 
