@@ -18,7 +18,7 @@
     "license": "MIT",
     "dependencies": {
         "@youwol/cdn-client": "^0.0.10",
-        "@youwol/flux-core": "^0.0.21",
+        "@youwol/flux-core": "^0.0.22",
         "@youwol/flux-view": "^0.0.10",
         "@youwol/flux-files": "^0.0.5",
         "@youwol/flux-youwol-essentials": "^0.0.4",
@@ -68,7 +68,7 @@
         },
         "cdnDependencies": {
             "@youwol/cdn-client": "^0.0.10",
-            "@youwol/flux-core": "^0.0.21",
+            "@youwol/flux-core": "^0.0.22",
             "@youwol/flux-view": "^0.0.10",
             "@youwol/flux-files": "^0.0.5",
             "@youwol/flux-youwol-essentials": "^0.0.4",
