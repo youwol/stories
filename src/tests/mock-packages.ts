@@ -1,3 +1,4 @@
+import { of } from "rxjs"
 
 export class CodeMirror {
 
@@ -43,7 +44,16 @@ export class CodeMirror {
     }
 }
 
+// fetch & Request are mocked just to provide the signedIn$ ok signal in the top-banner 
+class Request {
+    constructor() { }
+}
+let fetch = () => of({ status: 200 })
+
 export function installMockPackages() {
+
+    (window as any)['fetch'] = fetch;
+    (window as any)['Request'] = Request
 
     window['@youwol/cdn-client'] = {
         fetchBundles: () => {
