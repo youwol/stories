@@ -1,3 +1,6 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
+/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
+
 import { installMockPackages } from './mock-packages'
 import { AppState, load$ } from '../app/main-app/app-state'
 import { EditorView } from '../app/main-panels/document-editor/editor/editor.view'

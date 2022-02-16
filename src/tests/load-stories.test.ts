@@ -1,3 +1,6 @@
+// eslint-disable-next-line eslint-comments/disable-enable-pair -- to not have problem
+/* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
+
 import { CodeMirror, installMockPackages } from './mock-packages'
 import { filter, mergeMap, tap } from 'rxjs/operators'
 import { AppState, load$, SavingStatus } from '../app/main-app/app-state'
