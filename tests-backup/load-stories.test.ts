@@ -3,7 +3,7 @@
 
 import { CodeMirror, installMockPackages } from './mock-packages'
 import { filter, mergeMap, tap } from 'rxjs/operators'
-import { AppState, load$, SavingStatus } from '../app/main-app/app-state'
+import { AppState, SavingStatus } from '../app/main-app/app-state'
 import { Client } from '../app/client/client'
 import { EditorView } from '../app/main-panels/document-editor/editor/editor.view'
 import { RenderView } from '../app/main-panels/document-editor/render/render.view'
@@ -14,6 +14,7 @@ import { sanitizeCodeScript } from '../app/main-panels/document-editor/render/re
 import { storiesUnitTests } from './mock-data/database'
 import { contentMarkdown } from './mock-data/test-story-markdown'
 import { combineLatest } from 'rxjs'
+import { load$ } from '../app/main-app/utils'
 
 installMockPackages()
 
