@@ -29,7 +29,7 @@ export abstract class ExplorerNode extends ImmutableTree.Node {
 
     story: Story
 
-    constructor({ id, name, children, story }) {
+    protected constructor({ id, name, children, story }) {
         super({ id, children })
         this.name = name
         this.story = story

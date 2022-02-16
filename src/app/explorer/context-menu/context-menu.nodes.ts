@@ -99,7 +99,7 @@ export class ContextTreeNode extends ImmutableTree.Node {
 export function isExecutable(
     node: ExecutableNode | ContextTreeNode,
 ): node is ExecutableNode {
-    return (node as any as ExecutableNode).execute !== undefined
+    return (node as unknown as ExecutableNode).execute !== undefined
 }
 
 /**
@@ -146,7 +146,7 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
         Object.assign(this, params)
     }
 
-    execute(state: ContextMenuState) {
+    execute(_state: ContextMenuState) {
         this.explorerState.appState.addDocument(this.parentNode.id, {
             content: '',
             title: 'New document',
@@ -190,7 +190,7 @@ export class BrickTemplateNode
         Object.assign(this, params)
     }
 
-    execute(state: ContextMenuState) {
+    execute(_state: ContextMenuState) {
         popupSelectModuleView$()
             .pipe(
                 mergeMap(({ toolboxId, brickId }) => {
@@ -246,7 +246,7 @@ export class SetFromTemplateToolboxNode
         Object.assign(this, params)
     }
 
-    execute(state: ContextMenuState) {
+    execute(_state: ContextMenuState) {
         popupSelectToolboxView$()
             .pipe(
                 mergeMap(({ toolboxId }) => {
@@ -295,7 +295,7 @@ export class RenameNode<TNode extends ExplorerNode>
         Object.assign(this, params)
     }
 
-    execute(state: ContextMenuState) {
+    execute(_state: ContextMenuState) {
         this.node.signal$.next({
             type: SignalType.Rename,
         })
@@ -325,7 +325,7 @@ export class DeleteDocumentNode
         Object.assign(this, params)
     }
 
-    execute(state: ContextMenuState) {
+    execute(_state: ContextMenuState) {
         this.explorerState.appState.deleteDocument(this.deletedNode.document)
     }
 }

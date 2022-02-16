@@ -34,7 +34,7 @@ export class EditorView implements VirtualDOM {
      * This editor gets initialized after the required assets
      * have been fetched from the CDN
      */
-    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirrorEditor>(1)
+    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirror.Editor>(1)
 
     constructor(params: {
         appState: AppState
@@ -51,8 +51,7 @@ export class EditorView implements VirtualDOM {
             this.appState.page$.pipe(
                 filter(({ document }) => document == this.document),
                 filter(
-                    ({ content, originId }) =>
-                        originId != ContentChangedOrigin.editor,
+                    ({ originId }) => originId != ContentChangedOrigin.editor,
                 ),
             ),
         )
@@ -66,7 +65,7 @@ export class EditorView implements VirtualDOM {
                             id: 'code-mirror-editor',
                             class: 'w-100 h-100',
                             connectedCallback: (elem: HTMLElement$) => {
-                                const config = {
+                                const config: CodeMirror.EditorConfiguration = {
                                     ...this.configurationCodeMirror,
                                     value: '',
                                     readOnly: !this.appState.permissions.write,
@@ -97,11 +96,9 @@ export class EditorView implements VirtualDOM {
                                     )
                                 })
                                 elem.ownSubscriptions(
-                                    reloadContent$.subscribe(
-                                        ({ content, originId }) => {
-                                            editor.setValue(content)
-                                        },
-                                    ),
+                                    reloadContent$.subscribe(({ content }) => {
+                                        editor.setValue(content)
+                                    }),
                                     this.emojis$.subscribe((text) => {
                                         const doc = editor.getDoc()
                                         const cursor = doc.getCursor()
