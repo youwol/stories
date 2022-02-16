@@ -1,16 +1,11 @@
-import { render, VirtualDOM } from '@youwol/flux-view'
-import { forkJoin, Observable, ReplaySubject } from 'rxjs'
-import { Client, Document, Story } from '../client/client'
-import { ClientApi } from '../client/API'
+import { VirtualDOM } from '@youwol/flux-view'
+import { ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
+import { AssetsGateway } from '@youwol/http-clients'
+import { Document, Permissions, Story } from '../models'
+import { handleError } from './utils'
 import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
-import {
-    distinctUntilChanged,
-    filter,
-    map,
-    mergeMap,
-    tap,
-} from 'rxjs/operators'
+import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
 import { DocumentEditorView } from '../main-panels/document-editor/document-editor.view'
 import { TopBannerState, TopBannerView } from './top-banner'
 
@@ -81,9 +76,15 @@ export class AppState {
     }>(1)
     public readonly story: Story
     public readonly rootDocument: Document
-    public readonly permissions: ClientApi.Permissions
+    public readonly permissions: Permissions
 
-    constructor(params: { story: Story; rootDocument: Document; permissions }) {
+    public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
+
+    constructor(params: {
+        story: Story
+        rootDocument: Document
+        permissions?
+    }) {
         Object.assign(this, params)
 
         this.topBannerState = new TopBannerState({
@@ -99,10 +100,17 @@ export class AppState {
             .pipe(
                 distinctUntilChanged(),
                 mergeMap((node: ExplorerNode) => {
-                    return Client.getContent$(
-                        node.getDocument().storyId,
-                        node.getDocument().documentId,
-                    ).pipe(map((content) => ({ content, node })))
+                    return this.client
+                        .getContent$(
+                            node.getDocument().storyId,
+                            node.getDocument().documentId,
+                        )
+                        .pipe(
+                            handleError({
+                                browserContext: 'Selected node raw content',
+                            }),
+                            map((content) => ({ content, node })),
+                        )
                 }),
             )
             .subscribe(({ node, content }) => {
@@ -130,8 +138,12 @@ export class AppState {
 
     save(document: Document, content: string) {
         this.save$.next({ document, content, status: SavingStatus.started })
-        Client.postContent$(document.storyId, document.documentId, { content })
-            .pipe(map(() => ({ content, document })))
+        this.client
+            .updateContent$(document.storyId, document.documentId, { content })
+            .pipe(
+                handleError({ browserContext: 'save document' }),
+                map(() => ({ content, document })),
+            )
             .subscribe(() => {
                 this.save$.next({
                     document,
@@ -159,39 +171,41 @@ export class AppState {
             documentId: doc.documentId,
             title: newName,
         }
-        Client.postDocument$(doc.storyId, doc.documentId, body).subscribe(
-            (newDoc: Document) => {
+        this.client
+            .updateDocument$(doc.storyId, doc.documentId, body)
+            .subscribe((newDoc: Document) => {
                 node instanceof DocumentNode
                     ? this.explorerState.replaceAttributes(node, {
                           document: newDoc,
                       })
                     : this.explorerState.replaceAttributes(node, {
-                          story: new Story({ ...node.story, title: newName }),
+                          story: { ...node.story, title: newName },
                       })
-            },
-        )
+            })
     }
 
     addDocument(
         parentDocumentId: string,
         { title, content }: { title: string; content: string },
     ) {
-        Client.putDocument$(this.story.storyId, {
-            parentDocumentId: parentDocumentId,
-            title,
-            content,
-        }).subscribe((document: Document) => {
-            this.addedDocument$.next({ parentDocumentId, document })
-        })
+        this.client
+            .createDocument$(this.story.storyId, {
+                parentDocumentId: parentDocumentId,
+                title,
+                content,
+            })
+            .subscribe((document: Document) => {
+                this.addedDocument$.next({ parentDocumentId, document })
+            })
     }
 
     deleteDocument(document: Document) {
         this.deletedDocument$.next(document)
-        Client.deleteDocument$(document.storyId, document.documentId).subscribe(
-            () => {
+        this.client
+            .deleteDocument$(document.storyId, document.documentId)
+            .subscribe(() => {
                 // This is intentional: make the request happening
-            },
-        )
+            })
     }
 }
 

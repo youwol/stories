@@ -5,10 +5,11 @@
  *
  * @module load-app
  */
+import { Client } from '@youwol/cdn-client'
+import { load$, new$ } from './main-app/utils'
 
-import { Client } from './client/client'
-import { StoryBackend } from './client/stories-backend'
-import { load$ } from './main-app/app-state'
+const storyIdQueryParam = new URLSearchParams(window.location.search).get('id')
+const container = document.getElementById('content')
 
 Client.service = new StoryBackend()
 

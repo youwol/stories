@@ -1,13 +1,14 @@
 import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
-import { map, mergeMap } from 'rxjs/operators'
+import { mergeMap } from 'rxjs/operators'
 import { popupSelectModuleView$ } from '../../modals/select-module.modal'
 import { popupSelectToolboxView$ } from '../../modals/select-toolbox.modal'
-import { fetchResources$ } from '../../utils/cdn-fetch'
+import { install } from '@youwol/cdn-client'
 import { ExplorerState } from '../explorer.view'
 import { DocumentNode, ExplorerNode, SignalType, StoryNode } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
 import { templateFluxModule } from './page-templates/flux-module.template'
+import { from } from 'rxjs'
 
 /**
  * Factory of available actions in the
@@ -193,16 +194,10 @@ export class BrickTemplateNode
         popupSelectModuleView$()
             .pipe(
                 mergeMap(({ toolboxId, brickId }) => {
-                    return fetchResources$({
-                        bundles: {
-                            [toolboxId]: 'latest',
-                        },
-                        urlsCss: [],
-                        urlsJsAddOn: [],
-                    }).pipe(
-                        map(() => {
-                            return window[toolboxId][brickId]
-                        }),
+                    return from(
+                        install({
+                            modules: [toolboxId],
+                        }).then(() => window[toolboxId][brickId]),
                     )
                 }),
             )
@@ -255,16 +250,10 @@ export class SetFromTemplateToolboxNode
         popupSelectToolboxView$()
             .pipe(
                 mergeMap(({ toolboxId }) => {
-                    return fetchResources$({
-                        bundles: {
-                            [toolboxId]: 'latest',
-                        },
-                        urlsCss: [],
-                        urlsJsAddOn: [],
-                    }).pipe(
-                        map(() => {
-                            return window[toolboxId].pack.modules
-                        }),
+                    return from(
+                        install({
+                            modules: [toolboxId],
+                        }).then(() => window[toolboxId].pack.modules),
                     )
                 }),
             )

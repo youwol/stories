@@ -1,12 +1,11 @@
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { filter, take } from 'rxjs/operators'
 import { AppState, ContentChangedOrigin } from '../../../main-app/app-state'
-import { Document } from '../../../client/client'
+import { Document } from '../../../models'
 import { merge, ReplaySubject, Subject } from 'rxjs'
 import { fetchCodeMirror$ } from '../../../utils/cdn-fetch'
 import { popupEmojisBrowserModal } from '../../../modals/emojis-picker.view'
-
-type CodeMirrorEditor = any
+import CodeMirror from 'codemirror'
 
 /**
  * Editor view
