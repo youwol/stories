@@ -1,17 +1,8 @@
 import { VirtualDOM } from '@youwol/flux-view'
-import { BehaviorSubject, from, of } from 'rxjs'
-import {
-    ComboTogglesView,
-    defaultUserMenu,
-    defaultYouWolMenu,
-    FaIconToggleView,
-    LockerBadge,
-    YouwolBannerState,
-    YouwolBannerView,
-} from '@youwol/platform-essentials'
+import { BehaviorSubject, of } from 'rxjs'
+import { TopBanner } from '@youwol/platform-essentials'
 import { ClientApi } from '../client/API'
 import { fetchCodeMirror$ } from '../utils/cdn-fetch'
-import { map } from 'rxjs/operators'
 
 /**
  * Layout combination between [[RenderView]] &  [[EditorView]]
@@ -36,7 +27,7 @@ export enum ViewMode {
 /**
  * Encapsulates the state w/ top banner, see [[BannerActionsView]], [[TopBannerView]]
  */
-export class TopBannerState extends YouwolBannerState {
+export class TopBannerState extends TopBanner.YouwolBannerState {
     public readonly viewMode$: BehaviorSubject<ViewMode>
     public readonly permissions: ClientApi.Permissions
 
@@ -75,7 +66,10 @@ export class BannerActionsView implements VirtualDOM {
 
     constructor(params: { state: TopBannerState }) {
         Object.assign(this, params)
-        const viewModeCombo = new ComboTogglesView<ViewMode, TopBannerState>({
+        const viewModeCombo = new TopBanner.ComboTogglesView<
+            ViewMode,
+            TopBannerState
+        >({
             selection$: this.state.viewMode$,
             state: this.state,
             values: [
@@ -84,7 +78,7 @@ export class BannerActionsView implements VirtualDOM {
                 ViewMode.renderOnly,
             ],
             viewFactory: (mode: ViewMode) => {
-                return new FaIconToggleView<ViewMode>({
+                return new TopBanner.FaIconToggleView<ViewMode>({
                     value: mode,
                     selection$: this.state.viewMode$,
                     classes: BannerActionsView.iconsFactory[mode] + ` ${mode}`,
@@ -99,19 +93,16 @@ export class BannerActionsView implements VirtualDOM {
 /**
  * Top banner of the application
  */
-export class TopBannerView extends YouwolBannerView {
+export class TopBannerView extends TopBanner.YouwolBannerView {
     constructor(state: TopBannerState) {
         super({
             state,
-            badgesView: new LockerBadge({
+            badgesView: new TopBanner.LockerBadge({
                 locked$: of(state.permissions.write),
             }),
             customActionsView: new BannerActionsView({ state }),
-            userMenuView: defaultUserMenu(state),
-            youwolMenuView: defaultYouWolMenu(state),
-            signedIn$: from(
-                fetch(new Request('/api/assets-gateway/healthz')),
-            ).pipe(map((resp) => resp.status == 200)),
+            userMenuView: TopBanner.defaultUserMenu(state),
+            youwolMenuView: TopBanner.defaultYouWolMenu(state),
         })
     }
 }
