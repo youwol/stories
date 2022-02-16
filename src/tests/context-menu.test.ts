@@ -22,7 +22,7 @@ test('load story, display context menu', (done) => {
         // EXPECT story node is displayed
         expect(storyView).toBeTruthy()
         const storyNodeView = document.querySelector('#test-story span')
-        expect(storyNodeView.innerText).toBe('Test story')
+        expect(storyNodeView.textContent).toBe('Test story')
 
         // WHEN context menu triggered ...
         const event = document.createEvent('HTMLEvents')
@@ -52,7 +52,7 @@ test('load story, select story, display context menu, rename story', (done) => {
         // EXPECT - 2 : rename story action is available
         const renameView = document.querySelector('#node-rename-story span')
         expect(renameView).toBeTruthy()
-        expect(renameView.innerText).toBe('rename story')
+        expect(renameView.textContent).toBe('rename story')
 
         // WHEN rename story triggered ...
         renameView.dispatchEvent(new Event('click', { bubbles: true }))
@@ -110,7 +110,7 @@ test('load story, select document, display context menu, rename document', (done
         // EXPECT - 2 : rename document action is available
         const renameView = document.querySelector('#node-rename-document span')
         expect(renameView).toBeTruthy()
-        expect(renameView.innerText).toBe('rename document')
+        expect(renameView.textContent).toBe('rename document')
 
         // WHEN rename document triggered ...
         renameView.dispatchEvent(new Event('click', { bubbles: true }))
@@ -162,7 +162,7 @@ test('load story, select document, display context menu, delete document', (done
         // EXPECT - 2 : delete document action is available
         const deleteView = document.querySelector('#node-delete-document span')
         expect(deleteView).toBeTruthy()
-        expect(deleteView.innerText).toBe('delete document')
+        expect(deleteView.textContent).toBe('delete document')
 
         // WHEN delete triggered ...
         deleteView.dispatchEvent(new Event('click', { bubbles: true }))
@@ -198,7 +198,7 @@ test('load story, select story, display context menu, add child', (done) => {
         // EXPECT - 2 : add document action is available
         const addDoc = document.querySelector('#node-add-document span')
         expect(addDoc).toBeTruthy()
-        expect(addDoc.innerText).toBe('new document')
+        expect(addDoc.textContent).toBe('new document')
 
         // WHEN add document is selected
         addDoc.dispatchEvent(new Event('click', { bubbles: true }))
@@ -206,7 +206,7 @@ test('load story, select story, display context menu, add child', (done) => {
         // THEN WHEN create empty document is selected
         const newEmpty = document.querySelector('#node-add-document-empty span')
         expect(newEmpty).toBeTruthy()
-        expect(newEmpty.innerText).toBe('empty document')
+        expect(newEmpty.textContent).toBe('empty document')
 
         newEmpty.dispatchEvent(new Event('click', { bubbles: true }))
 
@@ -244,7 +244,7 @@ test('load story, select document, display context menu, add child', (done) => {
         // EXPECT - 2 : add document action is available
         const newDoc = document.querySelector('#node-add-document span')
         expect(newDoc).toBeTruthy()
-        expect(newDoc.innerText).toBe('new document')
+        expect(newDoc.textContent).toBe('new document')
 
         // WHEN add document is selected
         newDoc.dispatchEvent(new Event('click', { bubbles: true }))
@@ -252,7 +252,7 @@ test('load story, select document, display context menu, add child', (done) => {
         // THEN WHEN create empty document is selected
         const newEmpty = document.querySelector('#node-add-document-empty span')
         expect(newEmpty).toBeTruthy()
-        expect(newEmpty.innerText).toBe('empty document')
+        expect(newEmpty.textContent).toBe('empty document')
 
         newEmpty.dispatchEvent(new Event('click', { bubbles: true }))
 
@@ -300,7 +300,7 @@ test('load story, select document, display context menu, add flux-module child',
         // EXPECT - 2 : add document action is available
         const newDoc = document.querySelector('#node-add-document span')
         expect(newDoc).toBeTruthy()
-        expect(newDoc.innerText).toBe('new document')
+        expect(newDoc.textContent).toBe('new document')
 
         // WHEN add document is selected
         newDoc.dispatchEvent(new Event('click', { bubbles: true }))
@@ -310,7 +310,7 @@ test('load story, select document, display context menu, add flux-module child',
             '#node-add-document-template-brick span',
         )
         expect(newTemplateMdleFlux).toBeTruthy()
-        expect(newTemplateMdleFlux.innerText).toBe('brick template')
+        expect(newTemplateMdleFlux.textContent).toBe('brick template')
 
         newTemplateMdleFlux.dispatchEvent(new Event('click', { bubbles: true }))
 
@@ -391,7 +391,7 @@ test('load story, select document, display context menu, set flux-pack template'
         // EXPECT - 2 : set from template action is available
         const newDoc = document.querySelector('#node-set-from-template span')
         expect(newDoc).toBeTruthy()
-        expect(newDoc.innerText).toBe('Set from template')
+        expect(newDoc.textContent).toBe('Set from template')
 
         // WHEN add document is selected
         newDoc.dispatchEvent(new Event('click', { bubbles: true }))
@@ -401,7 +401,7 @@ test('load story, select document, display context menu, set flux-pack template'
             '#node-set-from-template-toolbox span',
         )
         expect(newTemplateToolbox).toBeTruthy()
-        expect(newTemplateToolbox.innerText).toBe('Toolbox')
+        expect(newTemplateToolbox.textContent).toBe('Toolbox')
 
         newTemplateToolbox.dispatchEvent(new Event('click', { bubbles: true }))
 
@@ -411,7 +411,7 @@ test('load story, select document, display context menu, set flux-pack template'
 
         const inputToolboxIdView = document.querySelector(
             '#toolbox-id input',
-        ) as TextInput.View
+        ) as unknown as TextInput.View
         expect(inputToolboxIdView).toBeTruthy()
         inputToolboxIdView.state.value$.next('TestToolbox')
 
