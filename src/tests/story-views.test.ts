@@ -99,7 +99,7 @@ return () => {
     done()
 })
 
-test('unit test StoryView with direct HTMLElement returned with options', (done) => {
+test('unit test StoryView with component', (done) => {
     class TestStoryViewComponent implements VirtualDOM {
         class = 'TestStoryViewComponent'
         innerText = 'TestStoryViewComponent'
