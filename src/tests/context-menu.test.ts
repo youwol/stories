@@ -320,12 +320,12 @@ test('load story, select document, display context menu, add flux-module child',
 
         const inputToolboxIdView = document.querySelector(
             '#toolbox-id input',
-        ) as TextInput.View
+        ) as unknown as TextInput.View
         expect(inputToolboxIdView).toBeTruthy()
         inputToolboxIdView.state.value$.next('TestToolbox')
         const inputBrickIdView = document.querySelector(
             '#brick-id input',
-        ) as TextInput.View
+        ) as unknown as TextInput.View
         expect(inputBrickIdView).toBeTruthy()
         inputBrickIdView.state.value$.next('TestModule')
 
