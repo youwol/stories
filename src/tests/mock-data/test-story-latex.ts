@@ -1,4 +1,4 @@
-export let contentLatex = `
+export const contentLatex = `
 # Latex equations
 
 You can find more example [here](https://fr.overleaf.com/learn/latex/Mathematical_expressions)

@@ -1,66 +1,66 @@
-
 import { installMockPackages } from './mock-packages'
-installMockPackages()
-
-import { AppState, load$ } from "../app/main-app/app-state"
-import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
-import { setupMockService } from "../app/utils/mock-service"
+import { AppState, load$ } from '../app/main-app/app-state'
+import { EditorView } from '../app/main-panels/document-editor/editor/editor.view'
+import { setupMockService } from '../app/utils/mock-service'
 import { storiesUnitTests } from './mock-data/database'
-import { YouwolBannerView } from '@youwol/platform-essentials'
+import { TopBanner } from '@youwol/platform-essentials'
 import { RenderView } from '../app/main-panels/document-editor/render/render.view'
 import { ViewMode } from '../app/main-app/top-banner'
 
+installMockPackages()
 
 setupMockService(storiesUnitTests, true)
 
-let storyId = 'test-story'
+const storyId = 'test-story'
 AppState.debounceTimeSave = 1
 
-
-
 test('load story, ensure readonly ok', (done) => {
+    load$(storyId, document.body).subscribe(({ appState }) => {
+        // WHEN application is loaded ...
 
-    load$(storyId, document.body)
-        .subscribe(({ appState }) => {
+        // EXPECT - 0 : no write permissions (readonly)
+        expect(appState.permissions.write).toBeFalsy()
 
-            // WHEN application is loaded ...
+        // EXPECT - 1 : tree-view with node 'test-story' is displayed
+        const storyView = document.getElementById('test-story')
+        expect(storyView).toBeTruthy()
 
-            // EXPECT - 0 : no write permissions (readonly)
-            expect(appState.permissions.write).toBeFalsy()
+        // EXPECT - 2 : editor view is not displayed by default in readonly
+        let editorView = document.getElementById(
+            'editor-view',
+        ) as any as EditorView
+        expect(editorView).toBeFalsy()
 
-            // EXPECT - 1 : tree-view with node 'test-story' is displayed
-            let storyView = document.getElementById("test-story")
-            expect(storyView).toBeTruthy()
+        // EXPECT - 3 : editor view is not displayed by default in readonly
+        const renderView = document.getElementById(
+            'render-view',
+        ) as any as RenderView
+        expect(renderView).toBeTruthy()
 
-            // EXPECT - 2 : editor view is not displayed by default in readonly
-            let editorView = document.getElementById("editor-view") as any as EditorView
-            expect(editorView).toBeFalsy()
+        // EXPECT - 4 : banner is displayed
+        const bannerView = document.querySelector(
+            `.${TopBanner.YouwolBannerView.ClassSelector}`,
+        )
+        expect(bannerView).toBeTruthy()
 
-            // EXPECT - 3 : editor view is not displayed by default in readonly
-            let renderView = document.getElementById("render-view") as any as RenderView
-            expect(renderView).toBeTruthy()
+        // EXPECT - 5 : locked icon is displayed
+        const lockedView = bannerView.querySelector('.locked')
+        expect(lockedView).toBeTruthy()
 
-            // EXPECT - 4 : banner is displayed
-            let bannerView = document.querySelector(`.${YouwolBannerView.ClassSelector}`)
-            expect(bannerView).toBeTruthy()
+        // WHEN trigger edit-only mode
+        const customActionsView = document.querySelector('.custom-actions-view')
+        const editOnlyView = customActionsView.querySelector(
+            `.${ViewMode.editOnly}`,
+        )
+        expect(editOnlyView).toBeTruthy()
+        editOnlyView.dispatchEvent(new Event('click', { bubbles: true }))
 
-            // EXPECT - 5 : locked icon is displayed
-            let lockedView = bannerView.querySelector(".locked")
-            expect(lockedView).toBeTruthy()
-
-            // WHEN trigger edit-only mode
-            let customActionsView = document.querySelector(".custom-actions-view")
-            let editOnlyView = customActionsView.querySelector(`.${ViewMode.editOnly}`)
-            expect(editOnlyView).toBeTruthy()
-            editOnlyView.dispatchEvent(new Event('click', { bubbles: true }))
-
-            // EXPECT editor view
-            editorView = document.getElementById("editor-view") as any as EditorView
-            expect(editorView).toBeTruthy()
-            editorView.codeMirrorEditor$.subscribe((editor) => {
-
-                expect(editor.readonly).toBeTruthy()
-                done()
-            })
+        // EXPECT editor view
+        editorView = document.getElementById('editor-view') as any as EditorView
+        expect(editorView).toBeTruthy()
+        editorView.codeMirrorEditor$.subscribe((editor) => {
+            expect(editor.readonly).toBeTruthy()
+            done()
         })
+    })
 })

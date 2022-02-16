@@ -1,25 +1,26 @@
-
 import { installMockPackages } from './mock-packages'
-installMockPackages()
-
-import { load$ } from "../app/main-app/app-state"
-import { EditorView } from "../app/main-panels/document-editor/editor/editor.view"
-import { RenderView } from "../app/main-panels/document-editor/render/render.view"
-import { setupMockService } from "../app/utils/mock-service"
-import { contentYouwolView } from "./mock-data/test-story-youwol-view"
-import { sanitizeCodeScript, StoryView } from "../app/main-panels/document-editor/render/renderers"
+import { load$ } from '../app/main-app/app-state'
+import { EditorView } from '../app/main-panels/document-editor/editor/editor.view'
+import { RenderView } from '../app/main-panels/document-editor/render/render.view'
+import { setupMockService } from '../app/utils/mock-service'
+import { contentYouwolView } from './mock-data/test-story-youwol-view'
+import {
+    sanitizeCodeScript,
+    StoryView,
+} from '../app/main-panels/document-editor/render/renderers'
 import { storiesUnitTests } from './mock-data/database'
 import { render, VirtualDOM } from '@youwol/flux-view'
 
+installMockPackages()
+
 setupMockService(storiesUnitTests)
 
-let storyId = 'test-story'
+const storyId = 'test-story'
 
-test("unit test StoryView with direct HTMLElement returned", (done) => {
+test('unit test StoryView with direct HTMLElement returned', (done) => {
+    document.body.innerHTML = ''
 
-    document.body.innerHTML = ""
-
-    let code = `
+    const code = `
 return () => {
     let div = document.createElement('div')
     div.id = "test-direct-htmlelement"
@@ -28,18 +29,17 @@ return () => {
 }
 `
     // WHEN a story view with HTML element returned ...
-    let view = new StoryView(code)
+    const view = new StoryView(code)
     view.resolveView(window, document.body)
     // EXPECT the element to be inserted
-    let div = document.getElementById("test-direct-htmlelement")
+    const div = document.getElementById('test-direct-htmlelement')
     expect(div).toBeTruthy()
     done()
 })
 
-test("unit test StoryView with direct error", (done) => {
-
-    document.body.innerHTML = ""
-    let code = `
+test('unit test StoryView with direct error', (done) => {
+    document.body.innerHTML = ''
+    const code = `
 return () => {
     let div = document.createElement('div')
     div.id  "test-direct-htmlelement"
@@ -48,22 +48,20 @@ return () => {
 }
 `
     // WHEN a story view with HTML element returned ...
-    let view = new StoryView(code)
+    const view = new StoryView(code)
     view.resolveView(window, document.body)
     // EXPECT the element to be inserted
-    let div = document.querySelector(".story-view-error")
+    const div = document.querySelector('.story-view-error')
     expect(div).toBeTruthy()
-    let stacks = Array.from(document.querySelectorAll(".story-view-error li"))
+    const stacks = Array.from(document.querySelectorAll('.story-view-error li'))
     expect(stacks.length).toBeGreaterThan(0)
     done()
 })
 
+test('unit test StoryView with direct HTMLElement returned with options', (done) => {
+    document.body.innerHTML = ''
 
-test("unit test StoryView with direct HTMLElement returned with options", (done) => {
-
-    document.body.innerHTML = ""
-
-    let code = `
+    const code = `
 return () => {
     let div = document.createElement('div')
     div.innerHTML='unit test YouWol view'
@@ -81,43 +79,42 @@ return () => {
 }
 `
     // WHEN a story view with HTML & options returned ...
-    let view = new StoryView(code)
+    const view = new StoryView(code)
     view.resolveView(window, document.body)
 
     // EXPECT the element to be inserted
-    let div = document.getElementById("test-direct-htmlelement-with-options")
+    const div = document.getElementById('test-direct-htmlelement-with-options')
     expect(div).toBeTruthy()
 
     // EXPECT the wrapper to be modified
-    expect(document.body.classList.contains("test")).toBeTruthy()
-    expect(document.body.style.getPropertyValue('width')).toEqual('50px')
+    expect(document.body.classList.contains('test')).toBeTruthy()
+    expect(document.body.style.getPropertyValue('width')).toBe('50px')
 
     // EXPECT the mode to be dual
-    expect(view.mode$.getValue()).toEqual("dual")
+    expect(view.mode$.getValue()).toBe('dual')
 
     done()
 })
 
-
-test("unit test StoryView with direct HTMLElement returned with options", (done) => {
-
-
+test('unit test StoryView with direct HTMLElement returned with options', (done) => {
     class TestStoryViewComponent implements VirtualDOM {
-        class = "TestStoryViewComponent"
-        innerText = "TestStoryViewComponent"
+        class = 'TestStoryViewComponent'
+        innerText = 'TestStoryViewComponent'
+
         renderStoryView() {
             return render(this)
         }
     }
+
     window['cdn'] = window['@youwol/cdn-client']
     window['cdn'].install = () => {
         window['@youwol/story-views'] = { TestStoryViewComponent }
         return Promise.resolve(window)
     }
 
-    document.body.innerHTML = ""
+    document.body.innerHTML = ''
 
-    let code = `
+    const code = `
 return {
 	package:'@youwol/story-views',
     view:"TestStoryViewComponent",
@@ -128,23 +125,20 @@ return {
 }
 `
     // WHEN a story view with HTML & options returned ...
-    let view = new StoryView(code)
+    const view = new StoryView(code)
 
     view.resolveView(window, document.body).then(() => {
-
-        let div = document.querySelector('.TestStoryViewComponent')
+        const div = document.querySelector('.TestStoryViewComponent')
         expect(div).toBeTruthy()
-        expect(div['innerText']).toEqual("TestStoryViewComponent")
+        expect(div['innerText']).toBe('TestStoryViewComponent')
         done()
     })
 })
 
+test('unit test StoryView promise on HTMLElement returned', (done) => {
+    document.body.innerHTML = ''
 
-test("unit test StoryView promise on HTMLElement returned", (done) => {
-
-    document.body.innerHTML = ""
-
-    let code = `
+    const code = `
 return () => {
     let div = document.createElement('div')
     div.innerHTML='unit test YouWol view'
@@ -154,23 +148,19 @@ return () => {
 `
 
     // WHEN a story view with a promise on HTML returned ...
-    let view = new StoryView(code)
-    view.resolveView(window, document.body).then(
-        () => {
-            // EXPECT the element to be inserted at promise resolution
-            let div = document.getElementById("test-promise-htmlelement")
-            expect(div).toBeTruthy()
-            done()
-        }
-    )
+    const view = new StoryView(code)
+    view.resolveView(window, document.body).then(() => {
+        // EXPECT the element to be inserted at promise resolution
+        const div = document.getElementById('test-promise-htmlelement')
+        expect(div).toBeTruthy()
+        done()
+    })
 })
 
+test('unit test StoryView promise on with error, no stack available', (done) => {
+    document.body.innerHTML = ''
 
-test("unit test StoryView promise on with error, no stack available", (done) => {
-
-    document.body.innerHTML = ""
-
-    let code = `
+    const code = `
 return () => {
     let div = document.createElement('div')
     div.innerHTML='unit test YouWol view'
@@ -182,31 +172,27 @@ return () => {
 }
 `
     // WHEN a story view with a promise containing an error ...
-    let view = new StoryView(code)
-    view.resolveView(window, document.body).then(
-        () => {
-            // EXPECT an error view displayed
-            let div = document.querySelector(".story-view-error")
-            expect(div).toBeTruthy()
-            done()
-        }
-    )
+    const view = new StoryView(code)
+    view.resolveView(window, document.body).then(() => {
+        // EXPECT an error view displayed
+        const div = document.querySelector('.story-view-error')
+        expect(div).toBeTruthy()
+        done()
+    })
 })
 
-
-test("unit test StoryView with cdn install step", (done) => {
-
+test('unit test StoryView with cdn install step', (done) => {
     let rendered = false
     window['cdn'] = window['@youwol/cdn-client']
     window['cdn'].install = () => {
-        window['@youwol/flux-view'] = { render: () => rendered = true }
+        window['@youwol/flux-view'] = { render: () => (rendered = true) }
         window['fluxView'] = window['@youwol/flux-view']
         return Promise.resolve(window)
     }
 
-    document.body.innerHTML = ""
+    document.body.innerHTML = ''
 
-    let code = `
+    const code = `
 return ({cdn}) => 
     installFluxView(cdn)
     .then( () => ({
@@ -216,137 +202,143 @@ return ({cdn}) =>
         }
     }))
 `
-    let view = new StoryView(code)
-    view.resolveView(window, document.body).then(
-        () => {
-            expect(rendered).toBeTruthy()
-            done()
-        }
-    )
+    const view = new StoryView(code)
+    view.resolveView(window, document.body).then(() => {
+        expect(rendered).toBeTruthy()
+        done()
+    })
     done()
 })
 
-
-test("unit test StoryView and swapping with mode", (done) => {
-
-    document.body.innerHTML = ""
+test('unit test StoryView and swapping with mode', (done) => {
+    document.body.innerHTML = ''
 
     function expectVisible(elem: Element) {
-        expect(elem.classList.contains("d-none")).toBeFalsy()
+        expect(elem.classList.contains('d-none')).toBeFalsy()
     }
 
-    document.body.innerHTML = ""
-    let code = `
+    document.body.innerHTML = ''
+    const code = `
 return () => {
     let div = document.createElement('div')
     return div
 }
 `
     // WHEN a story view is inserted
-    let view = new StoryView(code)
+    const view = new StoryView(code)
     document.body.appendChild(render(view))
 
     // EXPECT by default the iframe view
-    let iframeView = document.querySelector(".story-view .iframe-view")
+    let iframeView = document.querySelector('.story-view .iframe-view')
     expect(iframeView).toBeTruthy()
 
     // EXPECT by default not the code view
-    let codeView = document.querySelector(".story-view .code-view")
+    let codeView = document.querySelector('.story-view .code-view')
     expect(codeView).toBeFalsy()
 
     // WHEN switch to code view triggered
-    let switchToCode = document.querySelector(".story-view .menu-view .mode-code")
+    const switchToCode = document.querySelector(
+        '.story-view .menu-view .mode-code',
+    )
     expect(switchToCode).toBeTruthy()
     switchToCode.dispatchEvent(new Event('click', { bubbles: true }))
 
     // EXPECT code view visible
-    codeView = document.querySelector(".story-view .code-view")
+    codeView = document.querySelector('.story-view .code-view')
     expect(codeView).toBeTruthy()
     expectVisible(codeView)
 
     // EXPECT iframe view not visible
-    iframeView = document.querySelector(".story-view .iframe-view")
+    iframeView = document.querySelector('.story-view .iframe-view')
     expect(iframeView).toBeFalsy()
 
     // WHEN switch to iframe view triggered
-    let switchToIFrame = document.querySelector(".story-view .menu-view .mode-iframe")
+    const switchToIFrame = document.querySelector(
+        '.story-view .menu-view .mode-iframe',
+    )
     expect(switchToIFrame).toBeTruthy()
     switchToIFrame.dispatchEvent(new Event('click', { bubbles: true }))
 
     // EXPECT iframe view visible
-    iframeView = document.querySelector(".story-view .iframe-view")
+    iframeView = document.querySelector('.story-view .iframe-view')
     expectVisible(iframeView)
 
     // EXPECT code view not visible
-    codeView = document.querySelector(".story-view .code-view")
+    codeView = document.querySelector('.story-view .code-view')
     expect(codeView).toBeFalsy()
 
     // WHEN switch to dual view triggered
-    let switchToDual = document.querySelector(".story-view .menu-view .mode-dual")
+    const switchToDual = document.querySelector(
+        '.story-view .menu-view .mode-dual',
+    )
     expect(switchToDual).toBeTruthy()
     switchToDual.dispatchEvent(new Event('click', { bubbles: true }))
 
     // EXPECT iframe view visible
-    iframeView = document.querySelector(".story-view .iframe-view")
+    iframeView = document.querySelector('.story-view .iframe-view')
     expectVisible(iframeView)
 
     // EXPECT code view visible
-    codeView = document.querySelector(".story-view .code-view")
+    codeView = document.querySelector('.story-view .code-view')
     expectVisible(codeView)
 
     done()
 })
 
-
 test('load story, expand root  node, select a document with flux-views', (done) => {
-
-    document.body.innerHTML = ""
+    document.body.innerHTML = ''
 
     RenderView.debounceTime = 0
-    load$(storyId, document.body)
-        .subscribe(() => {
+    load$(storyId, document.body).subscribe(() => {
+        // WHEN application is loaded ...
+        // EXPECT tree-view with node 'test-story' is displayed
+        const storyView = document.getElementById('test-story')
+        expect(storyView).toBeTruthy()
 
-            // WHEN application is loaded ...
-            // EXPECT tree-view with node 'test-story' is displayed
-            let storyView = document.getElementById("test-story")
-            expect(storyView).toBeTruthy()
+        // WHEN the test-story node is expanded
+        storyView.dispatchEvent(new Event('click', { bubbles: true }))
 
-            // WHEN the test-story node is expanded
-            storyView.dispatchEvent(new Event('click', { bubbles: true }))
+        // EXPECT its children are displayed
+        const docViews = Array.from(document.querySelectorAll('.document'))
+        expect(docViews).toHaveLength(3)
 
-            // EXPECT its children are displayed
-            let docViews = Array.from(document.querySelectorAll('.document'))
-            expect(docViews.length).toEqual(3)
+        // WHEN a child is expanded (contentYouWol)
+        docViews[2].dispatchEvent(new Event('click', { bubbles: true }))
 
-            // WHEN a child is expanded (contentYouWol)
-            docViews[2].dispatchEvent(new Event('click', { bubbles: true }))
+        // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
+        const editorView = document.getElementById(
+            'editor-view',
+        ) as any as EditorView
+        expect(editorView).toBeTruthy()
 
-            // EXPECT - 1: the content of the code mirror editor displayed 'contentYouwolView'
-            let editorView = document.getElementById("editor-view") as any as EditorView
-            expect(editorView).toBeTruthy()
-
-            editorView.codeMirrorEditor$.subscribe(() => {
-                let innerTextCodeMirror = document.getElementById("CodeMirror").innerHTML
-                expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(contentYouwolView.trim())
-            })
-
-            // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentYouwolView'
-            let renderView = document.getElementById("render-view") as any as RenderView
-            renderView.renderedElement$.subscribe(({ document, htmlElement }) => {
-                expect(document.documentId).toEqual('test-story-youwol-view')
-                let storyViews = Array.from(htmlElement.querySelectorAll(".story-view"))
-                expect(storyViews.length).toEqual(2)
-
-                // IFrame encapsulation does not allow to test the rendered IFrame content 
-                // We would like to test this:
-                // There is one correctly formatted code
-                //let youwolView = htmlElement.querySelector("#test-youwol-view")
-                // And another one with error
-                //let errorView = htmlElement.querySelector(".youwol-view-error")
-                //expect(errorView).toBeTruthy()
-
-                done()
-            })
+        editorView.codeMirrorEditor$.subscribe(() => {
+            const innerTextCodeMirror =
+                document.getElementById('CodeMirror').innerHTML
+            expect(sanitizeCodeScript(innerTextCodeMirror).trim()).toEqual(
+                contentYouwolView.trim(),
+            )
         })
-})
 
+        // EXPECT - 2 the content of the renderer view display the virtual DOM loaded from 'contentYouwolView'
+        const renderView = document.getElementById(
+            'render-view',
+        ) as any as RenderView
+        renderView.renderedElement$.subscribe(({ document, htmlElement }) => {
+            expect(document.documentId).toBe('test-story-youwol-view')
+            const storyViews = Array.from(
+                htmlElement.querySelectorAll('.story-view'),
+            )
+            expect(storyViews).toHaveLength(2)
+
+            // IFrame encapsulation does not allow to test the rendered IFrame content
+            // We would like to test this:
+            // There is one correctly formatted code
+            //let youwolView = htmlElement.querySelector("#test-youwol-view")
+            // And another one with error
+            //let errorView = htmlElement.querySelector(".youwol-view-error")
+            //expect(errorView).toBeTruthy()
+
+            done()
+        })
+    })
+})

@@ -1,5 +1,4 @@
-
-export let contentMarkdownCode = `
+export const contentMarkdownCode = `
 #  Some example of code
 
 ## Javascript

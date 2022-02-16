@@ -1,13 +1,9 @@
-import { Factory } from "@youwol/flux-core";
-
+import { Factory } from '@youwol/flux-core'
 
 export function templateFluxModule(factory: Factory) {
-
-    let resources = Object
-        .entries(factory.resources)
-        .map(([name, url]) => {
-            return `*    [${name}](${url})`
-        })
+    const resources = Object.entries(factory.resources).map(([name, url]) => {
+        return `*    [${name}](${url})`
+    })
 
     return `
 # Module ${factory.displayName}

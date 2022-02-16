@@ -1,15 +1,13 @@
-
-
 import { ImmutableTree } from '@youwol/fv-tree'
 import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { Client, Story, Document } from '../client/client'
+import { Client, Document, Story } from '../client/client'
 
 /**
  * Node's signal's type enum
  */
 export enum SignalType {
-    Rename = "Rename"
+    Rename = 'Rename',
 }
 
 /**
@@ -23,7 +21,6 @@ interface NodeSignal {
  * Base class of explorer's node
  */
 export abstract class ExplorerNode extends ImmutableTree.Node {
-
     name: string
 
     signal$ = new ReplaySubject<NodeSignal>()
@@ -40,22 +37,27 @@ export abstract class ExplorerNode extends ImmutableTree.Node {
 }
 
 /**
- * Story node of explorer's node  
+ * Story node of explorer's node
  */
 export class StoryNode extends ExplorerNode {
-
     rootDocument: Document
-    constructor({ story, rootDocument, children }: {
-        story: Story,
-        rootDocument: Document,
+
+    constructor({
+        story,
+        rootDocument,
+        children,
+    }: {
+        story: Story
+        rootDocument: Document
         children?
-    }
-    ) {
+    }) {
         super({
             id: rootDocument.documentId,
             story,
             name: story.title,
-            children: children || getChildrenOfDocument$(story, rootDocument.documentId)
+            children:
+                children ||
+                getChildrenOfDocument$(story, rootDocument.documentId),
         })
         this.rootDocument = rootDocument
     }
@@ -66,22 +68,26 @@ export class StoryNode extends ExplorerNode {
 }
 
 /**
- * Document node of explorer's node  
+ * Document node of explorer's node
  */
 export class DocumentNode extends ExplorerNode {
-
     document: Document
 
-    constructor({ story, document, children }: {
-        story: Story,
-        document: Document,
+    constructor({
+        story,
+        document,
+        children,
+    }: {
+        story: Story
+        document: Document
         children?
     }) {
         super({
             id: document.documentId,
             story,
             name: document.title,
-            children: children || getChildrenOfDocument$(story, document.documentId)
+            children:
+                children || getChildrenOfDocument$(story, document.documentId),
         })
         this.document = document
     }
@@ -101,14 +107,13 @@ export class DocumentNode extends ExplorerNode {
  */
 function getChildrenOfDocument$(
     story: Story,
-    parentDocumentId: string
+    parentDocumentId: string,
 ): Observable<DocumentNode[]> {
-
     return Client.getChildren$(story.storyId, { parentDocumentId }).pipe(
         map((documents: Document[]) => {
             return documents.map((document: Document) => {
                 return new DocumentNode({ story, document })
             })
-        })
+        }),
     )
 }

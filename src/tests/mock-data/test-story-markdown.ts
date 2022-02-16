@@ -1,4 +1,4 @@
-export let contentMarkdown = `
+export const contentMarkdown = `
 #  Titre 1
 ## Titre 2
 ###  Titre 3

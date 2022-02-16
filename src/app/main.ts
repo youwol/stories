@@ -1,59 +1,45 @@
 /**
  * Entry point of the bundle, fetch the dependencies then await [[load-app]]
- * 
- * 
+ *
+ *
  * @module main
  */
 
 // (index.html is handled by HtmlWebpackPlugin)
+import { install } from '@youwol/cdn-client'
+
 require('./style.css')
-export { }
+export {}
 
-let cdn = window['@youwol/cdn-client']
-
-let loadingScreen = new cdn.LoadingScreenView({ container: document.body, mode: 'svg' })
-loadingScreen.render()
-
-let stylesFutures = cdn.fetchStyleSheets([
-    "bootstrap#4.4.1~bootstrap.min.css",
-    "fontawesome#5.12.1~css/all.min.css",
-    "@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css",
-    "highlight.js#11.2.0~styles/default.min.css"
-]).then(([bootstrap, fa, fvWidgets]) => {
-    bootstrap.id = 'bootstrap'
-    fa.id = 'fa'
-    fvWidgets.id = 'fv'
-})
-
-let bundlesFutures = cdn.fetchBundles(
+await install(
     {
-        'lodash': '4.17.15',
-        "rxjs": '6.5.5',
-        "@youwol/flux-core": 'latest',
-        '@youwol/flux-view': 'latest',
-        "@youwol/fv-group": "latest",
-        "@youwol/fv-button": "latest",
-        "@youwol/fv-tree": "latest",
-        "@youwol/fv-tabs": "latest",
-        "@youwol/fv-input": "latest",
-        "@youwol/fv-context-menu": "latest",
-        "@youwol/flux-fv-widgets": "latest",
-        "@youwol/platform-essentials": "latest",
-        "marked": "latest",
-        "mathjax": "latest",
-        "highlight.js": "11.2.0"
+        modules: [
+            'lodash',
+            'rxjs',
+            '@youwol/flux-core',
+            '@youwol/flux-view',
+            '@youwol/fv-group',
+            '@youwol/fv-button',
+            '@youwol/fv-tree',
+            '@youwol/fv-tabs',
+            '@youwol/fv-input',
+            '@youwol/fv-context-menu',
+            '@youwol/flux-fv-widgets',
+            '@youwol/platform-essentials',
+            'marked',
+            'mathjax',
+            'highlight.js',
+        ],
+        css: [
+            'bootstrap#4.4.1~bootstrap.min.css',
+            'fontawesome#5.12.1~css/all.min.css',
+            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
+            'highlight.js#11.2.0~styles/default.min.css',
+        ],
     },
-    window,
-    (event) => {
-        loadingScreen.next(event)
-    }
-).catch((error) => {
-    loadingScreen.error(error)
-})
+    {
+        displayLoadingScreen: true,
+    },
+)
 
-await Promise.all([stylesFutures, bundlesFutures])
-
-loadingScreen.done()
 await import('./load-app')
-
-

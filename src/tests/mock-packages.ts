@@ -1,17 +1,17 @@
-import { of } from "rxjs"
-
 export class CodeMirror {
-
-    events = {
-    }
+    events = {}
     value: string
     readonly: boolean
 
-    constructor(public readonly elem: HTMLDivElement, content: { value: string, readOnly: boolean }) {
+    constructor(
+        public readonly elem: HTMLDivElement,
+        content: { value: string; readOnly: boolean },
+    ) {
         elem.innerHTML = `<div id='CodeMirror'> ${content.value} </div>`
         this.value = content.value
         this.readonly = content.readOnly
     }
+
     on(changeType, callback) {
         this.events[changeType] = callback
     }
@@ -19,13 +19,13 @@ export class CodeMirror {
     setValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
-        this.events["changes"](undefined, [{ origin: "setValue" }])
+        this.events['changes'](undefined, [{ origin: 'setValue' }])
     }
 
     changeValue(content) {
         this.value = content
         this.elem.innerHTML = `<div id='CodeMirror'> ${content} </div>`
-        this.events["changes"](undefined, [{ origin: "changeValue" }])
+        this.events['changes'](undefined, [{ origin: 'changeValue' }])
     }
 
     getValue() {
@@ -39,12 +39,24 @@ export class CodeMirror {
             getCursor: () => 0,
             replaceRange: (text, cursor) => {
                 this.replacedRanges.push({ text, cursor })
-            }
+            },
         }
     }
 }
 
-// fetch & Request are mocked just to provide the signedIn$ ok signal in the top-banner 
+export function installMockPackages() {
+    window['CodeMirror'] = (elem, content) => new CodeMirror(elem, content)
+
+    window['MathJax'] = {
+        typesetPromise: (elements: HTMLElement[]) => {
+            elements.forEach((elem) => elem.classList.add('mathjax'))
+            return Promise.resolve()
+        },
+    }
+}
+
+// fetch & Request are mocked just to provide the signedIn$ ok signal in the top-banner
+/*
 class Request {
     constructor() { }
 }
@@ -93,3 +105,4 @@ export function installMockPackages() {
     document.head.appendChild(fvLink)
     document.head.appendChild(faLink)
 }
+*/
