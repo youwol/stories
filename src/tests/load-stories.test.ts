@@ -174,7 +174,9 @@ test('load story, change editor content and check savings', (done) => {
                     cmEditor.changeValue(newContent)
                 }),
             )
-            .subscribe(() => {})
+            .subscribe(() => {
+                /*no op*/
+            })
     })
 })
 
