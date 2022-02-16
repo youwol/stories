@@ -5,11 +5,16 @@
  * @module main
  */
 
-// (index.html is handled by HtmlWebpackPlugin)
-import { install } from '@youwol/cdn-client'
+import { Client, install, LoadingScreenView } from '@youwol/cdn-client'
 
 require('./style.css')
 export {}
+
+const loadingScreen = new LoadingScreenView({
+    container: document.body,
+    mode: 'svg',
+})
+loadingScreen.render()
 
 await install(
     {
@@ -38,8 +43,9 @@ await install(
         ],
     },
     {
-        displayLoadingScreen: true,
+        onEvent: (ev) => loadingScreen.next(ev),
     },
 )
+Client['initialLoadingScreen'] = loadingScreen
 
 await import('./load-app')

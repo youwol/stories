@@ -9,34 +9,6 @@ import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
 import { DocumentEditorView } from '../main-panels/document-editor/document-editor.view'
 import { TopBannerState, TopBannerView } from './top-banner'
 
-/**
- *
- * @param storyId id of the story to load
- * @param container where to insert the main view
- * @returns application state & application view
- */
-export function load$(
-    storyId: string,
-    container: HTMLElement,
-): Observable<{ appState: AppState; appView: AppView }> {
-    container.innerHTML = ''
-
-    return forkJoin([
-        Client.getStory$(storyId),
-        Client.getChildren$(storyId, {
-            parentDocumentId: storyId,
-            count: 1,
-        }).pipe(map((docs) => docs[0])),
-    ]).pipe(
-        map(([{ story, permissions }, rootDocument]: any) => {
-            const appState = new AppState({ story, rootDocument, permissions })
-            const appView = new AppView({ state: appState })
-            return { appState, appView }
-        }),
-        tap(({ appView }) => container.appendChild(render(appView))),
-    )
-}
-
 export enum SavingStatus {
     modified = 'Modified',
     started = 'Started',
