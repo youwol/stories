@@ -31,6 +31,7 @@
         "@youwol/fv-tabs": "^0.0.3",
         "@youwol/fv-tree": "^0.0.5",
         "@youwol/fv-context-menu": "^0.0.0",
+        "grapesjs": "0.x",
         "js-beautify": "^1.14.0",
         "lodash": "4.x",
         "reflect-metadata": "0.x",
@@ -78,6 +79,7 @@
             "version": "0.0.0"
         },
         "cdnDependencies": {
+            "grapesjs": "0.x",
             "js-beautify": "^1.14.0",
             "@youwol/logging": "^0.0.2",
             "@youwol/http-clients": "^0.0.3",

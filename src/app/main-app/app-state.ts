@@ -6,8 +6,8 @@ import { Document, Permissions, Story } from '../models'
 import { handleError } from './utils'
 import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
 import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
-import { DocumentEditorView } from '../main-panels/document-editor/document-editor.view'
 import { TopBannerState, TopBannerView } from './top-banner'
+import { GrapesEditorView } from '../grapes-editor/grapes-editor.view'
 
 export enum SavingStatus {
     modified = 'Modified',
@@ -203,7 +203,8 @@ export class AppView implements VirtualDOM {
                     new ExplorerView({
                         explorerState: this.state.explorerState,
                     }),
-                    new DocumentEditorView({ appState: this.state }),
+                    //new DocumentEditorView({ appState: this.state }),
+                    new GrapesEditorView({ idPrefix: 'main' }),
                 ],
             },
         ]

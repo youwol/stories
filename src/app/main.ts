@@ -34,6 +34,7 @@ await install(
             'marked',
             'mathjax',
             'highlight.js',
+            'grapes',
         ],
         css: [
             {
@@ -53,10 +54,16 @@ await install(
                 resource: 'highlight.js#11.2.0~styles/default.min.css',
                 domId: 'highlight',
             },
+            {
+                resource: 'grapes#latest~css/grapes.min.css',
+                domId: 'grapes-css',
+            },
         ],
     },
     {
-        onEvent: (ev) => loadingScreen.next(ev),
+        onEvent: (ev) => {
+            loadingScreen.next(ev)
+        },
     },
 )
 Client['initialLoadingScreen'] = loadingScreen
