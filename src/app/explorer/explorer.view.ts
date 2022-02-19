@@ -160,8 +160,6 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                     ),
                 ),
                 ({
-                    document,
-                    content,
                     status,
                 }: {
                     document: Document
@@ -172,8 +170,6 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                         case SavingStatus.modified:
                             return {
                                 class: 'fas fa-save p-1 ml-auto fv-pointer fv-hover-opacity-100 fv-opacity-50 fv-opacity-transition-500 explorer-save-item',
-                                onclick: () =>
-                                    state.appState.save(document, content),
                             }
                         case SavingStatus.started:
                             return {

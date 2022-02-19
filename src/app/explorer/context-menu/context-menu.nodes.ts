@@ -1,14 +1,7 @@
-import { Factory } from '@youwol/flux-core'
 import { ImmutableTree } from '@youwol/fv-tree'
-import { mergeMap } from 'rxjs/operators'
-import { popupSelectModuleView$ } from '../../modals/select-module.modal'
-import { popupSelectToolboxView$ } from '../../modals/select-toolbox.modal'
-import { install } from '@youwol/cdn-client'
 import { ExplorerState } from '../explorer.view'
 import { DocumentNode, ExplorerNode, SignalType, StoryNode } from '../nodes'
 import { ContextMenuState } from './context-menu.view'
-import { templateFluxModule } from './page-templates/flux-module.template'
-import { from } from 'rxjs'
 
 /**
  * Factory of available actions in the
@@ -52,21 +45,13 @@ export const ALL_ACTIONS = {
                 explorerState,
             }),
     },
-    setFromTemplate: {
-        applicable: (selectedNode) => selectedNode instanceof StoryNode,
-        createNode: (parentNode: StoryNode, explorerState: ExplorerState) =>
-            new SetFromTemplateNode({
-                parentNode,
-                explorerState,
-            }),
-    },
 }
 
 /**
  * Interface of executable nodes of the context menu
  */
 export interface ExecutableNode {
-    execute(state: ContextMenuState, { event }: { event: MouseEvent })
+    execute(state: ContextMenuState)
 }
 
 /**
@@ -111,25 +96,7 @@ export class ContextRootNode extends ContextTreeNode {
     }
 }
 
-/**
- * Add document node type of the context-menu's tree-view
- */
-export class AddDocumentNode extends ContextTreeNode {
-    constructor(params: {
-        explorerState: ExplorerState
-        parentNode: DocumentNode
-    }) {
-        super({
-            id: 'add-document',
-            children: [new EmptyDocNode(params), new BrickTemplateNode(params)],
-            name: 'new document',
-            faIcon: 'fas fa-plus',
-        })
-        Object.assign(this, params)
-    }
-}
-
-export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
+export class AddDocumentNode extends ContextTreeNode implements ExecutableNode {
     public readonly explorerState: ExplorerState
     public readonly parentNode: DocumentNode | StoryNode
 
@@ -140,7 +107,7 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
         super({
             id: 'add-document-empty',
             children: undefined,
-            name: 'empty document',
+            name: 'child document',
             faIcon: 'fas fa-file',
         })
         Object.assign(this, params)
@@ -151,121 +118,6 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
             content: { html: '', css: '' },
             title: 'New document',
         })
-    }
-}
-
-function addBrickTemplate({
-    factory,
-    explorerState,
-    parentNode,
-}: {
-    factory: Factory
-    explorerState: ExplorerState
-    parentNode: ExplorerNode
-}) {
-    const content = templateFluxModule(factory)
-    explorerState.appState.addDocument(parentNode.id, {
-        content,
-        title: factory.displayName,
-    })
-}
-
-export class BrickTemplateNode
-    extends ContextTreeNode
-    implements ExecutableNode
-{
-    public readonly explorerState: ExplorerState
-    public readonly parentNode: DocumentNode | StoryNode
-
-    constructor(params: {
-        explorerState: ExplorerState
-        parentNode: DocumentNode
-    }) {
-        super({
-            id: 'add-document-template-brick',
-            children: undefined,
-            name: 'brick template',
-            faIcon: 'fas fa-puzzle-piece',
-        })
-        Object.assign(this, params)
-    }
-
-    execute(_state: ContextMenuState) {
-        popupSelectModuleView$()
-            .pipe(
-                mergeMap(({ toolboxId, brickId }) => {
-                    return from(
-                        install({
-                            modules: [toolboxId],
-                        }).then(() => window[toolboxId][brickId]),
-                    )
-                }),
-            )
-            .subscribe((factory: Factory) => {
-                addBrickTemplate({
-                    factory,
-                    explorerState: this.explorerState,
-                    parentNode: this.parentNode,
-                })
-            })
-    }
-}
-
-export class SetFromTemplateNode extends ContextTreeNode {
-    constructor(params: {
-        explorerState: ExplorerState
-        parentNode: StoryNode
-    }) {
-        super({
-            id: 'set-from-template',
-            children: [new SetFromTemplateToolboxNode(params)],
-            name: 'Set from template',
-            faIcon: 'fas fa-book-open',
-        })
-        Object.assign(this, params)
-    }
-}
-
-export class SetFromTemplateToolboxNode
-    extends ContextTreeNode
-    implements ExecutableNode
-{
-    explorerState: ExplorerState
-    parentNode: StoryNode
-
-    constructor(params: {
-        explorerState: ExplorerState
-        parentNode: StoryNode
-    }) {
-        super({
-            id: 'set-from-template-toolbox',
-            children: undefined,
-            name: 'Toolbox',
-            faIcon: 'fas fa-toolbox',
-        })
-        Object.assign(this, params)
-    }
-
-    execute(_state: ContextMenuState) {
-        popupSelectToolboxView$()
-            .pipe(
-                mergeMap(({ toolboxId }) => {
-                    return from(
-                        install({
-                            modules: [toolboxId],
-                        }).then(() => window[toolboxId].pack.modules),
-                    )
-                }),
-            )
-            .subscribe((factories: Factory[]) =>
-                Object.values(factories).forEach((factory) =>
-                    addBrickTemplate({
-                        factory,
-                        explorerState: this.explorerState,
-                        parentNode: this.parentNode,
-                    }),
-                ),
-            )
     }
 }
 

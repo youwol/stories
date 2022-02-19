@@ -1,17 +1,18 @@
 import { ContextMenu } from '@youwol/fv-context-menu'
 import { fromEvent, Observable } from 'rxjs'
-import { filter, tap } from 'rxjs/operators'
+import { filter, map, tap } from 'rxjs/operators'
 import { AppState } from '../../main-app/app-state'
 import {
     ALL_ACTIONS,
     ContextRootNode,
     ContextTreeNode,
+    ExecutableNode,
     isExecutable,
 } from './context-menu.nodes'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { ExplorerState } from '../explorer.view'
-import { ExplorerNode } from '../nodes'
+import { DocumentNode, ExplorerNode, StoryNode } from '../nodes'
 
 /**
  * Logic side of [[ContextMenuView]]
@@ -40,7 +41,7 @@ export class ContextMenuState extends ContextMenu.State {
         this.explorerDiv = explorerDiv
     }
 
-    dispatch(ev: MouseEvent): VirtualDOM {
+    dispatch(_ev: MouseEvent): VirtualDOM {
         return {
             style: {
                 zIndex: 1,
@@ -81,7 +82,7 @@ export class ContextMenuView implements VirtualDOM {
             .filter((action) => action.applicable(this.selectedNode))
             .map((action) =>
                 action.createNode(
-                    this.selectedNode as any,
+                    this.selectedNode as DocumentNode & StoryNode,
                     this.state.explorerState,
                 ),
             )
@@ -104,10 +105,13 @@ export class ContextMenuView implements VirtualDOM {
             htmlElement: HTMLElement$ & HTMLDivElement,
         ) => {
             const sub = contextTreeState.selectedNode$
-                .pipe(filter((node) => isExecutable(node)))
-                .subscribe((node: any) => {
+                .pipe(
+                    filter((node) => isExecutable(node)),
+                    map((node) => node as unknown as ExecutableNode),
+                )
+                .subscribe((node) => {
                     htmlElement.remove()
-                    node.execute(this)
+                    node.execute(this.state)
                 })
             htmlElement.ownSubscriptions(sub)
         }
