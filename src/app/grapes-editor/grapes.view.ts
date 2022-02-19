@@ -81,73 +81,35 @@ export class SettingsView implements VirtualDOM {
     }
 }
 
-const styleToggle0 = {
-    commonClassBase: 'fas fv-pointer p-1 rounded',
-    activeClass: 'fv-text-focus  fv-bg-background',
-    inactiveClass:
-        'fv-text-primary  fv-hover-text-focus fv-bg-background-alt fv-hover-xx-darker ',
-}
-
-const styleToggle1 = {
-    ...styleToggle0,
-    commonClassBase: 'fas fv-pointer flex-grow-1 rounded text-center py-1',
-}
-
-export class DisplayModeToggle implements VirtualDOM {
-    class = 'd-flex'
-
-    children: ToggleButton<DisplayMode>[]
-
-    constructor(public readonly displayMode$) {
-        this.children = [
-            new ToggleButton({
-                selector$: this.displayMode$,
-                targetValue: 'edit',
-                commonClassSpecific: 'fa-border-none',
-                ...styleToggle0,
-            }),
-            new ToggleButton({
-                selector$: this.displayMode$,
-                targetValue: 'preview',
-                commonClassSpecific: 'fa-eye',
-                ...styleToggle0,
-            }),
-        ]
+export class DisplayModeToggle extends ToggleMenu<DisplayMode> {
+    constructor(public readonly deviceMode$) {
+        super({
+            options: {
+                edit: 'fa-border-none',
+                preview: 'fa-eye',
+            },
+            buttonStyle: {
+                ...styleToggleBase,
+            },
+            selector$: deviceMode$,
+        })
     }
 }
 
-export class DeviceModeToggle implements VirtualDOM {
-    class = 'd-flex'
-
-    children: ToggleButton<DeviceMode>[]
-
+export class DeviceModeToggle extends ToggleMenu<DeviceMode> {
     constructor(public readonly deviceMode$) {
-        this.children = [
-            new ToggleButton({
-                selector$: this.deviceMode$,
-                targetValue: 'desktop',
-                commonClassSpecific: 'fa-desktop',
-                ...styleToggle0,
-            }),
-            new ToggleButton({
-                selector$: this.deviceMode$,
-                targetValue: 'tablet',
-                commonClassSpecific: 'fa-tablet-alt',
-                ...styleToggle0,
-            }),
-            new ToggleButton({
-                selector$: this.deviceMode$,
-                targetValue: 'mobile-landscape',
-                commonClassSpecific: 'fa-mobile-alt',
-                ...styleToggle0,
-            }),
-            new ToggleButton({
-                selector$: this.deviceMode$,
-                targetValue: 'mobile-portrait',
-                commonClassSpecific: 'fa-mobile-alt',
-                ...styleToggle0,
-            }),
-        ]
+        super({
+            options: {
+                desktop: 'fa-desktop',
+                tablet: 'fa-tablet-alt',
+                'mobile-landscape': 'fa-mobile-alt',
+                'mobile-portrait': 'fa-mobile-alt',
+            },
+            buttonStyle: {
+                ...styleToggleBase,
+            },
+            selector$: deviceMode$,
+        })
     }
 }
 
@@ -178,31 +140,21 @@ export class AttributesEditor implements VirtualDOM {
     }
 }
 
-export class EditorModeToggle implements VirtualDOM {
-    class = 'd-flex w-100'
-    children: ToggleButton<EditorMode>[]
-
-    constructor(public readonly editorMode$) {
-        this.children = [
-            new ToggleButton({
-                selector$: this.editorMode$,
-                targetValue: 'blocks',
-                commonClassSpecific: 'fa-th-large',
-                ...styleToggle1,
-            }),
-            new ToggleButton({
-                selector$: this.editorMode$,
-                targetValue: 'styles',
-                commonClassSpecific: 'fa-palette',
-                ...styleToggle1,
-            }),
-            new ToggleButton({
-                selector$: this.editorMode$,
-                targetValue: 'layers',
-                commonClassSpecific: 'fa-bars',
-                ...styleToggle1,
-            }),
-        ]
+export class EditorModeToggle extends ToggleMenu<EditorMode> {
+    constructor(public readonly deviceMode$) {
+        super({
+            options: {
+                blocks: 'fa-th-large',
+                styles: 'fa-palette',
+                layers: 'fa-bars',
+            },
+            buttonStyle: {
+                ...styleToggleBase,
+                commonClassBase:
+                    'fas fv-pointer flex-grow-1 rounded text-center py-1',
+            },
+            selector$: deviceMode$,
+        })
     }
 }
 
