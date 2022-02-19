@@ -35,7 +35,8 @@ import {
 } from 'rxjs'
 import { getStylesSectors } from './manager-style'
 import { getBlocks } from './manager-blocks'
-import { map, mergeMap } from 'rxjs/operators'
+import { filter, map, mergeMap } from 'rxjs/operators'
+import { Page } from '../models'
 
 export function grapesConfig({
     canvas,
@@ -123,9 +124,16 @@ export class GrapesEditorState {
     public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
     public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
 
+    public readonly page$: BehaviorSubject<Page>
+
     public readonly subscriptions = []
 
-    constructor() {
+    private cachedHTML = ''
+    private cachedCSS = ''
+
+    constructor(params: { page$: BehaviorSubject<Page> }) {
+        Object.assign(this, params)
+
         localStorage.setItem('gjs-components', '')
         localStorage.setItem('gjs-html', '')
         localStorage.setItem('gjs-css', '')
@@ -133,7 +141,10 @@ export class GrapesEditorState {
 
         this.loadedNativeEditor$ = new Subject<grapesjs.Editor>()
 
-        this.subscriptions = [this.connectActions()]
+        this.subscriptions = [
+            this.connectActions(),
+            ...this.connectRenderingUpdates(),
+        ]
     }
 
     load({
@@ -201,4 +212,53 @@ export class GrapesEditorState {
                 actionsFactory[mode](editor)
             })
     }
+
+    connectRenderingUpdates() {
+        const sub0 = combineLatest([
+            this.loadedNativeEditor$,
+            this.page$.pipe(filter((page) => page != undefined)),
+        ]).subscribe(([editor, { content }]) => {
+            if (content.html != this.cachedHTML) {
+                this.cachedHTML = content.html
+                editor.setComponents(content.html)
+            }
+            if (content.css != this.cachedCSS) {
+                this.cachedCSS = content.css
+                editor.setStyle(content.css)
+            }
+        })
+
+        const sub1 = this.loadedNativeEditor$.subscribe((editor) => {
+            editor.on('change', () => {
+                const html = localStorage.getItem('gjs-html')
+                let needUpdate = false
+                if (html != this.cachedHTML && html != '') {
+                    this.cachedHTML = html
+                    needUpdate = true
+                }
+                const css = cleanCss(localStorage.getItem('gjs-css'))
+                if (css != this.cachedCSS && css != '') {
+                    this.cachedCSS = css
+                    needUpdate = true
+                }
+                if (needUpdate) {
+                    const document = this.page$.getValue().document
+
+                    this.page$.next({
+                        document,
+                        content: { html, css },
+                        originId: 'editor',
+                    })
+                }
+            })
+        })
+        return [sub0, sub1]
+    }
+}
+
+function cleanCss(css: string): string {
+    const rules = [...new Set(css.split('}'))]
+        .filter((r) => r.length > 0)
+        .map((r) => r + '}')
+    return rules.reduce((acc: string, e: string) => acc + e, '')
 }

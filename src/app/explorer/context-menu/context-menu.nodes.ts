@@ -148,7 +148,7 @@ export class EmptyDocNode extends ContextTreeNode implements ExecutableNode {
 
     execute(_state: ContextMenuState) {
         this.explorerState.appState.addDocument(this.parentNode.id, {
-            content: '',
+            content: { html: '', css: '' },
             title: 'New document',
         })
     }

@@ -1,8 +1,15 @@
 import { VirtualDOM } from '@youwol/flux-view'
-import { ReplaySubject } from 'rxjs'
+import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
-import { Document, Permissions, Story } from '../models'
+import {
+    ContentChangedOrigin,
+    Document,
+    DocumentContent,
+    Page,
+    Permissions,
+    Story,
+} from '../models'
 import { handleError } from './utils'
 import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
 import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
@@ -16,11 +23,6 @@ export enum SavingStatus {
     saved = 'Saved',
 }
 
-export enum ContentChangedOrigin {
-    editor = 'editor',
-    nodeLoad = 'loaded',
-}
-
 /**
  * Global application state, logic side of [[AppView]]
  */
@@ -30,11 +32,7 @@ export class AppState {
 
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
-    public readonly page$ = new ReplaySubject<{
-        document: Document
-        content: string
-        originId: ContentChangedOrigin
-    }>(1)
+    public readonly page$ = new BehaviorSubject<Page>(undefined)
 
     public readonly addedDocument$ = new ReplaySubject<{
         document: Document
@@ -44,7 +42,7 @@ export class AppState {
 
     public readonly save$ = new ReplaySubject<{
         document: Document
-        content: string
+        content: DocumentContent
         status: SavingStatus
     }>(1)
     public readonly story: Story
@@ -90,33 +88,31 @@ export class AppState {
                 this.page$.next({
                     document: node.getDocument(),
                     content,
-                    originId: ContentChangedOrigin.nodeLoad,
+                    originId: 'loaded',
                 })
             })
 
         this.page$
+            .pipe(filter((page) => page != undefined))
+            .subscribe((page) => {
+                console.log('Load page', page)
+                console.log(page)
+            })
+        this.page$
             .pipe(
-                filter(({ originId }) => {
-                    return originId == ContentChangedOrigin.editor
-                }),
+                filter((page) => page != undefined),
+                filter((page) => page.originId == 'editor'),
             )
-            .subscribe(({ document, content }) => {
-                this.save$.next({
-                    document,
-                    content,
-                    status: SavingStatus.modified,
-                })
+            .subscribe((page) => {
+                this.save(page)
             })
     }
 
-    save(document: Document, content: string) {
-        this.save$.next({ document, content, status: SavingStatus.started })
+    save({ document, content }: Page) {
+        console.log('Save page', { document, content })
         this.client
-            .updateContent$(document.storyId, document.documentId, { content })
-            .pipe(
-                handleError({ browserContext: 'save document' }),
-                map(() => ({ content, document })),
-            )
+            .updateContent$(document.storyId, document.documentId, content)
+            .pipe(handleError({ browserContext: 'save document' }))
             .subscribe(() => {
                 this.save$.next({
                     document,
@@ -128,7 +124,7 @@ export class AppState {
 
     setContent(
         document: Document,
-        content: string,
+        content: DocumentContent,
         originId: ContentChangedOrigin,
     ) {
         this.page$.next({ document, content, originId })
@@ -159,7 +155,7 @@ export class AppState {
 
     addDocument(
         parentDocumentId: string,
-        { title, content }: { title: string; content: string },
+        { title, content }: { title: string; content: DocumentContent },
     ) {
         this.client
             .createDocument$(this.story.storyId, {
@@ -206,7 +202,9 @@ export class AppView implements VirtualDOM {
                     }),
                     //new DocumentEditorView({ appState: this.state }),
                     new GrapesEditorView({
-                        state: new GrapesEditorState(),
+                        state: new GrapesEditorState({
+                            page$: this.state.page$,
+                        }),
                     }),
                 ],
             },
