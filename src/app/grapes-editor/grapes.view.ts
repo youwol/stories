@@ -1,22 +1,16 @@
 import { attr$, HTMLElement$, Stream$, VirtualDOM } from '@youwol/flux-view'
-import { resizablePanel } from '@youwol/fv-group'
+
 import {
-    actionsFactory,
     DeviceMode,
     DisplayMode,
+    EditorMode,
     GrapesEditorState,
 } from './grapes.state'
-import {
-    BehaviorSubject,
-    merge,
-    Observable,
-    ReplaySubject,
-    Subject,
-} from 'rxjs'
+import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs'
 
-import { map, mergeMap } from 'rxjs/operators'
-import { ToggleButton } from '../utils/utils.view'
+import { styleToggleBase, ToggleMenu } from '../utils/utils.view'
 import * as grapesjs from 'grapesjs'
+import { resizablePanel } from '@youwol/fv-group'
 
 export class GrapesEditorView implements VirtualDOM {
     public readonly state: GrapesEditorState
@@ -33,7 +27,7 @@ export class GrapesEditorView implements VirtualDOM {
         Object.assign(this, params)
 
         this.canvasView = new CanvasView()
-        this.settingsView = new SettingsView()
+        this.settingsView = new SettingsView(params)
 
         this.children = [
             this.canvasView,
@@ -43,7 +37,6 @@ export class GrapesEditorView implements VirtualDOM {
         ]
 
         const bodySettings = this.settingsView.attributesEditor.body
-        const headerSettings = this.settingsView.overallSettings
 
         this.state.load({
             canvas$: this.canvasView.htmlElement$,
@@ -52,21 +45,7 @@ export class GrapesEditorView implements VirtualDOM {
             layersPanel$: bodySettings.layersPanel.htmlElement$,
         })
         this.connectedCallback = (elem: HTMLElement$) => {
-            const mode$ = merge(
-                headerSettings.displayMode$,
-                headerSettings.deviceMode$,
-            )
-            elem.ownSubscriptions(
-                this.state.loadedNativeEditor$
-                    .pipe(
-                        mergeMap((editor) => {
-                            return mode$.pipe(map((mode) => ({ editor, mode })))
-                        }),
-                    )
-                    .subscribe(({ editor, mode }) => {
-                        actionsFactory[mode](editor)
-                    }),
-            )
+            elem.ownSubscriptions(...this.state.subscriptions)
         }
     }
 }
@@ -91,8 +70,8 @@ export class SettingsView implements VirtualDOM {
     public readonly attributesEditor: AttributesEditor
     public readonly children: VirtualDOM[]
 
-    constructor() {
-        this.overallSettings = new OverallSettings()
+    constructor(params: { state: GrapesEditorState }) {
+        this.overallSettings = new OverallSettings(params)
         this.attributesEditor = new AttributesEditor()
         this.children = [
             this.overallSettings,
@@ -173,20 +152,16 @@ export class DeviceModeToggle implements VirtualDOM {
 }
 
 export class OverallSettings implements VirtualDOM {
-    public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
-    public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
     public readonly class = 'd-flex justify-content-between p-1'
     public readonly children: VirtualDOM[]
 
-    constructor() {
+    constructor(params: { state: GrapesEditorState }) {
         this.children = [
-            new DisplayModeToggle(this.displayMode$),
-            new DeviceModeToggle(this.deviceMode$),
+            new DisplayModeToggle(params.state.displayMode$),
+            new DeviceModeToggle(params.state.deviceMode$),
         ]
     }
 }
-
-type EditorMode = 'blocks' | 'styles' | 'layers'
 
 export class AttributesEditor implements VirtualDOM {
     public readonly editorMode$ = new BehaviorSubject<EditorMode>('blocks')

@@ -26,7 +26,13 @@
  * @module grapes-editor.view
  */
 import * as grapesjs from 'grapesjs'
-import { combineLatest, Observable, Subject } from 'rxjs'
+import {
+    BehaviorSubject,
+    combineLatest,
+    merge,
+    Observable,
+    Subject,
+} from 'rxjs'
 import { getStylesSectors } from './manager-style'
 import { getBlocks } from './manager-blocks'
 import { map, mergeMap } from 'rxjs/operators'
@@ -82,6 +88,8 @@ export type DeviceMode =
     | 'mobile-landscape'
     | 'mobile-portrait'
 
+export type EditorMode = 'blocks' | 'styles' | 'layers'
+
 export const actionsFactory: Record<
     DisplayMode | DeviceMode,
     (editor: grapesjs.Editor) => void
@@ -112,6 +120,11 @@ export class GrapesEditorState {
     nativeEditor: grapesjs.Editor
     loadedNativeEditor$ = new Subject<grapesjs.Editor>()
 
+    public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
+    public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
+
+    public readonly subscriptions = []
+
     constructor() {
         localStorage.setItem('gjs-components', '')
         localStorage.setItem('gjs-html', '')
@@ -119,6 +132,8 @@ export class GrapesEditorState {
         localStorage.setItem('gjs-styles', '')
 
         this.loadedNativeEditor$ = new Subject<grapesjs.Editor>()
+
+        this.subscriptions = [this.connectActions()]
     }
 
     load({
@@ -172,5 +187,18 @@ export class GrapesEditorState {
 
         this.nativeEditor.render()
         return this.loadedNativeEditor$
+    }
+
+    connectActions() {
+        const mode$ = merge(this.displayMode$, this.deviceMode$)
+        return this.loadedNativeEditor$
+            .pipe(
+                mergeMap((editor) => {
+                    return mode$.pipe(map((mode) => ({ editor, mode })))
+                }),
+            )
+            .subscribe(({ editor, mode }) => {
+                actionsFactory[mode](editor)
+            })
     }
 }
