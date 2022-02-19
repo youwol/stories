@@ -118,6 +118,7 @@ export const actionsFactory: Record<
 }
 
 export class GrapesEditorState {
+    static privateClasses: string[] = []
     nativeEditor: grapesjs.Editor
     loadedNativeEditor$ = new Subject<grapesjs.Editor>()
 
@@ -192,8 +193,17 @@ export class GrapesEditorState {
             this.loadedNativeEditor$.next(this.nativeEditor)
         })
         this.nativeEditor.SelectorManager.getAll().each((selector) => {
-            //selector.set('private', privateClasses.includes(selector.id))
-            selector.set('private', true)
+            selector.set(
+                'private',
+                GrapesEditorState.privateClasses.includes(selector.id),
+            )
+        })
+        this.nativeEditor.on('selector:add', (selector) => {
+            selector.set('active', false)
+            selector.set(
+                'private',
+                GrapesEditorState.privateClasses.includes(selector.id),
+            )
         })
 
         this.nativeEditor.render()
