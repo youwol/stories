@@ -183,12 +183,11 @@ export class GrapesEditorState {
 
         const cssNodes = ['bootstrap', 'fa', 'fv'].map((idCss) => {
             const node = document.getElementById(idCss)
-            if (idCss == null) {
+            if (node == null) {
                 throw Error(`${idCss} css node not found`)
             }
             return node
         })
-
         this.nativeEditor.on('load', () => {
             const document = this.nativeEditor.Canvas.getDocument() as Document
             const headElement = document.head
