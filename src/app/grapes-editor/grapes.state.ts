@@ -37,6 +37,8 @@ import { getStylesSectors } from './manager-style'
 import { getBlocks } from './manager-blocks'
 import { filter, map, mergeMap } from 'rxjs/operators'
 import { Page } from '../models'
+import { getMiscBlocks } from './plugins/misc.blocks'
+import { markdownComponent } from './plugins/mardown.component'
 
 export function grapesConfig({
     canvas,
@@ -78,9 +80,10 @@ export function grapesConfig({
         },
         blockManager: {
             appendTo: blocks,
-            blocks: getBlocks(),
+            blocks: [...getBlocks(), ...getMiscBlocks()],
         },
         layerManager: { appendTo: layers },
+        plugins: [markdownComponent],
     }
 }
 
