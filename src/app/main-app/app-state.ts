@@ -91,13 +91,6 @@ export class AppState {
                     originId: 'loaded',
                 })
             })
-
-        this.page$
-            .pipe(filter((page) => page != undefined))
-            .subscribe((page) => {
-                console.log('Load page', page)
-                console.log(page)
-            })
         this.page$
             .pipe(
                 filter((page) => page != undefined),
@@ -109,7 +102,6 @@ export class AppState {
     }
 
     save({ document, content }: Page) {
-        console.log('Save page', { document, content })
         this.client
             .updateContent$(document.storyId, document.documentId, content)
             .pipe(handleError({ browserContext: 'save document' }))
