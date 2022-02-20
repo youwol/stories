@@ -54,7 +54,9 @@ export function grapesConfig({
         container: canvas,
         canvas: {
             styles: [],
-            scripts: [],
+            scripts: [
+                '/api/assets-gateway/raw/package/QHlvdXdvbC9jZG4tY2xpZW50/latest/dist/@youwol/cdn-client.js',
+            ],
         },
         height: '100%',
         width: 'auto',
