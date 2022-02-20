@@ -20,15 +20,25 @@ export function markdownComponent(editor: grapesjs.Editor) {
             return
         }
         const cdnClient = window['@youwol/cdn-client']
-        cdnClient.install({ modules: ['marked', 'highlight.js'] }).then(() => {
-            window.marked.setOptions({
-                langPrefix: 'hljs language-',
-                highlight: function (code, lang) {
-                    return window['hljs'].highlightAuto(code, [lang]).value
-                },
+        cdnClient
+            .install({
+                modules: ['marked', 'highlight.js'],
+                css: [
+                    {
+                        resource: 'highlight.js#11.2.0~styles/default.min.css',
+                        domId: 'highlight',
+                    },
+                ],
             })
-            parse()
-        })
+            .then(() => {
+                window.marked.setOptions({
+                    langPrefix: 'hljs language-',
+                    highlight: function (code, lang) {
+                        return window['hljs'].highlightAuto(code, [lang]).value
+                    },
+                })
+                parse()
+            })
     }
 
     editor.DomComponents.addType('markdown-editor', {
