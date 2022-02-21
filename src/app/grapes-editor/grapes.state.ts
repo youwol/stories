@@ -41,6 +41,7 @@ import { getMiscBlocks } from './plugins/misc.blocks'
 import { markdownComponent } from './plugins/markdown/mardown.component'
 import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
 import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
+import { customViewComponent } from './plugins/custom-view/custom-view.component'
 
 export function grapesConfig({
     canvas,
@@ -85,7 +86,12 @@ export function grapesConfig({
             blocks: [...getBlocks(), ...getMiscBlocks()],
         },
         layerManager: { appendTo: layers },
-        plugins: [markdownComponent, mathjaxComponent, fluxAppComponent],
+        plugins: [
+            markdownComponent,
+            mathjaxComponent,
+            fluxAppComponent,
+            customViewComponent,
+        ],
     }
 }
 
