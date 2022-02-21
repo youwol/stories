@@ -1,4 +1,4 @@
-import { from } from 'rxjs'
+import { from, of } from 'rxjs'
 import { shareReplay } from 'rxjs/operators'
 import { install } from '@youwol/cdn-client'
 
@@ -8,6 +8,9 @@ import { install } from '@youwol/cdn-client'
  * @returns an observable that resolves when fetching is achieved
  */
 export function fetchCodeMirror$() {
+    if (window['CodeMirror']) {
+        return of(window)
+    }
     return from(
         install({
             modules: ['codemirror'],
