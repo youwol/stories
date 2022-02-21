@@ -6,7 +6,6 @@ export function fluxAppComponent(editor: grapesjs.Editor) {
     editor.DomComponents.addType('flux-app', {
         extendFn: ['initialize'],
         isComponent: (el: HTMLElement) => {
-            console.log(el.tagName)
             return el.tagName == 'FLUX-APP'
         },
         model: {
