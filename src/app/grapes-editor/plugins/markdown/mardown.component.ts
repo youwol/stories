@@ -35,6 +35,14 @@ export function markdownComponent(editor: grapesjs.Editor) {
                 script,
                 tagName,
                 droppable: false,
+                traits: [
+                    {
+                        type: 'checkbox',
+                        name: 'mathjax',
+                        label: 'parse tex equations',
+                        value: false,
+                    },
+                ],
             },
         },
         view: {
