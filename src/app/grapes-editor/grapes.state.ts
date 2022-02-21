@@ -39,6 +39,7 @@ import { filter, map, mergeMap } from 'rxjs/operators'
 import { Page } from '../models'
 import { getMiscBlocks } from './plugins/misc.blocks'
 import { markdownComponent } from './plugins/mardown.component'
+import { latexComponent } from './plugins/latex.component'
 
 export function grapesConfig({
     canvas,
@@ -83,7 +84,7 @@ export function grapesConfig({
             blocks: [...getBlocks(), ...getMiscBlocks()],
         },
         layerManager: { appendTo: layers },
-        plugins: [markdownComponent],
+        plugins: [markdownComponent, latexComponent],
     }
 }
 
