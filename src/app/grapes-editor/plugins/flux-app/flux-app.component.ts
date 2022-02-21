@@ -16,7 +16,6 @@ export function fluxAppComponent(editor: grapesjs.Editor) {
         model: {
             defaults: {
                 script: render,
-                tagName: 'flux-app',
                 droppable: false,
                 attributes: {
                     componentType,
