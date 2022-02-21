@@ -26,9 +26,6 @@ export function markdownComponent(editor: grapesjs.Editor) {
         },
         model: {
             initialize() {
-                const attributes = this.getAttributes()
-                console.log(attributes)
-
                 this.on('change:attributes:mathjax', () => {
                     this.view.render()
                 })
