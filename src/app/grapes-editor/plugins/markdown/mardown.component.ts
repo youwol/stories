@@ -14,13 +14,15 @@ const codeMirrorConfiguration = {
     lineWrapping: true,
     indentUnit: 4,
 }
-
+const componentType = 'markdown-editor'
 export function markdownComponent(editor: grapesjs.Editor) {
-    const tagName = 'markdown'
-    editor.DomComponents.addType('markdown-editor', {
+    editor.DomComponents.addType(componentType, {
         extendFn: ['initialize'],
         isComponent: (el: HTMLElement) => {
-            return el.tagName.toLowerCase() == tagName
+            return (
+                el.getAttribute &&
+                el.getAttribute('componentType') == componentType
+            )
         },
         model: {
             initialize() {
@@ -33,8 +35,11 @@ export function markdownComponent(editor: grapesjs.Editor) {
             },
             defaults: {
                 script,
-                tagName,
+                tagName: 'div',
                 droppable: false,
+                attributes: {
+                    componentType,
+                },
                 traits: [
                     {
                         type: 'checkbox',
