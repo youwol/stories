@@ -38,7 +38,7 @@ import { getBlocks } from './manager-blocks'
 import { filter, map, mergeMap } from 'rxjs/operators'
 import { Page } from '../models'
 import { getMiscBlocks } from './plugins/misc.blocks'
-import { markdownComponent } from './plugins/mardown.component'
+import { markdownComponent } from './plugins/markdown/mardown.component'
 import { latexComponent } from './plugins/latex.component'
 import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
 
