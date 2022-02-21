@@ -1,15 +1,22 @@
 import * as grapesjs from 'grapesjs'
-import CodeMirror from 'codemirror'
 
-import { child$, HTMLElement$, render, VirtualDOM } from '@youwol/flux-view'
-import { BehaviorSubject, merge, ReplaySubject, Subject } from 'rxjs'
-import { fetchCodeMirror$ } from '../../utils/cdn-fetch'
+import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
+import { BehaviorSubject, combineLatest, Subject } from 'rxjs'
 import { popupEmojisBrowserModal } from '../../modals/emojis-picker.view'
-import { Modal } from '@youwol/fv-group'
+import { CodeEditorState, CodeEditorView } from './editor.view'
+import { popupModal } from './editor.modal'
+
+const codeMirrorConfiguration = {
+    value: '',
+    mode: 'markdown',
+    lineNumbers: true,
+    theme: 'blackboard',
+    lineWrapping: true,
+    indentUnit: 4,
+}
 
 export function markdownComponent(editor: grapesjs.Editor) {
     const script = function () {
-        window['contextId'] = 'grapesj_iframe'
         this.innerHTML = `parsing(${this.attributes.content.nodeValue})`
 
         const parse = () => {
@@ -72,147 +79,67 @@ export function markdownComponent(editor: grapesjs.Editor) {
         },
         view: {
             events: {
-                click: 'clickOnElement',
                 dblclick: 'editMarkdown',
-            },
-            clickOnElement: () => {
-                console.log('On click')
             },
             editMarkdown: () => {
                 const component = editor.getSelected()
-                const initialContent = component.getAttributes().content
-                popupModal(initialContent).subscribe((content) => {
+
+                const content$ = new BehaviorSubject(
+                    component.getAttributes().content,
+                )
+                const state = new CodeEditorState({
+                    codeMirrorConfiguration,
+                    content$,
+                })
+                const headerView = new MarkDownHeaderView({ state })
+                const editorView = new CodeEditorView({
+                    headerView,
+                    state,
+                    content$,
+                })
+                popupModal({ editorView })
+                content$.subscribe((content) => {
                     component && component.addAttributes({ content })
                     component.view.render()
                 })
-            },
-            onRender({ el }) {
-                const btn = document.createElement('button')
-                btn.value = '+'
-                el.appendChild(btn)
             },
         },
     })
 }
 
-/**
- * Editor view
- */
-export class EditorView implements VirtualDOM {
-    static codeMirror$ = fetchCodeMirror$()
-    public readonly class = 'd-flex flex-column fv-text-primary'
-    public readonly content$: BehaviorSubject<string>
-
-    public readonly children: Array<VirtualDOM>
-
+export class MarkDownHeaderView {
+    public readonly state: CodeEditorState
     public readonly emojis$ = new Subject<string>()
+    public readonly children: VirtualDOM[]
+    public readonly connectedCallback: (
+        elem: HTMLElement$ & HTMLDivElement,
+    ) => void
 
-    public readonly configurationCodeMirror = {
-        value: '',
-        mode: 'markdown',
-        lineNumbers: true,
-        theme: 'blackboard',
-        lineWrapping: true,
-        indentUnit: 4,
-    }
-
-    /**
-     * This editor gets initialized after the required assets
-     * have been fetched from the CDN
-     */
-    public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirror.Editor>(1)
-
-    constructor(params: { content$: BehaviorSubject<string> }) {
+    constructor(params: { state: CodeEditorState }) {
         Object.assign(this, params)
-
         this.children = [
-            this.headerView(),
             {
-                class: 'w-100',
-                style: {
-                    height: '50vh',
-                },
+                class: 'd-flex w-100 align-items-center',
                 children: [
-                    child$(EditorView.codeMirror$, () => {
-                        return {
-                            id: 'code-mirror-editor',
-                            class: 'w-100 h-100',
-                            connectedCallback: (elem: HTMLElement$) => {
-                                const config = {
-                                    ...this.configurationCodeMirror,
-                                    value: this.content$.getValue(),
-                                }
-                                const editor: CodeMirror.Editor = window[
-                                    'CodeMirror'
-                                ](elem, config)
-                                editor.on('changes', (_, changeObj) => {
-                                    if (
-                                        changeObj.length == 1 &&
-                                        changeObj[0].origin == 'setValue'
-                                    ) {
-                                        return
-                                    }
-                                    this.content$.next(editor.getValue())
-                                })
-
-                                elem.ownSubscriptions(
-                                    this.emojis$.subscribe((text) => {
-                                        const doc = editor.getDoc()
-                                        const cursor = doc.getCursor()
-                                        doc.replaceRange(text, cursor)
-                                    }),
-                                )
-                                this.codeMirrorEditor$.next(editor)
-                            },
-                        }
-                    }),
+                    {
+                        tag: 'i',
+                        class: 'fv-pointer rounded m-1 fas fa-smile editor-view-header-emoji',
+                        onclick: () => popupEmojisBrowserModal(this.emojis$),
+                    },
                 ],
             },
         ]
-    }
-
-    headerView() {
-        return {
-            children: [
-                {
-                    class: 'd-flex w-100 align-items-center',
-                    children: [
-                        {
-                            tag: 'i',
-                            class: 'fv-pointer rounded m-1 fas fa-smile editor-view-header-emoji',
-                            onclick: () =>
-                                popupEmojisBrowserModal(this.emojis$),
-                        },
-                    ],
-                },
-            ],
+        this.connectedCallback = (elem: HTMLElement$ & HTMLDivElement) => {
+            elem.ownSubscriptions(
+                combineLatest([
+                    this.state.codeMirrorEditor$,
+                    this.emojis$,
+                ]).subscribe(([cm, emoji]) => {
+                    const doc = cm.getDoc()
+                    const cursor = doc.getCursor()
+                    doc.replaceRange(emoji, cursor)
+                }),
+            )
         }
     }
-}
-
-function popupModal(content: string) {
-    const content$ = new BehaviorSubject(content)
-    const editor = new EditorView({ content$ })
-    const modalState = new Modal.State()
-    const view = new Modal.View({
-        state: modalState,
-        contentView: () => {
-            return {
-                class: 'p-3 rounded fv-color-primary fv-bg-background w-75 h-75 overflow-auto',
-                children: [editor],
-            }
-        },
-        connectedCallback: (elem: HTMLDivElement & HTMLElement$) => {
-            elem.children[0].classList.add('w-100')
-            const sub = merge(modalState.cancel$, modalState.ok$).subscribe(
-                () => {
-                    modalDiv.remove()
-                },
-            )
-            elem.ownSubscriptions(sub)
-        },
-    } as any)
-    const modalDiv = render(view)
-    document.querySelector('body').appendChild(modalDiv)
-    return content$
 }
