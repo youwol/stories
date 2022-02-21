@@ -16,7 +16,7 @@ export function getMiscBlocks() {
             label: 'Latex',
             category: 'Misc',
             content: {
-                type: 'latex-editor',
+                type: 'mathjax-editor',
             },
             render({ el }: { el: HTMLElement }) {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')
