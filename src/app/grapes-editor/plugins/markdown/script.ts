@@ -1,7 +1,8 @@
 export function script() {
     this.innerHTML = ``
+    const src = this.getAttribute('src') || '# Dbl click to edit'
     const parse = () => {
-        this.innerHTML = window.marked(this.attributes.content.nodeValue)
+        this.innerHTML = window.marked(src)
     }
     if (window.marked) {
         parse()
