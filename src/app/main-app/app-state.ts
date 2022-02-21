@@ -192,7 +192,6 @@ export class AppView implements VirtualDOM {
                     new ExplorerView({
                         explorerState: this.state.explorerState,
                     }),
-                    //new DocumentEditorView({ appState: this.state }),
                     new GrapesEditorView({
                         state: new GrapesEditorState({
                             page$: this.state.page$,
