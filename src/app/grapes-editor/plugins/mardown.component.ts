@@ -17,8 +17,7 @@ const codeMirrorConfiguration = {
 
 export function markdownComponent(editor: grapesjs.Editor) {
     const script = function () {
-        this.innerHTML = `parsing(${this.attributes.content.nodeValue})`
-
+        this.innerHTML = ``
         const parse = () => {
             this.innerHTML = window.marked(this.attributes.content.nodeValue)
         }
@@ -63,18 +62,14 @@ export function markdownComponent(editor: grapesjs.Editor) {
                 attributes: {
                     class: 'grapes-markdown-editor',
                 },
-                components: 'Example',
                 traits: [
-                    'name',
-                    'placeholder',
-                    { type: 'checkbox', name: 'required' },
                     {
-                        type: 'string',
+                        type: 'text',
                         name: 'content',
+                        label: 'Content',
                         value: '# Start',
                     },
                 ],
-                'script-props': ['content'],
             },
         },
         view: {
