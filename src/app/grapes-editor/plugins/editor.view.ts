@@ -69,7 +69,7 @@ export class CodeEditorView implements VirtualDOM {
 
     constructor(params: {
         state: CodeEditorState
-        headerView: VirtualDOM
+        headerView?: VirtualDOM
         content$: BehaviorSubject<string>
     }) {
         Object.assign(this, params)
