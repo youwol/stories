@@ -33,13 +33,23 @@ export function getMiscBlocks() {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')
             },
         },
-
         {
             id: 'custom-view',
             label: 'Custom View',
             category: 'Misc',
             content: {
                 type: 'custom-view',
+            },
+            render({ el }: { el: HTMLElement }) {
+                el.classList.add('gjs-fonts', 'gjs-f-b2')
+            },
+        },
+        {
+            id: 'npm-package',
+            label: 'Npm package',
+            category: 'Misc',
+            content: {
+                type: 'npm-package',
             },
             render({ el }: { el: HTMLElement }) {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')

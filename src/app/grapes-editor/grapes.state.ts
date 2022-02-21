@@ -42,6 +42,7 @@ import { markdownComponent } from './plugins/markdown/mardown.component'
 import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
 import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
 import { customViewComponent } from './plugins/custom-view/custom-view.component'
+import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
 
 export function grapesConfig({
     canvas,
@@ -91,6 +92,7 @@ export function grapesConfig({
             mathjaxComponent,
             fluxAppComponent,
             customViewComponent,
+            npmPackageComponent,
         ],
     }
 }
