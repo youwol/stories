@@ -22,5 +22,16 @@ export function getMiscBlocks() {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')
             },
         },
+        {
+            id: 'flux-app',
+            label: 'Flux App',
+            category: 'Misc',
+            content: {
+                type: 'flux-app',
+            },
+            render({ el }: { el: HTMLElement }) {
+                el.classList.add('gjs-fonts', 'gjs-f-b2')
+            },
+        },
     ]
 }
