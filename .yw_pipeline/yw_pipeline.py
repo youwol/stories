@@ -17,7 +17,7 @@ class PipelineFactory(IPipelineFactory):
                 icon={"class": "fas fa-book"},
                 displayName="Story",
                 execution=Execution(
-                    standalone=False,
+                    standalone=True,
                     parametrized=[
                         FromAsset(
                             match={"kind": "story"},

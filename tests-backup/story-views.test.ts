@@ -2,7 +2,7 @@
 /* eslint-disable jest/no-done-callback -- eslint-comment It is required because */
 
 import { installMockPackages } from './mock-packages'
-import { load$ } from '../app/main-app/app-state'
+
 import { EditorView } from '../app/main-panels/document-editor/editor/editor.view'
 import { RenderView } from '../app/main-panels/document-editor/render/render.view'
 import { setupMockService } from '../app/utils/mock-service'
@@ -13,6 +13,7 @@ import {
 } from '../app/main-panels/document-editor/render/renderers'
 import { storiesUnitTests } from './mock-data/database'
 import { render, VirtualDOM } from '@youwol/flux-view'
+import { load$ } from '../app/main-app/utils'
 
 installMockPackages()
 

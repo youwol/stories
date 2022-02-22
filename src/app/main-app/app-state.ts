@@ -1,56 +1,26 @@
-import { render, VirtualDOM } from '@youwol/flux-view'
-import { forkJoin, Observable, ReplaySubject } from 'rxjs'
-import { Client, Document, Story } from '../client/client'
-import { ClientApi } from '../client/API'
+import { VirtualDOM } from '@youwol/flux-view'
+import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
-import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
+import { AssetsGateway } from '@youwol/http-clients'
 import {
-    distinctUntilChanged,
-    filter,
-    map,
-    mergeMap,
-    tap,
-} from 'rxjs/operators'
-import { DocumentEditorView } from '../main-panels/document-editor/document-editor.view'
+    ContentChangedOrigin,
+    Document,
+    DocumentContent,
+    Page,
+    Permissions,
+    Story,
+} from '../models'
+import { handleError } from './utils'
+import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
+import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
 import { TopBannerState, TopBannerView } from './top-banner'
-
-/**
- *
- * @param storyId id of the story to load
- * @param container where to insert the main view
- * @returns application state & application view
- */
-export function load$(
-    storyId: string,
-    container: HTMLElement,
-): Observable<{ appState: AppState; appView: AppView }> {
-    container.innerHTML = ''
-
-    return forkJoin([
-        Client.getStory$(storyId),
-        Client.getChildren$(storyId, {
-            parentDocumentId: storyId,
-            count: 1,
-        }).pipe(map((docs) => docs[0])),
-    ]).pipe(
-        map(([{ story, permissions }, rootDocument]: any) => {
-            const appState = new AppState({ story, rootDocument, permissions })
-            const appView = new AppView({ state: appState })
-            return { appState, appView }
-        }),
-        tap(({ appView }) => container.appendChild(render(appView))),
-    )
-}
+import { GrapesEditorView } from '../grapes-editor/grapes.view'
+import { GrapesEditorState } from '../grapes-editor/grapes.state'
 
 export enum SavingStatus {
     modified = 'Modified',
     started = 'Started',
     saved = 'Saved',
-}
-
-export enum ContentChangedOrigin {
-    editor = 'editor',
-    nodeLoad = 'loaded',
 }
 
 /**
@@ -62,11 +32,7 @@ export class AppState {
 
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
-    public readonly page$ = new ReplaySubject<{
-        document: Document
-        content: string
-        originId: ContentChangedOrigin
-    }>(1)
+    public readonly page$ = new BehaviorSubject<Page>(undefined)
 
     public readonly addedDocument$ = new ReplaySubject<{
         document: Document
@@ -76,14 +42,20 @@ export class AppState {
 
     public readonly save$ = new ReplaySubject<{
         document: Document
-        content: string
+        content: DocumentContent
         status: SavingStatus
     }>(1)
     public readonly story: Story
     public readonly rootDocument: Document
-    public readonly permissions: ClientApi.Permissions
+    public readonly permissions: Permissions
 
-    constructor(params: { story: Story; rootDocument: Document; permissions }) {
+    public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
+
+    constructor(params: {
+        story: Story
+        rootDocument: Document
+        permissions?
+    }) {
         Object.assign(this, params)
 
         this.topBannerState = new TopBannerState({
@@ -99,39 +71,40 @@ export class AppState {
             .pipe(
                 distinctUntilChanged(),
                 mergeMap((node: ExplorerNode) => {
-                    return Client.getContent$(
-                        node.getDocument().storyId,
-                        node.getDocument().documentId,
-                    ).pipe(map((content) => ({ content, node })))
+                    return this.client
+                        .getContent$(
+                            node.getDocument().storyId,
+                            node.getDocument().documentId,
+                        )
+                        .pipe(
+                            handleError({
+                                browserContext: 'Selected node raw content',
+                            }),
+                            map((content) => ({ content, node })),
+                        )
                 }),
             )
             .subscribe(({ node, content }) => {
                 this.page$.next({
                     document: node.getDocument(),
                     content,
-                    originId: ContentChangedOrigin.nodeLoad,
+                    originId: 'loaded',
                 })
             })
-
         this.page$
             .pipe(
-                filter(({ originId }) => {
-                    return originId == ContentChangedOrigin.editor
-                }),
+                filter((page) => page != undefined),
+                filter((page) => page.originId == 'editor'),
             )
-            .subscribe(({ document, content }) => {
-                this.save$.next({
-                    document,
-                    content,
-                    status: SavingStatus.modified,
-                })
+            .subscribe((page) => {
+                this.save(page)
             })
     }
 
-    save(document: Document, content: string) {
-        this.save$.next({ document, content, status: SavingStatus.started })
-        Client.postContent$(document.storyId, document.documentId, { content })
-            .pipe(map(() => ({ content, document })))
+    save({ document, content }: Page) {
+        this.client
+            .updateContent$(document.storyId, document.documentId, content)
+            .pipe(handleError({ browserContext: 'save document' }))
             .subscribe(() => {
                 this.save$.next({
                     document,
@@ -143,7 +116,7 @@ export class AppState {
 
     setContent(
         document: Document,
-        content: string,
+        content: DocumentContent,
         originId: ContentChangedOrigin,
     ) {
         this.page$.next({ document, content, originId })
@@ -159,39 +132,41 @@ export class AppState {
             documentId: doc.documentId,
             title: newName,
         }
-        Client.postDocument$(doc.storyId, doc.documentId, body).subscribe(
-            (newDoc: Document) => {
+        this.client
+            .updateDocument$(doc.storyId, doc.documentId, body)
+            .subscribe((newDoc: Document) => {
                 node instanceof DocumentNode
                     ? this.explorerState.replaceAttributes(node, {
                           document: newDoc,
                       })
                     : this.explorerState.replaceAttributes(node, {
-                          story: new Story({ ...node.story, title: newName }),
+                          story: { ...node.story, title: newName },
                       })
-            },
-        )
+            })
     }
 
     addDocument(
         parentDocumentId: string,
-        { title, content }: { title: string; content: string },
+        { title, content }: { title: string; content: DocumentContent },
     ) {
-        Client.putDocument$(this.story.storyId, {
-            parentDocumentId: parentDocumentId,
-            title,
-            content,
-        }).subscribe((document: Document) => {
-            this.addedDocument$.next({ parentDocumentId, document })
-        })
+        this.client
+            .createDocument$(this.story.storyId, {
+                parentDocumentId: parentDocumentId,
+                title,
+                content,
+            })
+            .subscribe((document: Document) => {
+                this.addedDocument$.next({ parentDocumentId, document })
+            })
     }
 
     deleteDocument(document: Document) {
         this.deletedDocument$.next(document)
-        Client.deleteDocument$(document.storyId, document.documentId).subscribe(
-            () => {
+        this.client
+            .deleteDocument$(document.storyId, document.documentId)
+            .subscribe(() => {
                 // This is intentional: make the request happening
-            },
-        )
+            })
     }
 }
 
@@ -217,7 +192,11 @@ export class AppView implements VirtualDOM {
                     new ExplorerView({
                         explorerState: this.state.explorerState,
                     }),
-                    new DocumentEditorView({ appState: this.state }),
+                    new GrapesEditorView({
+                        state: new GrapesEditorState({
+                            page$: this.state.page$,
+                        }),
+                    }),
                 ],
             },
         ]

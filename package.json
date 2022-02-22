@@ -31,6 +31,7 @@
         "@youwol/fv-tabs": "^0.0.3",
         "@youwol/fv-tree": "^0.0.5",
         "@youwol/fv-context-menu": "^0.0.0",
+        "grapesjs": "0.x",
         "js-beautify": "^1.14.0",
         "lodash": "4.x",
         "reflect-metadata": "0.x",
@@ -42,9 +43,11 @@
         "@types/jest": "26.0.22",
         "@types/marked": "3.0.1",
         "@types/node": "14.14.37",
+        "@types/codemirror": "^5.60.5",
         "@typescript-eslint/eslint-plugin": "^5.0.0",
         "@typescript-eslint/parser": "^5.0.0",
         "css-loader": "5.2.0",
+        "codemirror": "^5.63.3",
         "del-cli": "3.0.1",
         "eslint": "7.23.0",
         "eslint-config-prettier": "^8.3.0",
@@ -77,6 +80,7 @@
             "version": "0.0.0"
         },
         "cdnDependencies": {
+            "grapesjs": "0.x",
             "js-beautify": "^1.14.0",
             "@youwol/logging": "^0.0.2",
             "@youwol/http-clients": "^0.0.3",

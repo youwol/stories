@@ -1,7 +1,7 @@
 import { VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, of } from 'rxjs'
 import { TopBanner } from '@youwol/platform-essentials'
-import { ClientApi } from '../client/API'
+import { Permissions } from '../models'
 import { fetchCodeMirror$ } from '../utils/cdn-fetch'
 
 /**
@@ -29,14 +29,14 @@ export enum ViewMode {
  */
 export class TopBannerState extends TopBanner.YouwolBannerState {
     public readonly viewMode$: BehaviorSubject<ViewMode>
-    public readonly permissions: ClientApi.Permissions
+    public readonly permissions: Permissions
 
     /**
      *
      * @param parameters Constructor's parameters
      * @param parameters.permissions user's permission w/ the story
      */
-    constructor(parameters: { permissions: ClientApi.Permissions }) {
+    constructor(parameters: { permissions: Permissions }) {
         super({ cmEditorModule$: fetchCodeMirror$() })
         Object.assign(this, parameters)
 

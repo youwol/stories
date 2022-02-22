@@ -1,12 +1,12 @@
 const path = require('path')
-const webpack = require('webpack')
 const ROOT = path.resolve(__dirname, 'src/app')
 const DESTINATION = path.resolve(__dirname, 'dist')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const packageJson = require('./package.json')
 
-const BundleAnalyzerPlugin =
-    require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+// const BundleAnalyzerPlugin =
+//     require('webpack-bundle-analyzer').BundleAnalyzerPlugin
 
 module.exports = {
     context: ROOT,
@@ -28,6 +28,7 @@ module.exports = {
             title: 'Flux Builder',
             template: './index.html',
             filename: './index.html',
+            baseHref: `/applications/${packageJson.name}/${packageJson.version}/`,
         }),
         //new BundleAnalyzerPlugin()
     ],
@@ -45,6 +46,8 @@ module.exports = {
             lodash: '_',
             rxjs: 'rxjs',
             marked: 'marked',
+            grapesjs: "window['grapesjs']",
+            codemirror: "window['CodeMirror']",
             'js-beautify': "window['js-beautify']",
             'rxjs/operators': "window['rxjs']['operators']",
             '@youwol/logging': "window['@youwol/logging']",

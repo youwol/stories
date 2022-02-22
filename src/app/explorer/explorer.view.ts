@@ -2,7 +2,7 @@ import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { filter } from 'rxjs/operators'
 import { AppState, SavingStatus } from '../main-app/app-state'
-import { Document } from '../client/client'
+import { Document } from '../models'
 import { ContextMenuState } from './context-menu/context-menu.view'
 import { ContextMenu } from '@youwol/fv-context-menu'
 import { DocumentNode, ExplorerNode, SignalType, StoryNode } from './nodes'
@@ -57,7 +57,7 @@ export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
         super({
             state: explorerState,
             headerView,
-        } as any)
+        })
 
         this.appState = explorerState.appState
         this.connectedCallback = (
@@ -139,13 +139,16 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                     filter((signal) => signal.type == SignalType.Rename),
                 ),
                 () => {
-                    return headerRenamed(node as any, state)
+                    return headerRenamed(
+                        node as DocumentNode | StoryNode,
+                        state,
+                    )
                 },
                 {
                     untilFirst: {
                         tag: 'span',
                         innerText: node.name,
-                    } as any,
+                    },
                 },
             ),
             child$(
@@ -157,8 +160,6 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                     ),
                 ),
                 ({
-                    document,
-                    content,
                     status,
                 }: {
                     document: Document
@@ -169,8 +170,6 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                         case SavingStatus.modified:
                             return {
                                 class: 'fas fa-save p-1 ml-auto fv-pointer fv-hover-opacity-100 fv-opacity-50 fv-opacity-transition-500 explorer-save-item',
-                                onclick: () =>
-                                    state.appState.save(document, content),
                             }
                         case SavingStatus.started:
                             return {

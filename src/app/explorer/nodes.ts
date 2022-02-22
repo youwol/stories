@@ -1,7 +1,9 @@
 import { ImmutableTree } from '@youwol/fv-tree'
 import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { Client, Document, Story } from '../client/client'
+import { Document, Story } from '../models'
+import { AssetsGateway } from '@youwol/http-clients'
+import { handleError } from '../main-app/utils'
 
 /**
  * Node's signal's type enum
@@ -27,7 +29,7 @@ export abstract class ExplorerNode extends ImmutableTree.Node {
 
     story: Story
 
-    constructor({ id, name, children, story }) {
+    protected constructor({ id, name, children, story }) {
         super({ id, children })
         this.name = name
         this.story = story
@@ -109,11 +111,14 @@ function getChildrenOfDocument$(
     story: Story,
     parentDocumentId: string,
 ): Observable<DocumentNode[]> {
-    return Client.getChildren$(story.storyId, { parentDocumentId }).pipe(
-        map((documents: Document[]) => {
-            return documents.map((document: Document) => {
-                return new DocumentNode({ story, document })
-            })
-        }),
-    )
+    return new AssetsGateway.AssetsGatewayClient().raw.story
+        .queryDocuments$(story.storyId, parentDocumentId)
+        .pipe(
+            handleError({ browserContext: 'Get children of document' }),
+            map((resp) => {
+                return resp.documents.map((document: Document) => {
+                    return new DocumentNode({ story, document })
+                })
+            }),
+        )
 }

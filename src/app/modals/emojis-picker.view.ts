@@ -1,8 +1,8 @@
 import { child$, VirtualDOM } from '@youwol/flux-view'
 import { Tabs } from '@youwol/fv-tabs'
 import { Subject } from 'rxjs'
-import { Client } from '../client/client'
 import { modalView } from './commons.view'
+import { AssetsGateway } from '@youwol/http-clients'
 
 function emojisListView(emojiList, insertedEmojis$): VirtualDOM {
     const icons = emojiList.map((char: string) => {
@@ -32,6 +32,7 @@ export function popupEmojisBrowserModal(insertedEmojis$: Subject<string>) {
         new Tabs.TabData('symbols', '🔣'),
         new Tabs.TabData('flags', '🎌'),
     ])
+    const client = new AssetsGateway.AssetsGatewayClient()
     const tabView = new Tabs.View({
         state: tabState,
         contentView: (state, tab) => {
@@ -39,8 +40,8 @@ export function popupEmojisBrowserModal(insertedEmojis$: Subject<string>) {
                 style: { aspectRatio: '2' },
                 children: [
                     child$(
-                        Client.getEmojis$(tab.id),
-                        ({ emojis }: { emojis: Array<any> }) => {
+                        client.misc.queryEmojis$(tab.id),
+                        ({ emojis }: { emojis: Array<string> }) => {
                             return emojisListView(emojis, insertedEmojis$)
                         },
                     ),
