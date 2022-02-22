@@ -1,21 +1,14 @@
 export function script() {
     const defaultSrc = `
-return ({cdn}) => {
-
-    return cdn
-        .install({ 
+return async ({cdn}) => {
+    const {fluxView, rxjs} = await cdn.install({ 
         modules: ['@youwol/flux-view'],
-        aliases: { 
-            fluxView: "@youwol/flux-view"
-        }
+        aliases: { fluxView: "@youwol/flux-view" }
     })
-        .then( ({fluxView, rxjs}) => {  
-
-        let vDOM = {
-             innerText: 'hello world'
-         }
-        return fluxView.render(vDOM) 
-    })\t
+    const vDOM = {
+         innerText: 'hello world'
+    }
+    return fluxView.render(vDOM)
 }`
 
     this.innerHTML = ``
