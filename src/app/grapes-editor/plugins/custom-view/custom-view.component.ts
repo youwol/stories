@@ -55,7 +55,9 @@ export function customViewComponent(editor: grapesjs.Editor) {
                 if (!component.getAttributes().src) {
                     component.addAttributes({ src: defaultSrc })
                 }
-                const src$ = new BehaviorSubject(component.getAttributes().src)
+                const src$ = new BehaviorSubject<string>(
+                    component.getAttributes().src,
+                )
                 const state = new CodeEditorState({
                     codeMirrorConfiguration,
                     content$: src$,
