@@ -121,7 +121,11 @@ export function render() {
         })
         this.appendChild(render(vDOM))
     }
-    if (window['@youwol/flux-view']) {
+    if (
+        window['@youwol/flux-view'] &&
+        window['@youwol/flux-fv-widgets'] &&
+        window['@youwol/flux-core']
+    ) {
         renderDOM()
         return
     }
