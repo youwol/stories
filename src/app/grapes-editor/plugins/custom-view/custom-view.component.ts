@@ -1,9 +1,10 @@
 import * as grapesjs from 'grapesjs'
-import { BehaviorSubject, combineLatest } from 'rxjs'
+import { BehaviorSubject } from 'rxjs'
 import { CodeEditorState, CodeEditorView } from '../editor.view'
 import { popupModal } from '../editor.modal'
 import { script } from './script'
 import { HeaderView } from './editor-header.view'
+import { withLatestFrom } from 'rxjs/operators'
 
 const codeMirrorConfiguration = {
     value: '',
@@ -69,10 +70,12 @@ export function customViewComponent(editor: grapesjs.Editor) {
                     headerView,
                 })
                 popupModal({ editorView })
-                combineLatest([src$, headerView.run$]).subscribe(([src, _]) => {
-                    component && component.addAttributes({ src })
-                    component.view.render()
-                })
+                headerView.run$
+                    .pipe(withLatestFrom(src$))
+                    .subscribe(([_, src]) => {
+                        component && component.addAttributes({ src })
+                        component.view.render()
+                    })
             },
         },
     })
