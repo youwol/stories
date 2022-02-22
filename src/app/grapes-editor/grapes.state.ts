@@ -95,6 +95,7 @@ export function grapesConfig({
             customViewComponent,
             npmPackageComponent,
             fluxModuleSettingsComponent,
+            jsPlaygroundComponent,
         ],
     }
 }
