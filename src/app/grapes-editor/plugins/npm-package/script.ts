@@ -112,7 +112,7 @@ export function render() {
         })
         this.appendChild(render(vDOM))
     }
-    console.log('Flux-View?', window['@youwol/flux-view'])
+
     if (window['@youwol/flux-view']) {
         renderDOM()
         return
