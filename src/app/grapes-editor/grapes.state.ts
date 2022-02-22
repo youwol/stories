@@ -43,6 +43,7 @@ import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
 import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
 import { customViewComponent } from './plugins/custom-view/custom-view.component'
 import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
+import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
 
 export function grapesConfig({
     canvas,
@@ -93,6 +94,7 @@ export function grapesConfig({
             fluxAppComponent,
             customViewComponent,
             npmPackageComponent,
+            fluxModuleSettingsComponent,
         ],
     }
 }
@@ -198,12 +200,29 @@ export class GrapesEditorState {
             }
             return node
         })
+        const jsNodes = [].map((idJs) => {
+            const node = document.getElementById(idJs)
+            if (node == null) {
+                throw Error(`${idJs} script node not found`)
+            }
+            return node
+        })
         this.nativeEditor.on('load', () => {
             const document = this.nativeEditor.Canvas.getDocument() as Document
             const headElement = document.head
             cssNodes.forEach((node) =>
                 headElement.appendChild(node.cloneNode()),
             )
+            jsNodes.forEach((node: HTMLScriptElement) => {
+                const script = document.createElement('script')
+                script.src = node.src
+                script.id = node.id
+                script.async = true
+                script.onload = () => {
+                    window['cdn'] = window['@youwol/cdn-client']
+                }
+                headElement.appendChild(script)
+            })
             this.loadedNativeEditor$.next(this.nativeEditor)
         })
         this.nativeEditor.SelectorManager.getAll().each((selector) => {

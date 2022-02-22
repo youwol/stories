@@ -55,5 +55,16 @@ export function getMiscBlocks() {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')
             },
         },
+        {
+            id: 'module-settings',
+            label: 'module-settings',
+            category: 'Misc',
+            content: {
+                type: 'flux-module-settings',
+            },
+            render({ el }: { el: HTMLElement }) {
+                el.classList.add('gjs-fonts', 'gjs-f-b2')
+            },
+        },
     ]
 }
