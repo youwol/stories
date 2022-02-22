@@ -47,6 +47,7 @@ module.exports = {
             rxjs: 'rxjs',
             marked: 'marked',
             grapesjs: "window['grapesjs']",
+            codemirror: "window['CodeMirror']",
             'js-beautify': "window['js-beautify']",
             'rxjs/operators': "window['rxjs']['operators']",
             '@youwol/logging': "window['@youwol/logging']",
