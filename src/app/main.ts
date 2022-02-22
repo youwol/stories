@@ -16,26 +16,29 @@ const loadingScreen = new LoadingScreenView({
 })
 loadingScreen.render()
 
+const modules = [
+    'lodash',
+    'rxjs',
+    '@youwol/flux-core',
+    '@youwol/flux-view',
+    '@youwol/fv-group',
+    '@youwol/fv-button',
+    '@youwol/fv-tree',
+    '@youwol/fv-tabs',
+    '@youwol/fv-input',
+    '@youwol/fv-context-menu',
+    '@youwol/flux-fv-widgets',
+    '@youwol/platform-essentials',
+    'grapes',
+].map((name) => ({
+    name,
+    version: 'latest',
+    domId: name,
+}))
+
 await install(
     {
-        modules: [
-            'lodash',
-            'rxjs',
-            '@youwol/flux-core',
-            '@youwol/flux-view',
-            '@youwol/fv-group',
-            '@youwol/fv-button',
-            '@youwol/fv-tree',
-            '@youwol/fv-tabs',
-            '@youwol/fv-input',
-            '@youwol/fv-context-menu',
-            '@youwol/flux-fv-widgets',
-            '@youwol/platform-essentials',
-            'marked',
-            'mathjax',
-            'highlight.js',
-            'grapes',
-        ],
+        modules,
         css: [
             {
                 resource: 'bootstrap#4.4.1~bootstrap.min.css',
