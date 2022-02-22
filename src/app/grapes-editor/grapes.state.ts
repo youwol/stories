@@ -44,6 +44,7 @@ import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
 import { customViewComponent } from './plugins/custom-view/custom-view.component'
 import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
 import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
+import { jsPlaygroundComponent } from './plugins/js-playground/js-playground.component'
 
 export function grapesConfig({
     canvas,
