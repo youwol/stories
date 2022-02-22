@@ -57,7 +57,9 @@ export class CodeEditorView implements VirtualDOM {
     public readonly class = 'd-flex flex-column fv-text-primary'
     public readonly headerView: VirtualDOM
     public readonly children: Array<VirtualDOM>
-
+    public readonly style = {
+        'font-size': 'initial',
+    }
     public readonly configurationCodeMirror = {
         value: '',
         mode: 'markdown',
