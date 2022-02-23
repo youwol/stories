@@ -4,9 +4,7 @@ const DESTINATION = path.resolve(__dirname, 'dist')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const MiniCssExtractPlugin = require('mini-css-extract-plugin')
 const packageJson = require('./package.json')
-
-// const BundleAnalyzerPlugin =
-//     require('webpack-bundle-analyzer').BundleAnalyzerPlugin
+const { BundleAnalyzerPlugin } = require('webpack-bundle-analyzer')
 
 module.exports = {
     context: ROOT,
@@ -30,7 +28,11 @@ module.exports = {
             filename: './index.html',
             baseHref: `/applications/${packageJson.name}/${packageJson.version}/`,
         }),
-        //new BundleAnalyzerPlugin()
+        new BundleAnalyzerPlugin({
+            analyzerMode: 'static',
+            reportFilename: './bundle-analysis.html',
+            openAnalyzer: false,
+        }),
     ],
     output: {
         filename: '[name].[contenthash].js',
