@@ -85,7 +85,7 @@ export class GrapesEditorState {
     public readonly plugins: string[]
 
     nativeEditor: grapesjs.Editor
-    loadedNativeEditor$ = new Subject<grapesjs.Editor>()
+    loadedNativeEditor$ = new ReplaySubject<grapesjs.Editor>(1)
 
     public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
     public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
@@ -99,13 +99,6 @@ export class GrapesEditorState {
 
     constructor(params: { page$: BehaviorSubject<Page>; appState: AppState }) {
         Object.assign(this, params)
-
-        localStorage.setItem('gjs-components', '')
-        localStorage.setItem('gjs-html', '')
-        localStorage.setItem('gjs-css', '')
-        localStorage.setItem('gjs-styles', '')
-
-        this.loadedNativeEditor$ = new Subject<grapesjs.Editor>()
 
         this.subscriptions = [
             this.connectActions(),
@@ -189,13 +182,13 @@ export class GrapesEditorState {
 
         const sub1 = this.loadedNativeEditor$.subscribe((editor) => {
             editor.on('change', () => {
-                const html = localStorage.getItem('gjs-html')
+                const html = editor.getHtml()
                 let needUpdate = false
                 if (html != this.cachedHTML && html != '') {
                     this.cachedHTML = html
                     needUpdate = true
                 }
-                const css = cleanCss(localStorage.getItem('gjs-css'))
+                const css = cleanCss(editor.getCss())
                 if (css != this.cachedCSS && css != '') {
                     this.cachedCSS = css
                     needUpdate = true
