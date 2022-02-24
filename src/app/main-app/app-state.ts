@@ -45,6 +45,9 @@ export class AppState {
         content: DocumentContent
         status: SavingStatus
     }>(1)
+
+    public readonly plugins$ = new BehaviorSubject<string[]>([])
+
     public readonly story: Story
     public readonly rootDocument: Document
     public readonly permissions: Permissions
@@ -99,6 +102,7 @@ export class AppState {
             .subscribe((page) => {
                 this.save(page)
             })
+        this.plugins$.next(this.story.requirements.plugins)
     }
 
     save({ document, content }: Page) {
@@ -168,6 +172,22 @@ export class AppState {
                 // This is intentional: make the request happening
             })
     }
+
+    togglePlugin(packageName: string) {
+        let actualPlugins = this.plugins$.getValue()
+
+        if (actualPlugins.includes(packageName)) {
+            this.plugins$.next(actualPlugins.filter((p) => p != packageName))
+            return
+        }
+        this.plugins$.next([...actualPlugins, packageName])
+        this.client
+            .addPlugin$(this.story.storyId, { packageName })
+            .pipe(handleError({ browserContext: 'add plugin' }))
+            .subscribe(() => {
+                // This is intentional: make the request happening
+            })
+    }
 }
 
 /**
@@ -195,6 +215,7 @@ export class AppView implements VirtualDOM {
                     new GrapesEditorView({
                         state: new GrapesEditorState({
                             page$: this.state.page$,
+                            appState: this.state,
                         }),
                     }),
                 ],

@@ -1,4 +1,4 @@
-import { attr$, HTMLElement$, Stream$, VirtualDOM } from '@youwol/flux-view'
+import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 
 import {
     DeviceMode,
@@ -11,6 +11,8 @@ import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs'
 import { styleToggleBase, ToggleMenu } from '../utils/utils.view'
 import * as grapesjs from 'grapesjs'
 import { resizablePanel } from '@youwol/fv-group'
+import { ToolboxesPanel } from './toolboxes.view'
+import { AttributesPanel } from './utils.view'
 
 export class GrapesEditorView implements VirtualDOM {
     public readonly state: GrapesEditorState
@@ -53,7 +55,9 @@ export class GrapesEditorView implements VirtualDOM {
 export class CanvasView implements VirtualDOM {
     public readonly id = 'gjs'
     public readonly class = 'flex-grow-1 p-2 fv-border-primary'
-    public htmlElement$ = new ReplaySubject<HTMLElement$ & HTMLDivElement>(1)
+    public readonly htmlElement$ = new ReplaySubject<
+        HTMLElement$ & HTMLDivElement
+    >(1)
 
     connectedCallback: (elem: HTMLElement$ & HTMLDivElement) => void
 
@@ -72,7 +76,7 @@ export class SettingsView implements VirtualDOM {
 
     constructor(params: { state: GrapesEditorState }) {
         this.overallSettings = new OverallSettings(params)
-        this.attributesEditor = new AttributesEditor()
+        this.attributesEditor = new AttributesEditor(params)
         this.children = [
             this.overallSettings,
             { class: 'mb-1 mx-2 border-top' },
@@ -130,12 +134,17 @@ export class AttributesEditor implements VirtualDOM {
     public readonly header: AttributesEditorHeader
     public readonly body: AttributesEditorBody
     public readonly children: VirtualDOM[]
+    public readonly state: GrapesEditorState
 
-    constructor() {
+    constructor(params: { state: GrapesEditorState }) {
+        Object.assign(this, params)
         this.header = new AttributesEditorHeader({
             editorMode$: this.editorMode$,
         })
-        this.body = new AttributesEditorBody({ editorMode$: this.editorMode$ })
+        this.body = new AttributesEditorBody({
+            editorMode$: this.editorMode$,
+            state: this.state,
+        })
         this.children = [this.header, this.body]
     }
 }
@@ -147,6 +156,7 @@ export class EditorModeToggle extends ToggleMenu<EditorMode> {
                 blocks: 'fa-th-large',
                 styles: 'fa-palette',
                 layers: 'fa-bars',
+                toolbox: 'fa-toolbox',
             },
             buttonStyle: {
                 ...styleToggleBase,
@@ -169,31 +179,6 @@ export class AttributesEditorHeader implements VirtualDOM {
     }
 }
 
-export class AttributesPanel implements VirtualDOM {
-    public readonly class: Stream$<EditorMode, string>
-    public readonly editorMode$: Observable<EditorMode>
-    public readonly target: EditorMode
-    public readonly htmlElement$ = new ReplaySubject<
-        HTMLElement$ & HTMLDivElement
-    >(1)
-
-    public readonly connectedCallback = (
-        elem: HTMLElement$ & HTMLDivElement,
-    ) => {
-        this.htmlElement$.next(elem)
-    }
-
-    constructor(params: {
-        target: EditorMode
-        editorMode$: Subject<EditorMode>
-    }) {
-        Object.assign(this, params)
-        this.class = attr$(this.editorMode$, (mode) => {
-            return mode == this.target ? 'd-block' : 'd-none'
-        })
-    }
-}
-
 export class AttributesEditorBody implements VirtualDOM {
     public readonly editorMode$: Subject<EditorMode>
     public readonly class = 'overflow-auto border border-dark panels-container'
@@ -204,13 +189,24 @@ export class AttributesEditorBody implements VirtualDOM {
     public readonly blocksPanel: AttributesPanel
     public readonly stylesPanel: AttributesPanel
     public readonly layersPanel: AttributesPanel
+    public readonly state: GrapesEditorState
 
-    constructor(params: { editorMode$: Subject<EditorMode> }) {
+    constructor(params: {
+        editorMode$: Subject<EditorMode>
+        state: GrapesEditorState
+    }) {
         Object.assign(this, params)
 
-        this.children = ['blocks', 'styles', 'layers'].map(
+        const factory: Record<EditorMode, new (d) => AttributesPanel> = {
+            blocks: AttributesPanel,
+            styles: AttributesPanel,
+            layers: AttributesPanel,
+            toolbox: ToolboxesPanel,
+        }
+        this.children = Object.keys(factory).map(
             (mode: EditorMode) =>
-                new AttributesPanel({
+                new factory[mode]({
+                    state: this.state,
                     target: mode,
                     editorMode$: this.editorMode$,
                 }),

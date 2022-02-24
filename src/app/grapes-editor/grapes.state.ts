@@ -50,7 +50,7 @@ export type DeviceMode =
     | 'mobile-landscape'
     | 'mobile-portrait'
 
-export type EditorMode = 'blocks' | 'styles' | 'layers'
+export type EditorMode = 'blocks' | 'styles' | 'layers' | 'toolbox'
 
 export const actionsFactory: Record<
     DisplayMode | DeviceMode,
@@ -80,6 +80,10 @@ export const actionsFactory: Record<
 
 export class GrapesEditorState {
     static privateClasses: string[] = []
+
+    public readonly appState: AppState
+    public readonly plugins: string[]
+
     nativeEditor: grapesjs.Editor
     loadedNativeEditor$ = new Subject<grapesjs.Editor>()
 
@@ -93,7 +97,7 @@ export class GrapesEditorState {
     private cachedHTML = ''
     private cachedCSS = ''
 
-    constructor(params: { page$: BehaviorSubject<Page> }) {
+    constructor(params: { page$: BehaviorSubject<Page>; appState: AppState }) {
         Object.assign(this, params)
 
         localStorage.setItem('gjs-components', '')
@@ -107,6 +111,19 @@ export class GrapesEditorState {
             this.connectActions(),
             ...this.connectRenderingUpdates(),
         ]
+        combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.plugins$,
+        ]).subscribe(([editor, plugins]) => {
+            plugins.forEach((packageName) => {
+                const plugin = window[packageName] as unknown as {
+                    addComponents: any
+                    addBlocks: any
+                }
+                plugin.addComponents(editor)
+                plugin.addBlocks(editor)
+            })
+        })
     }
 
     load({

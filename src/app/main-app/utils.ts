@@ -1,9 +1,14 @@
-import { forkJoin, Observable, OperatorFunction } from 'rxjs'
+import { forkJoin, from, Observable, OperatorFunction } from 'rxjs'
 import { AssetsGateway, HTTPError } from '@youwol/http-clients'
-import { map, mergeMap, tap } from 'rxjs/operators'
+import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 import { AppState, AppView } from './app-state'
 import { render } from '@youwol/flux-view'
-import { CdnMessageEvent, LoadingScreenView } from '@youwol/cdn-client'
+import {
+    CdnMessageEvent,
+    fetchLoadingGraph,
+    LoadingScreenView,
+} from '@youwol/cdn-client'
+import { StoryResponse } from '@youwol/http-clients/dist/lib/assets-gateway'
 
 export function defaultStoryTitle() {
     return 'tmp-story'
@@ -60,6 +65,22 @@ export function load$(
                     new CdnMessageEvent('fetch_story', 'Fetch story...done'),
                 ),
             ),
+            mergeMap((story: StoryResponse) => {
+                console.log(
+                    'fetch loading graph',
+                    story.requirements.loadingGraph,
+                )
+                return from(
+                    fetchLoadingGraph(
+                        story.requirements.loadingGraph as any,
+                        window,
+                        {},
+                        (event) => {
+                            loadingScreen.next(event)
+                        },
+                    ),
+                ).pipe(mapTo(story))
+            }),
         ),
         client.raw.story.queryDocuments$(storyId, storyId).pipe(
             handleError({
