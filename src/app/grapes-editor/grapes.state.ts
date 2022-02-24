@@ -31,75 +31,17 @@ import {
     combineLatest,
     merge,
     Observable,
-    Subject,
+    ReplaySubject,
 } from 'rxjs'
-import { getStylesSectors } from './manager-style'
-import { getBlocks } from './manager-blocks'
+
 import { filter, map, mergeMap } from 'rxjs/operators'
 import { Page } from '../models'
-import { getMiscBlocks } from './plugins/misc.blocks'
-import { markdownComponent } from './plugins/markdown/mardown.component'
-import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
-import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
-import { customViewComponent } from './plugins/custom-view/custom-view.component'
-import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
-import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
-import { jsPlaygroundComponent } from './plugins/js-playground/js-playground.component'
-
-export function grapesConfig({
-    canvas,
-    blocks,
-    style,
-    layers,
-}: {
-    canvas: HTMLDivElement
-    blocks: HTMLDivElement
-    style: HTMLDivElement
-    layers: HTMLDivElement
-}): grapesjs.EditorConfig {
-    return {
-        autorender: false,
-        container: canvas,
-        canvas: {
-            styles: [],
-            scripts: [
-                '/api/assets-gateway/raw/package/QHlvdXdvbC9jZG4tY2xpZW50/latest/dist/@youwol/cdn-client.js',
-            ],
-        },
-        height: '100%',
-        width: 'auto',
-        panels: { defaults: [] },
-        assetManager: {
-            assets: [],
-            autoAdd: true,
-        },
-        commands: {
-            defaults: [],
-        },
-        selectorManager: {
-            appendTo: style,
-        },
-        traitManager: { appendTo: style },
-        styleManager: {
-            appendTo: style,
-            sectors: getStylesSectors(),
-        },
-        blockManager: {
-            appendTo: blocks,
-            blocks: [...getBlocks(), ...getMiscBlocks()],
-        },
-        layerManager: { appendTo: layers },
-        plugins: [
-            markdownComponent,
-            mathjaxComponent,
-            fluxAppComponent,
-            customViewComponent,
-            npmPackageComponent,
-            fluxModuleSettingsComponent,
-            jsPlaygroundComponent,
-        ],
-    }
-}
+import { AppState } from '../main-app/app-state'
+import {
+    grapesConfig,
+    installStartingCss,
+    postInitConfiguration,
+} from './grapes.config'
 
 export type DisplayMode = 'edit' | 'preview'
 export type DeviceMode =
@@ -183,66 +125,21 @@ export class GrapesEditorState {
                 map(([canvas, blocks, style, layers]) =>
                     grapesConfig({ canvas, blocks, style, layers }),
                 ),
-                mergeMap((config) => this.load$(config)),
+                mergeMap((config) => {
+                    this.nativeEditor = grapesjs.init(config)
+                    postInitConfiguration(this.nativeEditor)
+                    this.nativeEditor.render()
+                    this.nativeEditor.on('load', () => {
+                        installStartingCss(this.nativeEditor).then(() => {
+                            this.loadedNativeEditor$.next(this.nativeEditor)
+                        })
+                    })
+                    return this.loadedNativeEditor$
+                }),
             )
-            .subscribe((editor) => {
-                editor.BlockManager.getCategories().each((ctg) =>
-                    ctg.set('open', false),
-                )
+            .subscribe(() => {
+                /*no op*/
             })
-    }
-
-    load$(config: grapesjs.EditorConfig): Observable<grapesjs.Editor> {
-        this.nativeEditor = grapesjs.init(config)
-
-        const cssNodes = ['bootstrap', 'fa', 'fv'].map((idCss) => {
-            const node = document.getElementById(idCss)
-            if (node == null) {
-                throw Error(`${idCss} css node not found`)
-            }
-            return node
-        })
-        const jsNodes = [].map((idJs) => {
-            const node = document.getElementById(idJs)
-            if (node == null) {
-                throw Error(`${idJs} script node not found`)
-            }
-            return node
-        })
-        this.nativeEditor.on('load', () => {
-            const document = this.nativeEditor.Canvas.getDocument() as Document
-            const headElement = document.head
-            cssNodes.forEach((node) =>
-                headElement.appendChild(node.cloneNode()),
-            )
-            jsNodes.forEach((node: HTMLScriptElement) => {
-                const script = document.createElement('script')
-                script.src = node.src
-                script.id = node.id
-                script.async = true
-                script.onload = () => {
-                    window['cdn'] = window['@youwol/cdn-client']
-                }
-                headElement.appendChild(script)
-            })
-            this.loadedNativeEditor$.next(this.nativeEditor)
-        })
-        this.nativeEditor.SelectorManager.getAll().each((selector) => {
-            selector.set(
-                'private',
-                GrapesEditorState.privateClasses.includes(selector.id),
-            )
-        })
-        this.nativeEditor.on('selector:add', (selector) => {
-            selector.set('active', false)
-            selector.set(
-                'private',
-                GrapesEditorState.privateClasses.includes(selector.id),
-            )
-        })
-
-        this.nativeEditor.render()
-        return this.loadedNativeEditor$
     }
 
     connectActions() {
