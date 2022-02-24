@@ -138,6 +138,7 @@ export class AppState {
         }
         this.client
             .updateDocument$(doc.storyId, doc.documentId, body)
+            .pipe(handleError({ browserContext: 'rename document' }))
             .subscribe((newDoc: Document) => {
                 node instanceof DocumentNode
                     ? this.explorerState.replaceAttributes(node, {
@@ -159,6 +160,7 @@ export class AppState {
                 title,
                 content,
             })
+            .pipe(handleError({ browserContext: 'add document' }))
             .subscribe((document: Document) => {
                 this.addedDocument$.next({ parentDocumentId, document })
             })
@@ -168,6 +170,7 @@ export class AppState {
         this.deletedDocument$.next(document)
         this.client
             .deleteDocument$(document.storyId, document.documentId)
+            .pipe(handleError({ browserContext: 'delete document' }))
             .subscribe(() => {
                 // This is intentional: make the request happening
             })
