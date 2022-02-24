@@ -66,16 +66,5 @@ export function getMiscBlocks() {
                 el.classList.add('gjs-fonts', 'gjs-f-b2')
             },
         },
-        {
-            id: 'js-playground',
-            label: 'Js Playground',
-            category: 'Education',
-            content: {
-                type: 'js-playground',
-            },
-            render({ el }: { el: HTMLElement }) {
-                el.classList.add('gjs-fonts', 'gjs-f-b2')
-            },
-        },
     ]
 }
