@@ -1,9 +1,17 @@
+function getCategory(name) {
+    return {
+        id: name,
+        label: name,
+        open: false,
+    }
+}
+
 export function getBlocks() {
     return [
         {
             id: 'section',
             label: '<b>Section</b>',
-            category: 'Basic',
+            category: getCategory('Basic'),
             attributes: { class: 'gjs-block-section' },
             content: `<section>
         <h1>This is a simple title</h1>
@@ -16,7 +24,7 @@ export function getBlocks() {
         {
             id: 'text',
             label: 'Text',
-            category: 'Basic',
+            category: getCategory('Basic'),
             content: '<div data-gjs-type="text">Insert your text here</div>',
             render({ el }: { el: HTMLElement }) {
                 el.classList.add('gjs-fonts', 'gjs-f-text')
@@ -25,7 +33,7 @@ export function getBlocks() {
         {
             id: 'image',
             label: 'Image',
-            category: 'Basic',
+            category: getCategory('Basic'),
             // Select the component once it's dropped
             select: true,
             // You can pass components as a JSON instead of a simple HTML string,
@@ -41,7 +49,7 @@ export function getBlocks() {
         {
             id: 'link',
             label: 'Link',
-            category: 'Basic',
+            category: getCategory('Basic'),
             select: true,
             content: {
                 type: 'link',
@@ -52,7 +60,7 @@ export function getBlocks() {
         {
             id: '2-columns',
             label: '2 Columns',
-            category: 'Layouts',
+            category: getCategory('Layouts'),
             content: `
             <div class='' style='display:flex; width:100%; height:100%; padding:5px' data-gjs-droppable='.fx-row-cell' data-gjs-custom-name='Row'>
               <div class='' style='min-width:50px; width:100%' data-gjs-draggable='.row' 

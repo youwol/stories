@@ -3,7 +3,11 @@ export function getMiscBlocks() {
         {
             id: 'markdown',
             label: 'Markdown',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'markdown-editor',
             },
@@ -14,7 +18,11 @@ export function getMiscBlocks() {
         {
             id: 'latext',
             label: 'Latex',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'mathjax-editor',
             },
@@ -25,7 +33,11 @@ export function getMiscBlocks() {
         {
             id: 'flux-app',
             label: 'Flux App',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'flux-app',
             },
@@ -36,7 +48,11 @@ export function getMiscBlocks() {
         {
             id: 'custom-view',
             label: 'Custom View',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'custom-view',
             },
@@ -47,7 +63,11 @@ export function getMiscBlocks() {
         {
             id: 'npm-package',
             label: 'Npm package',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'npm-package',
             },
@@ -58,7 +78,11 @@ export function getMiscBlocks() {
         {
             id: 'module-settings',
             label: 'module-settings',
-            category: 'Misc',
+            category: {
+                id: 'Misc',
+                label: 'Misc',
+                open: false,
+            },
             content: {
                 type: 'flux-module-settings',
             },
