@@ -1,4 +1,4 @@
-import { forkJoin, from, Observable, OperatorFunction } from 'rxjs'
+import { forkJoin, from, Observable, of, OperatorFunction } from 'rxjs'
 import { AssetsGateway, HTTPError } from '@youwol/http-clients'
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 import { AppState, AppView } from './app-state'
@@ -66,10 +66,9 @@ export function load$(
                 ),
             ),
             mergeMap((story: StoryResponse) => {
-                console.log(
-                    'fetch loading graph',
-                    story.requirements.loadingGraph,
-                )
+                if (!story.requirements.loadingGraph) {
+                    return of(story)
+                }
                 return from(
                     fetchLoadingGraph(
                         story.requirements.loadingGraph as any,
