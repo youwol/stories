@@ -11,7 +11,7 @@ const codeMirrorConfiguration = {
     mode: 'javascript',
     lineNumbers: true,
     theme: 'blackboard',
-    lineWrapping: true,
+    lineWrapping: false,
     indentUnit: 4,
 }
 
