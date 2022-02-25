@@ -16,6 +16,10 @@ const availablePlugins: Plugin[] = [
         displayName: 'Js playground',
     },
     {
+        packageName: '@youwol/grapes-coding-playgrounds',
+        displayName: 'Coding playgrounds',
+    },
+    {
         packageName: '@youwol/grapes-editors',
         displayName: 'Advanced Editors',
     },
