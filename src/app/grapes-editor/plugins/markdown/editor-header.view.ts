@@ -1,4 +1,4 @@
-import { CodeEditorState } from '../editor.view'
+import { CodeEditorState } from '../../../code-editor/code-editor.view'
 import { combineLatest, Subject } from 'rxjs'
 import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { popupEmojisBrowserModal } from '../../../modals/emojis-picker.view'

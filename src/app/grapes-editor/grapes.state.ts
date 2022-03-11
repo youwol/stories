@@ -138,6 +138,9 @@ export class GrapesEditorState {
                 mergeMap((config) => {
                     this.nativeEditor = grapesjs.init(config)
                     postInitConfiguration(this.nativeEditor)
+                    this.nativeEditor.on('component:deselected', () => {
+                        this.appState.removeCodeEditor()
+                    })
                     this.nativeEditor.render()
                     this.nativeEditor.on('load', () => {
                         installStartingCss(this.nativeEditor).then(() => {

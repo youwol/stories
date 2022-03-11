@@ -1,10 +1,10 @@
 import * as grapesjs from 'grapesjs'
 
 import { BehaviorSubject } from 'rxjs'
-import { CodeEditorState, CodeEditorView } from '../editor.view'
-import { popupModal } from '../editor.modal'
+import { CodeEditorState } from '../../../code-editor/code-editor.view'
 import { script } from './script'
 import { MarkDownHeaderView } from './editor-header.view'
+import { AppState } from '../../../main-app/app-state'
 
 const codeMirrorConfiguration = {
     value: '',
@@ -15,7 +15,7 @@ const codeMirrorConfiguration = {
     indentUnit: 4,
 }
 const componentType = 'markdown-editor'
-export function markdownComponent(editor: grapesjs.Editor) {
+export function markdownComponent(appState: AppState, editor: grapesjs.Editor) {
     editor.DomComponents.addType(componentType, {
         extendFn: ['initialize'],
         isComponent: (el: HTMLElement) => {
@@ -57,17 +57,23 @@ export function markdownComponent(editor: grapesjs.Editor) {
                     component.addAttributes({ src: '# Title' })
                 }
                 const src$ = new BehaviorSubject(component.getAttributes().src)
-                const state = new CodeEditorState({
-                    codeMirrorConfiguration,
+                appState.editCode({
+                    headerView: (state: CodeEditorState) =>
+                        new MarkDownHeaderView({ state }),
                     content$: src$,
+                    configuration: codeMirrorConfiguration,
+                    requirements: {
+                        scripts: [
+                            'codemirror#5.52.0~mode/javascript.min.js',
+                            'codemirror#5.52.0~mode/markdown.min.js',
+                            'codemirror#5.52.0~mode/css.min.js',
+                            'codemirror#5.52.0~mode/xml.min.js',
+                            'codemirror#5.52.0~mode/htmlmixed.min.js',
+                            'codemirror#5.52.0~mode/gfm.min.js',
+                        ],
+                        css: [],
+                    },
                 })
-                const headerView = new MarkDownHeaderView({ state })
-                const editorView = new CodeEditorView({
-                    headerView,
-                    state,
-                    content$: src$,
-                })
-                popupModal({ editorView })
                 src$.subscribe((src) => {
                     component && component.addAttributes({ src })
                     component.view.render()

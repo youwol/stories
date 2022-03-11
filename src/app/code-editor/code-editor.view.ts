@@ -1,24 +1,28 @@
-import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
-import { fetchCodeMirror$ } from '../../utils/cdn-fetch'
-import { map } from 'rxjs/operators'
 import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
-
+import { AppState } from '../main-app/app-state'
+import { Code, CodeRequirements } from '../models'
+import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
+import { fetchCodeMirror$ } from '../utils/cdn-fetch'
+import { map } from 'rxjs/operators'
 import CodeMirror from 'codemirror'
 
 export class CodeEditorState {
     public readonly codeMirrorConfiguration: { [k: string]: unknown }
     public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirror.Editor>()
-
+    public readonly requirements: CodeRequirements
     public readonly htmlElementContainer$ = new Subject<HTMLDivElement>()
-
     public readonly content$: BehaviorSubject<string>
 
     constructor(params: {
         codeMirrorConfiguration: { [k: string]: unknown }
         content$: BehaviorSubject<string>
+        requirements: CodeRequirements
     }) {
         Object.assign(this, params)
-        combineLatest([this.htmlElementContainer$, fetchCodeMirror$()])
+        combineLatest([
+            this.htmlElementContainer$,
+            fetchCodeMirror$(this.requirements),
+        ])
             .pipe(
                 map(([elem, _]) => {
                     const config = {
@@ -48,38 +52,30 @@ export class CodeEditorState {
     }
 }
 
-/**
- * Editor view
- */
 export class CodeEditorView implements VirtualDOM {
-    static codeMirror$ = fetchCodeMirror$()
+    public readonly appState: AppState
     public readonly state: CodeEditorState
-    public readonly class = 'd-flex flex-column fv-text-primary'
-    public readonly headerView: VirtualDOM
+    public readonly class =
+        'fv-bg-background fv-text-primary d-flex flex-column w-100 h-50'
+    public readonly code: Code
     public readonly children: Array<VirtualDOM>
     public readonly style = {
         'font-size': 'initial',
     }
-    public readonly configurationCodeMirror = {
-        value: '',
-        mode: 'markdown',
-        lineNumbers: true,
-        theme: 'blackboard',
-        lineWrapping: true,
-        indentUnit: 4,
-    }
-
-    constructor(params: {
-        state: CodeEditorState
-        headerView?: VirtualDOM
-        content$: BehaviorSubject<string>
-    }) {
+    constructor(params: { appState: AppState; code: Code }) {
         Object.assign(this, params)
-
+        this.state = new CodeEditorState({
+            codeMirrorConfiguration: this.code.configuration,
+            content$: this.code.content$,
+            requirements: this.code.requirements,
+        })
         this.children = [
-            this.headerView,
             {
-                class: 'w-100',
+                class: 'w-100 d-flex justify-content-center',
+                children: [this.code.headerView(this.state)],
+            },
+            {
+                class: 'w-100 flex-grow-1 overflow-auto',
                 style: {
                     height: '50vh',
                 },

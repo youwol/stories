@@ -1,8 +1,10 @@
 import * as grapesjs from 'grapesjs'
 import { BehaviorSubject } from 'rxjs'
-import { CodeEditorState, CodeEditorView } from '../editor.view'
-import { popupModal } from '../editor.modal'
+import { CodeEditorState } from '../../../code-editor/code-editor.view'
 import { script } from './script'
+import { HeaderView } from '../custom-view/editor-header.view'
+import { withLatestFrom } from 'rxjs/operators'
+import { AppState } from '../../../main-app/app-state'
 
 const codeMirrorConfiguration = {
     value: '',
@@ -14,7 +16,7 @@ const codeMirrorConfiguration = {
 }
 const componentType = 'mathjax-editor'
 
-export function mathjaxComponent(editor: grapesjs.Editor) {
+export function mathjaxComponent(appState: AppState, editor: grapesjs.Editor) {
     editor.DomComponents.addType(componentType, {
         isComponent: (el: HTMLElement) => {
             return (
@@ -38,19 +40,36 @@ export function mathjaxComponent(editor: grapesjs.Editor) {
             },
             editLatext: () => {
                 const component = editor.getSelected()
+
                 if (!component.getAttributes().src) {
                     component.addAttributes({ src: '\\Huge{e^{i\\pi}+1=0}' })
                 }
                 const src$ = new BehaviorSubject(component.getAttributes().src)
-                const state = new CodeEditorState({
-                    codeMirrorConfiguration,
+                appState.editCode({
+                    headerView: (state: CodeEditorState) => {
+                        const headerView = new HeaderView({ state })
+                        headerView.run$
+                            .pipe(withLatestFrom(src$))
+                            .subscribe(([_, src]) => {
+                                component && component.addAttributes({ src })
+                                component.view.render()
+                            })
+                        return headerView
+                    },
                     content$: src$,
+                    configuration: codeMirrorConfiguration,
+                    requirements: {
+                        scripts: [
+                            'codemirror#5.52.0~mode/javascript.min.js',
+                            'codemirror#5.52.0~mode/css.min.js',
+                            'codemirror#5.52.0~mode/xml.min.js',
+                            'codemirror#5.52.0~mode/htmlmixed.min.js',
+                            //'codemirror#5.52.0~mode/gfm.min.js',
+                        ],
+                        css: [],
+                    },
                 })
-                const editorView = new CodeEditorView({
-                    state,
-                    content$: src$,
-                })
-                popupModal({ editorView })
+
                 src$.subscribe((src) => {
                     component && component.addAttributes({ src })
                     component.view.render()

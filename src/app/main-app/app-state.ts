@@ -3,6 +3,7 @@ import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
 import {
+    Code,
     ContentChangedOrigin,
     Document,
     DocumentContent,
@@ -54,6 +55,10 @@ export class AppState {
 
     public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
 
+    public readonly codeEdition$ = new BehaviorSubject<Code | undefined>(
+        undefined,
+    )
+
     constructor(params: {
         story: Story
         rootDocument: Document
@@ -93,6 +98,7 @@ export class AppState {
                     content,
                     originId: 'loaded',
                 })
+                this.removeCodeEditor()
             })
         this.page$
             .pipe(
@@ -190,6 +196,14 @@ export class AppState {
             .subscribe(() => {
                 // This is intentional: make the request happening
             })
+    }
+
+    editCode(code: Code) {
+        this.codeEdition$.next(code)
+    }
+
+    removeCodeEditor() {
+        this.codeEdition$.next(undefined)
     }
 }
 

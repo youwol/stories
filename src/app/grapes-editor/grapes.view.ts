@@ -1,4 +1,4 @@
-import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
+import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 
 import {
     DeviceMode,
@@ -13,6 +13,7 @@ import * as grapesjs from 'grapesjs'
 import { resizablePanel } from '@youwol/fv-group'
 import { ToolboxesPanel } from './toolboxes.view'
 import { AttributesPanel } from './utils.view'
+import { CodeEditorView } from '../code-editor/code-editor.view'
 
 export class GrapesEditorView implements VirtualDOM {
     public readonly state: GrapesEditorState
@@ -32,7 +33,20 @@ export class GrapesEditorView implements VirtualDOM {
         this.settingsView = new SettingsView(params)
 
         this.children = [
-            this.canvasView,
+            {
+                class: 'd-flex flex-column w-100 h-100',
+                children: [
+                    this.canvasView,
+                    child$(this.state.appState.codeEdition$, (code) => {
+                        return code
+                            ? new CodeEditorView({
+                                  appState: this.state.appState,
+                                  code,
+                              })
+                            : {}
+                    }),
+                ],
+            },
             resizablePanel(this.settingsView, 'Toolboxes', 'right', {
                 minWidth: 195,
             }),

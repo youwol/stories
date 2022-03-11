@@ -1,10 +1,11 @@
 import * as grapesjs from 'grapesjs'
 
 import { render } from './script'
+import { AppState } from '../../../main-app/app-state'
 
 const componentType = 'flux-app'
 
-export function fluxAppComponent(editor: grapesjs.Editor) {
+export function fluxAppComponent(state: AppState, editor: grapesjs.Editor) {
     editor.DomComponents.addType(componentType, {
         extendFn: ['initialize'],
         isComponent: (el: HTMLElement) => {

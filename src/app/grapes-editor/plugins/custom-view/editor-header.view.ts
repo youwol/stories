@@ -1,4 +1,4 @@
-import { CodeEditorState } from '../editor.view'
+import { CodeEditorState } from '../../../code-editor/code-editor.view'
 import { Subject } from 'rxjs'
 import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 

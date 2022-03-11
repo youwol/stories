@@ -1,10 +1,11 @@
 import * as grapesjs from 'grapesjs'
 
 import { render } from './script'
+import { AppState } from '../../../main-app/app-state'
 
 const componentType = 'npm-package'
 
-export function npmPackageComponent(editor: grapesjs.Editor) {
+export function npmPackageComponent(state: AppState, editor: grapesjs.Editor) {
     editor.DomComponents.addType(componentType, {
         extendFn: ['initialize'],
         isComponent: (el: HTMLElement) => {
