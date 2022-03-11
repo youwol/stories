@@ -37,7 +37,13 @@ export class TopBannerState extends TopBanner.YouwolBannerState {
      * @param parameters.permissions user's permission w/ the story
      */
     constructor(parameters: { permissions: Permissions }) {
-        super({ cmEditorModule$: fetchCodeMirror$() })
+        super({
+            cmEditorModule$: fetchCodeMirror$({
+                modules: [],
+                scripts: [],
+                css: [],
+            }),
+        })
         Object.assign(this, parameters)
 
         this.viewMode$ = new BehaviorSubject<ViewMode>(
