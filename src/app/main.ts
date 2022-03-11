@@ -10,10 +10,7 @@ import { Client, install, LoadingScreenView } from '@youwol/cdn-client'
 require('./style.css')
 export {}
 
-const loadingScreen = new LoadingScreenView({
-    container: document.body,
-    mode: 'svg',
-})
+const loadingScreen = new LoadingScreenView()
 loadingScreen.render()
 
 await install(
