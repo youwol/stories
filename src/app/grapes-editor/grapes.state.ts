@@ -42,6 +42,12 @@ import {
     installStartingCss,
     postInitConfiguration,
 } from './grapes.config'
+import { markdownComponent } from './plugins/markdown/mardown.component'
+import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
+import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
+import { customViewComponent } from './plugins/custom-view/custom-view.component'
+import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
+import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
 
 export type DisplayMode = 'edit' | 'preview'
 export type DeviceMode =
@@ -113,7 +119,7 @@ export class GrapesEditorState {
                     addComponents: any
                     addBlocks: any
                 }
-                plugin.addComponents(editor)
+                plugin.addComponents(this.appState, editor)
                 plugin.addBlocks(editor)
             })
         })
@@ -137,6 +143,16 @@ export class GrapesEditorState {
                 ),
                 mergeMap((config) => {
                     this.nativeEditor = grapesjs.init(config)
+                    markdownComponent(this.appState, this.nativeEditor)
+                    mathjaxComponent(this.appState, this.nativeEditor)
+                    fluxAppComponent(this.appState, this.nativeEditor)
+                    customViewComponent(this.appState, this.nativeEditor)
+                    npmPackageComponent(this.appState, this.nativeEditor)
+                    fluxModuleSettingsComponent(
+                        this.appState,
+                        this.nativeEditor,
+                    )
+
                     postInitConfiguration(this.nativeEditor)
                     this.nativeEditor.on('component:deselected', () => {
                         this.appState.removeCodeEditor()

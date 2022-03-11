@@ -1,13 +1,6 @@
 import { getStylesSectors } from './manager-style'
 import { getBlocks } from './manager-blocks'
 import { getMiscBlocks } from './plugins/misc.blocks'
-import { markdownComponent } from './plugins/markdown/mardown.component'
-import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
-import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
-import { customViewComponent } from './plugins/custom-view/custom-view.component'
-import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
-import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
-
 import * as grapesjs from 'grapesjs'
 import { install } from '@youwol/cdn-client'
 import { GrapesEditorState } from './grapes.state'
@@ -56,12 +49,7 @@ export function grapesConfig({
         },
         layerManager: { appendTo: layers },
         plugins: [
-            markdownComponent,
-            mathjaxComponent,
-            fluxAppComponent,
-            customViewComponent,
-            npmPackageComponent,
-            fluxModuleSettingsComponent,
+            /* plugin are loaded dynamically latter*/
         ],
         storageManager: { type: 'fake', autoload: false, autosave: false },
     }
