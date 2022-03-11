@@ -6,6 +6,10 @@ import { Document } from '../models'
 import { ContextMenuState } from './context-menu/context-menu.view'
 import { ContextMenu } from '@youwol/fv-context-menu'
 import { DocumentNode, ExplorerNode, SignalType, StoryNode } from './nodes'
+import {
+    DocumentContentBody,
+    DocumentResponse,
+} from '@youwol/http-clients/dist/lib/assets-gateway'
 
 /**
  * Logic side of [[ExplorerView]]
@@ -162,8 +166,8 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                 ({
                     status,
                 }: {
-                    document: Document
-                    content: string
+                    document: DocumentResponse
+                    content: DocumentContentBody
                     status: SavingStatus
                 }) => {
                     switch (status) {
