@@ -195,7 +195,6 @@ export class GrapesEditorState {
         const pluginsToRemove = installedPluginsName.filter(
             (candidate) => !plugins.includes(candidate),
         )
-        console.log('Synchronize', { pluginsToAdd, pluginsToRemove })
 
         pluginsToAdd.forEach((pluginName) => {
             const plugin = window[pluginName] as unknown as {

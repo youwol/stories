@@ -38,7 +38,6 @@ export class StorageManager {
     }
 
     store(data, clb, _clbErr) {
-        console.log('data to post', data)
         this.appState.selectedNode$
             .pipe(
                 take(1),
@@ -58,11 +57,6 @@ export class StorageManager {
             )
             .subscribe(() => {
                 clb()
-                /*appState.save$.next({
-                    document,
-                    content,
-                    status: SavingStatus.saved,
-                })*/
             })
     }
 }
