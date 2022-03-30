@@ -7,29 +7,20 @@ import { map } from 'rxjs/operators'
 
 interface Plugin {
     packageName: string
-    displayName: string
 }
 
 const availablePlugins: Plugin[] = [
     {
-        packageName: '@youwol/grapes-js-playground',
-        displayName: 'Js playground',
+        packageName: '@youwol/grapes-text-editors',
     },
     {
         packageName: '@youwol/grapes-coding-playgrounds',
-        displayName: 'Coding playgrounds',
     },
     {
-        packageName: '@youwol/grapes-editors',
-        displayName: 'Advanced Editors',
+        packageName: '@youwol/grapes-basics',
     },
     {
         packageName: '@youwol/grapes-flux',
-        displayName: 'Flux',
-    },
-    {
-        packageName: '@youwol/grapes-custom-view',
-        displayName: 'Custom View',
     },
 ]
 
@@ -60,7 +51,7 @@ export class PluginView implements VirtualDOM {
             },
             {
                 class: 'px-2',
-                innerText: this.plugin.displayName,
+                innerText: this.plugin.packageName,
             },
         ]
     }
