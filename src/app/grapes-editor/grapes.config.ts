@@ -1,9 +1,9 @@
 import { getStylesSectors } from './manager-style'
-import { getBlocks } from './manager-blocks'
-import { getMiscBlocks } from './plugins/misc.blocks'
 import * as grapesjs from 'grapesjs'
 import { install } from '@youwol/cdn-client'
 import { GrapesEditorState } from './grapes.state'
+import { StorageManager } from './grapes.storage'
+import { AppState } from '../main-app/app-state'
 
 export function grapesConfig({
     canvas,
@@ -45,13 +45,13 @@ export function grapesConfig({
         },
         blockManager: {
             appendTo: blocks,
-            blocks: [...getBlocks(), ...getMiscBlocks()],
+            blocks: [],
         },
         layerManager: { appendTo: layers },
         plugins: [
             /* plugin are loaded dynamically latter*/
         ],
-        storageManager: { type: 'fake', autoload: false, autosave: false },
+        storageManager: { type: StorageManager.type },
     }
 }
 
@@ -70,7 +70,10 @@ export function installStartingCss(editor: grapesjs.Editor) {
     )
 }
 
-export function postInitConfiguration(editor: grapesjs.Editor) {
+export function postInitConfiguration(
+    editor: grapesjs.Editor,
+    appState: AppState,
+) {
     editor.SelectorManager.getAll().each((selector) => {
         selector.set(
             'private',
@@ -83,5 +86,8 @@ export function postInitConfiguration(editor: grapesjs.Editor) {
             'private',
             GrapesEditorState.privateClasses.includes(selector.id),
         )
+    })
+    editor.on('component:deselected', () => {
+        appState.removeCodeEditor()
     })
 }

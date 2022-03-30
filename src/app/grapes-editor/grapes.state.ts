@@ -34,20 +34,14 @@ import {
     ReplaySubject,
 } from 'rxjs'
 
-import { filter, map, mergeMap } from 'rxjs/operators'
-import { Page } from '../models'
+import { distinctUntilChanged, map, mergeMap, skip, take } from 'rxjs/operators'
 import { AppState } from '../main-app/app-state'
+import { StorageManager } from './grapes.storage'
 import {
     grapesConfig,
     installStartingCss,
     postInitConfiguration,
 } from './grapes.config'
-import { markdownComponent } from './plugins/markdown/mardown.component'
-import { mathjaxComponent } from './plugins/mathjax/mathjax.component'
-import { fluxAppComponent } from './plugins/flux-app/flux-app.component'
-import { customViewComponent } from './plugins/custom-view/custom-view.component'
-import { npmPackageComponent } from './plugins/npm-package/npm-package.component'
-import { fluxModuleSettingsComponent } from './plugins/flux-module-settings/flux-module-settings.component'
 
 export type DisplayMode = 'edit' | 'preview'
 export type DeviceMode =
@@ -88,39 +82,46 @@ export class GrapesEditorState {
     static privateClasses: string[] = []
 
     public readonly appState: AppState
-    public readonly plugins: string[]
+    public readonly storage: StorageManager
+
+    public readonly installedPlugins: {
+        [packName: string]: { blocks: string[]; components: string[] }
+    } = {}
 
     nativeEditor: grapesjs.Editor
-    loadedNativeEditor$ = new ReplaySubject<grapesjs.Editor>(1)
+    public readonly loadedNativeEditor$ = new ReplaySubject<grapesjs.Editor>(1)
 
     public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
     public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
 
-    public readonly page$: BehaviorSubject<Page>
-
     public readonly subscriptions = []
 
-    private cachedHTML = ''
-    private cachedCSS = ''
-
-    constructor(params: { page$: BehaviorSubject<Page>; appState: AppState }) {
+    constructor(params: { appState: AppState }) {
         Object.assign(this, params)
 
-        this.subscriptions = [
-            this.connectActions(),
-            ...this.connectRenderingUpdates(),
-        ]
+        this.storage = new StorageManager({ appState: this.appState })
+        this.subscriptions = [this.connectActions()]
         combineLatest([
             this.loadedNativeEditor$,
-            this.appState.plugins$,
+            this.appState.selectedNode$.pipe(
+                distinctUntilChanged((node1, node2) => node1.id == node2.id),
+            ),
+        ]).subscribe(([editor]) => {
+            editor.DomComponents.clear() // Clear components
+            editor.CssComposer.clear() // Clear styles
+            editor.UndoManager.clear()
+            editor.load(() => {
+                // No op for now
+            })
+        })
+
+        combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.plugins$.pipe(skip(1)),
         ]).subscribe(([editor, plugins]) => {
-            plugins.forEach((packageName) => {
-                const plugin = window[packageName] as unknown as {
-                    addComponents: any
-                    addBlocks: any
-                }
-                plugin.addComponents(this.appState, editor)
-                plugin.addBlocks(editor)
+            this.synchronizePlugins(plugins, editor)
+            editor.load(() => {
+                // No op for now
             })
         })
     }
@@ -136,27 +137,29 @@ export class GrapesEditorState {
         stylesPanel$: Observable<HTMLDivElement>
         layersPanel$: Observable<HTMLDivElement>
     }) {
-        combineLatest([canvas$, blocksPanel$, stylesPanel$, layersPanel$])
+        combineLatest([
+            canvas$,
+            blocksPanel$,
+            stylesPanel$,
+            layersPanel$,
+            // We should not need to wait for plugins to load has their scripts are encapsulated in html
+            this.appState.plugins$.pipe(take(1)),
+        ])
             .pipe(
-                map(([canvas, blocks, style, layers]) =>
-                    grapesConfig({ canvas, blocks, style, layers }),
-                ),
-                mergeMap((config) => {
+                map(([canvas, blocks, style, layers, plugins]) => {
+                    return [
+                        grapesConfig({ canvas, blocks, style, layers }),
+                        plugins,
+                    ]
+                }),
+                mergeMap(([config, plugins]) => {
                     this.nativeEditor = grapesjs.init(config)
-                    markdownComponent(this.appState, this.nativeEditor)
-                    mathjaxComponent(this.appState, this.nativeEditor)
-                    fluxAppComponent(this.appState, this.nativeEditor)
-                    customViewComponent(this.appState, this.nativeEditor)
-                    npmPackageComponent(this.appState, this.nativeEditor)
-                    fluxModuleSettingsComponent(
-                        this.appState,
-                        this.nativeEditor,
+                    this.synchronizePlugins(plugins, this.nativeEditor)
+                    this.nativeEditor.StorageManager.add(
+                        StorageManager.type,
+                        this.storage,
                     )
-
-                    postInitConfiguration(this.nativeEditor)
-                    this.nativeEditor.on('component:deselected', () => {
-                        this.appState.removeCodeEditor()
-                    })
+                    postInitConfiguration(this.nativeEditor, this.appState)
                     this.nativeEditor.render()
                     this.nativeEditor.on('load', () => {
                         installStartingCss(this.nativeEditor).then(() => {
@@ -184,52 +187,59 @@ export class GrapesEditorState {
             })
     }
 
-    connectRenderingUpdates() {
-        const sub0 = combineLatest([
-            this.loadedNativeEditor$,
-            this.page$.pipe(filter((page) => page != undefined)),
-        ]).subscribe(([editor, { content }]) => {
-            if (content.html != this.cachedHTML) {
-                this.cachedHTML = content.html
-                editor.setComponents(content.html)
-            }
-            if (content.css != this.cachedCSS) {
-                this.cachedCSS = content.css
-                editor.setStyle(content.css)
-            }
-        })
+    synchronizePlugins(plugins: string[], _editor: grapesjs.Editor) {
+        const installedPluginsName = Object.keys(this.installedPlugins)
+        const pluginsToAdd = plugins.filter(
+            (candidate) => !installedPluginsName.includes(candidate),
+        )
+        const pluginsToRemove = installedPluginsName.filter(
+            (candidate) => !plugins.includes(candidate),
+        )
+        console.log('Synchronize', { pluginsToAdd, pluginsToRemove })
 
-        const sub1 = this.loadedNativeEditor$.subscribe((editor) => {
-            editor.on('change', () => {
-                const html = editor.getHtml()
-                let needUpdate = false
-                if (html != this.cachedHTML && html != '') {
-                    this.cachedHTML = html
-                    needUpdate = true
-                }
-                const css = cleanCss(editor.getCss())
-                if (css != this.cachedCSS && css != '') {
-                    this.cachedCSS = css
-                    needUpdate = true
-                }
-                if (needUpdate) {
-                    const document = this.page$.getValue().document
-
-                    this.page$.next({
-                        document,
-                        content: { html, css },
-                        originId: 'editor',
-                    })
-                }
+        pluginsToAdd.forEach((pluginName) => {
+            const plugin = window[pluginName] as unknown as {
+                getComponents: any
+                getBlocks: any
+            }
+            const input = {
+                appState: this.appState,
+                grapesEditor: this.nativeEditor,
+                idFactory: (name) => `${pluginName}#${name}`,
+            }
+            let components = []
+            plugin.getComponents().forEach((ComponentClass) => {
+                let component = new ComponentClass(input)
+                this.nativeEditor.DomComponents.addType(
+                    component.componentType,
+                    component,
+                )
+                components.push(component.componentType)
             })
+            let blocks = []
+            plugin.getBlocks().forEach((BlockClass) => {
+                let block = new BlockClass(input)
+                this.nativeEditor.BlockManager.add(block.blockType, {
+                    ...block,
+                    category: {
+                        id: pluginName,
+                        label: pluginName,
+                        open: false,
+                    },
+                })
+                blocks.push(block.blockType)
+            })
+            this.installedPlugins[pluginName] = { components, blocks }
         })
-        return [sub0, sub1]
+        pluginsToRemove.forEach((pluginName) => {
+            const { blocks, components } = this.installedPlugins[pluginName]
+            blocks.forEach((block) => {
+                this.nativeEditor.BlockManager.remove(block)
+            })
+            components.forEach((component) => {
+                this.nativeEditor.DomComponents.removeType(component)
+            })
+            delete this.installedPlugins[pluginName]
+        })
     }
-}
-
-function cleanCss(css: string): string {
-    const rules = [...new Set(css.split('}'))]
-        .filter((r) => r.length > 0)
-        .map((r) => r + '}')
-    return rules.reduce((acc: string, e: string) => acc + e, '')
 }

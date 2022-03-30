@@ -2,18 +2,9 @@ import { VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
-import {
-    Code,
-    ContentChangedOrigin,
-    Document,
-    DocumentContent,
-    Page,
-    Permissions,
-    Story,
-} from '../models'
+import { Code, Document, DocumentContent, Permissions, Story } from '../models'
 import { handleError } from './utils'
 import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
-import { distinctUntilChanged, filter, map, mergeMap } from 'rxjs/operators'
 import { TopBannerState, TopBannerView } from './top-banner'
 import { GrapesEditorView } from '../grapes-editor/grapes.view'
 import { GrapesEditorState } from '../grapes-editor/grapes.state'
@@ -33,7 +24,6 @@ export class AppState {
 
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
-    public readonly page$ = new BehaviorSubject<Page>(undefined)
 
     public readonly addedDocument$ = new ReplaySubject<{
         document: Document
@@ -74,62 +64,11 @@ export class AppState {
             rootDocument: this.rootDocument,
             appState: this,
         })
+        this.selectedNode$.subscribe(() => {
+            this.removeCodeEditor()
+        })
 
-        this.selectedNode$
-            .pipe(
-                distinctUntilChanged(),
-                mergeMap((node: ExplorerNode) => {
-                    return this.client
-                        .getContent$(
-                            node.getDocument().storyId,
-                            node.getDocument().documentId,
-                        )
-                        .pipe(
-                            handleError({
-                                browserContext: 'Selected node raw content',
-                            }),
-                            map((content) => ({ content, node })),
-                        )
-                }),
-            )
-            .subscribe(({ node, content }) => {
-                this.page$.next({
-                    document: node.getDocument(),
-                    content,
-                    originId: 'loaded',
-                })
-                this.removeCodeEditor()
-            })
-        this.page$
-            .pipe(
-                filter((page) => page != undefined),
-                filter((page) => page.originId == 'editor'),
-            )
-            .subscribe((page) => {
-                this.save(page)
-            })
         this.plugins$.next(this.story.requirements.plugins)
-    }
-
-    save({ document, content }: Page) {
-        this.client
-            .updateContent$(document.storyId, document.documentId, content)
-            .pipe(handleError({ browserContext: 'save document' }))
-            .subscribe(() => {
-                this.save$.next({
-                    document,
-                    content,
-                    status: SavingStatus.saved,
-                })
-            })
-    }
-
-    setContent(
-        document: Document,
-        content: DocumentContent,
-        originId: ContentChangedOrigin,
-    ) {
-        this.page$.next({ document, content, originId })
     }
 
     selectNode(node: ExplorerNode) {
@@ -156,10 +95,8 @@ export class AppState {
             })
     }
 
-    addDocument(
-        parentDocumentId: string,
-        { title, content }: { title: string; content: DocumentContent },
-    ) {
+    addDocument(parentDocumentId: string, title: string) {
+        const content = { html: '', css: '', components: '', styles: '' }
         this.client
             .createDocument$(this.story.storyId, {
                 parentDocumentId: parentDocumentId,
@@ -231,7 +168,6 @@ export class AppView implements VirtualDOM {
                     }),
                     new GrapesEditorView({
                         state: new GrapesEditorState({
-                            page$: this.state.page$,
                             appState: this.state,
                         }),
                     }),
