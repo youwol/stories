@@ -27,13 +27,7 @@ export class StorageManager {
                     browserContext: 'Selected node raw content',
                 }),
             )
-            .subscribe((resp: any) => {
-                console.log('Load', {
-                    'gjs-html': resp.html,
-                    'gjs-css': resp.css,
-                    'gjs-components': resp.components,
-                    'gjs-styles': resp.styles,
-                })
+            .subscribe((resp) => {
                 clb({
                     'gjs-html': resp.html,
                     'gjs-css': resp.css,
@@ -57,7 +51,7 @@ export class StorageManager {
                             css: data['gjs-css'],
                             components: data['gjs-components'],
                             styles: data['gjs-styles'],
-                        } as any,
+                        },
                     )
                 }),
                 handleError({ browserContext: 'save document' }),

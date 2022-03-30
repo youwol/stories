@@ -99,7 +99,7 @@ export class ContextMenuView implements VirtualDOM {
                 state: contextTreeState,
                 headerView: (_, node) => headerView(node),
                 class: 'fv-bg-background fv-text-primary p-2 rounded border fv-color-primary',
-            } as any),
+            }),
         ]
         this.connectedCallback = (
             htmlElement: HTMLElement$ & HTMLDivElement,

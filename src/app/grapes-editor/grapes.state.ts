@@ -199,8 +199,8 @@ export class GrapesEditorState {
 
         pluginsToAdd.forEach((pluginName) => {
             const plugin = window[pluginName] as unknown as {
-                getComponents: any
-                getBlocks: any
+                getComponents
+                getBlocks
             }
             const input = {
                 appState: this.appState,
