@@ -6,7 +6,7 @@ import { distinctUntilChanged, mergeMap } from 'rxjs/operators'
 
 export class PageView implements VirtualDOM {
     public readonly appState: AppStateReader
-    public readonly class = 'flex-grow-1 h-100 p-3'
+    public readonly class = 'flex-grow-1 h-100 p-1'
     public readonly children
     public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
 
@@ -37,6 +37,7 @@ export class PageView implements VirtualDOM {
 }
 
 export class PageContent implements VirtualDOM {
+    public readonly class = 'h-100 w-100'
     public readonly innerHTML: string
     public readonly connectedCallback: (
         elem: HTMLDivElement & HTMLElement$,

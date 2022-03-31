@@ -34,11 +34,7 @@ export class ExplorerState extends ImmutableTree.State<ExplorerNode> {
 export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
     public readonly appState: AppStateReader
 
-    public readonly style = {
-        minWidth: '300px',
-    }
-    public readonly class =
-        'fv-bg-background fv-text-primary p-2 border fv-color-primary'
+    public readonly class = ''
 
     constructor({ explorerState }: { explorerState: ExplorerState }) {
         super({
@@ -73,13 +69,14 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
 
     return {
         id,
-        class: `d-flex align-items-center fv-pointer fv-hover-bg-background-alt w-100 ${nodeClass}`,
+        class: `d-flex align-items-center fv-pointer fv-hover-font-bolder ${nodeClass}`,
         children: [
             {
                 class: faClass + ' px-2',
             },
             {
                 tag: 'span',
+                style: { userSelect: 'none' },
                 innerText: node.name,
             },
         ],
