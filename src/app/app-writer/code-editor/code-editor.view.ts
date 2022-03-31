@@ -1,10 +1,11 @@
 import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { AppState } from '../app-state'
-import { Code, CodeRequirements } from '../models'
+import { Code } from '../models'
 import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
 import { fetchCodeMirror$ } from '../utils/cdn-fetch'
 import { map } from 'rxjs/operators'
 import CodeMirror from 'codemirror'
+import { CodeRequirements } from '../../common'
 
 export class CodeEditorState {
     public readonly codeMirrorConfiguration: { [k: string]: unknown }

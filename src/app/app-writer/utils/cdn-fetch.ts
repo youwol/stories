@@ -1,6 +1,6 @@
 import { from } from 'rxjs'
 import { install } from '@youwol/cdn-client'
-import { CodeRequirements } from '../models'
+import { CodeRequirements } from '../../common'
 
 /**
  * Fetches code mirror's assets.
