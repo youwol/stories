@@ -12,7 +12,7 @@ import {
 import { ImmutableTree } from '@youwol/fv-tree'
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { ExplorerState } from '../explorer.view'
-import { DocumentNode, ExplorerNode, StoryNode } from '../nodes'
+import { DocumentNode, ExplorerNode, StoryNode } from '../../../common'
 
 /**
  * Logic side of [[ContextMenuView]]

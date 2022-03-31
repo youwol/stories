@@ -1,9 +1,9 @@
 import { ImmutableTree } from '@youwol/fv-tree'
 import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
-import { Document, Story } from '../models'
+import { Document, Story } from './interfaces'
 import { AssetsGateway } from '@youwol/http-clients'
-import { handleError } from '../../common/utils'
+import { handleError } from './utils'
 
 /**
  * Node's signal's type enum

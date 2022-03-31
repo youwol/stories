@@ -2,10 +2,15 @@ import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { filter } from 'rxjs/operators'
 import { AppState, SavingStatus } from '../app-state'
-import { Document } from '../models'
 import { ContextMenuState } from './context-menu/context-menu.view'
 import { ContextMenu } from '@youwol/fv-context-menu'
-import { DocumentNode, ExplorerNode, SignalType, StoryNode } from './nodes'
+import {
+    DocumentNode,
+    ExplorerNode,
+    SignalType,
+    StoryNode,
+    Document,
+} from '../../common'
 import {
     DocumentContentBody,
     DocumentResponse,

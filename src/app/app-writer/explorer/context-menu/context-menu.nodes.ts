@@ -1,6 +1,11 @@
 import { ImmutableTree } from '@youwol/fv-tree'
 import { ExplorerState } from '../explorer.view'
-import { DocumentNode, ExplorerNode, SignalType, StoryNode } from '../nodes'
+import {
+    DocumentNode,
+    ExplorerNode,
+    SignalType,
+    StoryNode,
+} from '../../../common'
 import { ContextMenuState } from './context-menu.view'
 
 /**

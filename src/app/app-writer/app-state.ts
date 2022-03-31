@@ -2,14 +2,23 @@ import { VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, from, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from './explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
-import { Code, Document, DocumentContent, Permissions, Story } from './models'
-import { handleError } from '../common/utils'
-import { DocumentNode, ExplorerNode, StoryNode } from './explorer/nodes'
+import {
+    handleError,
+    Document,
+    DocumentContent,
+    Permissions,
+    Story,
+    DocumentNode,
+    ExplorerNode,
+    StoryNode,
+} from '../common'
+
 import { TopBannerState, TopBannerView } from './top-banner'
 import { GrapesEditorView } from './grapes-editor/grapes.view'
 import { GrapesEditorState } from './grapes-editor/grapes.state'
 import { mergeMap } from 'rxjs/operators'
 import { fetchLoadingGraph } from '@youwol/cdn-client'
+import { Code } from './models'
 
 export enum SavingStatus {
     modified = 'Modified',
