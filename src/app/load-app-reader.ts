@@ -6,13 +6,18 @@
  */
 import { Client } from '@youwol/cdn-client'
 import { load$ } from './common'
+import { AppStateReader } from './app-reader/app-state'
+import { AppView } from './app-reader/app-view'
+import { render } from '@youwol/flux-view'
 
 const storyIdQueryParam = new URLSearchParams(window.location.search).get('id')
 const container = document.getElementById('content')
 
 load$(storyIdQueryParam, container, Client['initialLoadingScreen']).subscribe(
     ({ story, rootDocument, permissions }) => {
-        console.log({ story, rootDocument, permissions })
+        const state = new AppStateReader({ story, rootDocument, permissions })
+        const appView = new AppView({ state })
+        container.appendChild(render(appView))
     },
 )
 
