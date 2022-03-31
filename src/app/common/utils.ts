@@ -39,12 +39,14 @@ export function handleError<T>({
  * @param storyId id of the story to load
  * @param container where to insert the main view
  * @param loadingScreen loading screen to append loading events
+ * @param loadPlugins if true, load stories' plugins
  * @returns application state & application view
  */
 export function load$(
     storyId: string,
     container: HTMLElement,
     loadingScreen: LoadingScreenView,
+    loadPlugins: boolean = true,
 ): Observable<{
     story: StoryResponse
     rootDocument: DocumentResponse
@@ -72,7 +74,7 @@ export function load$(
                 ),
             ),
             mergeMap((story: StoryResponse) => {
-                if (!story.requirements.loadingGraph) {
+                if (!story.requirements.loadingGraph || !loadPlugins) {
                     return of(story)
                 }
                 return from(

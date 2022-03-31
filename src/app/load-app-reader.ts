@@ -13,13 +13,16 @@ import { render } from '@youwol/flux-view'
 const storyIdQueryParam = new URLSearchParams(window.location.search).get('id')
 const container = document.getElementById('content')
 
-load$(storyIdQueryParam, container, Client['initialLoadingScreen']).subscribe(
-    ({ story, rootDocument, permissions }) => {
-        const state = new AppStateReader({ story, rootDocument, permissions })
-        const appView = new AppView({ state })
-        container.appendChild(render(appView))
-    },
-)
+load$(
+    storyIdQueryParam,
+    container,
+    Client['initialLoadingScreen'],
+    false,
+).subscribe(({ story, rootDocument, permissions }) => {
+    const state = new AppStateReader({ story, rootDocument, permissions })
+    const appView = new AppView({ state })
+    container.appendChild(render(appView))
+})
 
 /*
 storyIdQueryParam
