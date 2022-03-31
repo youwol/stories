@@ -107,12 +107,10 @@ export class AppState {
     }
 
     addDocument(parentDocumentId: string, title: string) {
-        const content = { html: '', css: '', components: '', styles: '' }
         this.client
             .createDocument$(this.story.storyId, {
                 parentDocumentId: parentDocumentId,
                 title,
-                content,
             })
             .pipe(handleError({ browserContext: 'add document' }))
             .subscribe((document: Document) => {
