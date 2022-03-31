@@ -1,13 +1,15 @@
 import { VirtualDOM } from '@youwol/flux-view'
-import { BehaviorSubject, ReplaySubject } from 'rxjs'
-import { ExplorerState, ExplorerView } from '../explorer/explorer.view'
+import { BehaviorSubject, from, ReplaySubject } from 'rxjs'
+import { ExplorerState, ExplorerView } from './explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
-import { Code, Document, DocumentContent, Permissions, Story } from '../models'
+import { Code, Document, DocumentContent, Permissions, Story } from './models'
 import { handleError } from './utils'
-import { DocumentNode, ExplorerNode, StoryNode } from '../explorer/nodes'
+import { DocumentNode, ExplorerNode, StoryNode } from './explorer/nodes'
 import { TopBannerState, TopBannerView } from './top-banner'
-import { GrapesEditorView } from '../grapes-editor/grapes.view'
-import { GrapesEditorState } from '../grapes-editor/grapes.state'
+import { GrapesEditorView } from './grapes-editor/grapes.view'
+import { GrapesEditorState } from './grapes-editor/grapes.state'
+import { mergeMap } from 'rxjs/operators'
+import { fetchLoadingGraph } from '@youwol/cdn-client'
 
 export enum SavingStatus {
     modified = 'Modified',
@@ -126,12 +128,20 @@ export class AppState {
             this.plugins$.next(actualPlugins.filter((p) => p != packageName))
             return
         }
-        this.plugins$.next([...actualPlugins, packageName])
         this.client
             .addPlugin$(this.story.storyId, { packageName })
-            .pipe(handleError({ browserContext: 'add plugin' }))
+            .pipe(
+                handleError({ browserContext: 'add plugin' }),
+                mergeMap((resp) => {
+                    return from(
+                        fetchLoadingGraph(
+                            resp.requirements.loadingGraph as any,
+                        ),
+                    )
+                }),
+            )
             .subscribe(() => {
-                // This is intentional: make the request happening
+                this.plugins$.next([...actualPlugins, packageName])
             })
     }
 

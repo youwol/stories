@@ -3,7 +3,7 @@ import { Observable, ReplaySubject } from 'rxjs'
 import { map } from 'rxjs/operators'
 import { Document, Story } from '../models'
 import { AssetsGateway } from '@youwol/http-clients'
-import { handleError } from '../main-app/utils'
+import { handleError } from '../utils'
 
 /**
  * Node's signal's type enum

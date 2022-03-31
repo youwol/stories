@@ -2,7 +2,7 @@ import { attr$, VirtualDOM } from '@youwol/flux-view'
 import { EditorMode, GrapesEditorState } from './grapes.state'
 import { Subject } from 'rxjs'
 import { AttributesPanel } from './utils.view'
-import { AppState } from '../main-app/app-state'
+import { AppState } from '../app-state'
 import { map } from 'rxjs/operators'
 
 interface Plugin {

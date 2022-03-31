@@ -1,8 +1,8 @@
 import { VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, of } from 'rxjs'
 import { TopBanner } from '@youwol/platform-essentials'
-import { Permissions } from '../models'
-import { fetchCodeMirror$ } from '../utils/cdn-fetch'
+import { Permissions } from './models'
+import { fetchCodeMirror$ } from './utils/cdn-fetch'
 
 /**
  * Layout combination between [[RenderView]] &  [[EditorView]]

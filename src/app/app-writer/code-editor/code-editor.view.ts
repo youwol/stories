@@ -1,5 +1,5 @@
 import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
-import { AppState } from '../main-app/app-state'
+import { AppState } from '../app-state'
 import { Code, CodeRequirements } from '../models'
 import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
 import { fetchCodeMirror$ } from '../utils/cdn-fetch'

@@ -1,14 +1,16 @@
 import { forkJoin, from, Observable, of, OperatorFunction } from 'rxjs'
 import { AssetsGateway, HTTPError } from '@youwol/http-clients'
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
-import { AppState, AppView } from './app-state'
-import { render } from '@youwol/flux-view'
+
 import {
     CdnMessageEvent,
     fetchLoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
-import { StoryResponse } from '@youwol/http-clients/dist/lib/assets-gateway'
+import {
+    DocumentResponse,
+    StoryResponse,
+} from '@youwol/http-clients/dist/lib/assets-gateway'
 
 export function defaultStoryTitle() {
     return 'tmp-story'
@@ -43,7 +45,11 @@ export function load$(
     storyId: string,
     container: HTMLElement,
     loadingScreen: LoadingScreenView,
-): Observable<{ appState: AppState; appView: AppView }> {
+): Observable<{
+    story: StoryResponse
+    rootDocument: DocumentResponse
+    permissions
+}> {
     container.innerHTML = ''
 
     const client = new AssetsGateway.AssetsGatewayClient()
@@ -112,12 +118,11 @@ export function load$(
         ),
     ]).pipe(
         tap(() => loadingScreen.done()),
-        map(([story, rootDocument, permissions]) => {
-            const appState = new AppState({ story, rootDocument, permissions })
-            const appView = new AppView({ state: appState })
-            return { appState, appView }
-        }),
-        tap(({ appView }) => container.appendChild(render(appView))),
+        map(([story, rootDocument, permissions]) => ({
+            story,
+            rootDocument,
+            permissions,
+        })),
     )
 }
 
@@ -127,6 +132,7 @@ export function load$(
  * @param loadingScreen loading screen to append loading events
  * @returns application state & application view
  */
+/*
 export function new$(
     container: HTMLElement,
     loadingScreen: LoadingScreenView,
@@ -167,3 +173,4 @@ export function new$(
         }),
     ) as Observable<{ appState: AppState; appView: AppView }>
 }
+ */

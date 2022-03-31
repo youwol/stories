@@ -1,7 +1,7 @@
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { ImmutableTree } from '@youwol/fv-tree'
 import { filter } from 'rxjs/operators'
-import { AppState, SavingStatus } from '../main-app/app-state'
+import { AppState, SavingStatus } from '../app-state'
 import { Document } from '../models'
 import { ContextMenuState } from './context-menu/context-menu.view'
 import { ContextMenu } from '@youwol/fv-context-menu'

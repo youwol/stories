@@ -1,7 +1,7 @@
 import { ContextMenu } from '@youwol/fv-context-menu'
 import { fromEvent, Observable } from 'rxjs'
 import { filter, map, tap } from 'rxjs/operators'
-import { AppState } from '../../main-app/app-state'
+import { AppState } from '../../app-state'
 import {
     ALL_ACTIONS,
     ContextRootNode,

@@ -35,7 +35,7 @@ import {
 } from 'rxjs'
 
 import { distinctUntilChanged, map, mergeMap, skip, take } from 'rxjs/operators'
-import { AppState } from '../main-app/app-state'
+import { AppState } from '../app-state'
 import { StorageManager } from './grapes.storage'
 import {
     grapesConfig,

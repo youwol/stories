@@ -1,7 +1,7 @@
-import { AppState } from '../main-app/app-state'
+import { AppState } from '../app-state'
 import { mergeMap, take } from 'rxjs/operators'
 import { ExplorerNode } from '../explorer/nodes'
-import { handleError } from '../main-app/utils'
+import { handleError } from '../utils'
 import { AssetsGateway } from '@youwol/http-clients'
 
 export class StorageManager {

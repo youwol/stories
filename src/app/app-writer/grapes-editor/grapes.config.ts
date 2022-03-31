@@ -3,7 +3,7 @@ import * as grapesjs from 'grapesjs'
 import { install } from '@youwol/cdn-client'
 import { GrapesEditorState } from './grapes.state'
 import { StorageManager } from './grapes.storage'
-import { AppState } from '../main-app/app-state'
+import { AppState } from '../app-state'
 
 export function grapesConfig({
     canvas,
