@@ -25,8 +25,8 @@ export class PageView implements VirtualDOM {
                         browserContext: 'PageView.constructor.getContent',
                     }),
                 ),
-                (document) => {
-                    return new PageContent({ innerHTML: document.html })
+                (page) => {
+                    return new PageContent(page)
                 },
             ),
         ]
@@ -39,8 +39,15 @@ export class PageContent implements VirtualDOM {
         elem: HTMLDivElement & HTMLElement$,
     ) => void
 
-    constructor(params: { innerHTML: string }) {
-        Object.assign(this, params)
+    constructor(page: DocumentContent) {
+        let styleElem = document.head.querySelector('style#gjs-css')
+        if (!styleElem) {
+            styleElem = document.createElement('style')
+            styleElem.id = 'gjs-css'
+            document.head.appendChild(styleElem)
+        }
+        styleElem.innerHTML = page.css
+        this.innerHTML = page.html
         this.connectedCallback = () => {
             const scripts = document.body.querySelectorAll('script')
             scripts.forEach((scriptToCopy) => {
