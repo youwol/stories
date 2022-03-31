@@ -1,5 +1,4 @@
 import { VirtualDOM } from '@youwol/flux-view'
-import { of } from 'rxjs'
 import { TopBanner } from '@youwol/platform-essentials'
 import { Permissions } from '../common'
 
@@ -43,9 +42,6 @@ export class TopBannerView extends TopBanner.YouwolBannerView {
     constructor(state: TopBannerState) {
         super({
             state,
-            badgesView: new TopBanner.LockerBadge({
-                locked$: of(state.permissions.write),
-            }),
             customActionsView: new BannerActionsView({ state }),
             userMenuView: TopBanner.defaultUserMenu(state),
             youwolMenuView: TopBanner.defaultYouWolMenu(state),
