@@ -1,8 +1,8 @@
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { AppStateReader } from './app-state'
 import { AssetsGateway } from '@youwol/http-clients'
-import { handleError } from '../common'
-import { mergeMap } from 'rxjs/operators'
+import { DocumentContent, handleError } from '../common'
+import { distinctUntilChanged, mergeMap } from 'rxjs/operators'
 
 export class PageView implements VirtualDOM {
     public readonly appState: AppStateReader
@@ -15,6 +15,9 @@ export class PageView implements VirtualDOM {
         this.children = [
             child$(
                 this.appState.selectedNode$.pipe(
+                    distinctUntilChanged(
+                        (node1, node2) => node1.id == node2.id,
+                    ),
                     mergeMap((node) => {
                         return this.client.getContent$(
                             node.story.storyId,
