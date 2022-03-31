@@ -64,35 +64,9 @@ export class BannerActionsView implements VirtualDOM {
         'd-flex justify-content-around my-auto custom-actions-view'
     public readonly children: VirtualDOM[]
 
-    static iconsFactory = {
-        [ViewMode.simultaneous]: 'fa-columns',
-        [ViewMode.editOnly]: 'fa-pen',
-        [ViewMode.renderOnly]: 'fa-eye',
-    }
-
     constructor(params: { state: TopBannerState }) {
         Object.assign(this, params)
-        const viewModeCombo = new TopBanner.ComboTogglesView<
-            ViewMode,
-            TopBannerState
-        >({
-            selection$: this.state.viewMode$,
-            state: this.state,
-            values: [
-                ViewMode.simultaneous,
-                ViewMode.editOnly,
-                ViewMode.renderOnly,
-            ],
-            viewFactory: (mode: ViewMode) => {
-                return new TopBanner.FaIconToggleView<ViewMode>({
-                    value: mode,
-                    selection$: this.state.viewMode$,
-                    classes: BannerActionsView.iconsFactory[mode] + ` ${mode}`,
-                })
-            },
-        })
-
-        this.children = [viewModeCombo]
+        this.children = []
     }
 }
 
