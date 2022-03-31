@@ -3,6 +3,7 @@ import { TopBannerView } from './top-banner'
 import { ExplorerView } from './explorer.view'
 import { AppStateReader } from './app-state'
 import { PageView } from './page.view'
+import { SideNavView } from '../common/side-nav.view'
 
 export class AppView implements VirtualDOM {
     public readonly state: AppStateReader
@@ -13,6 +14,11 @@ export class AppView implements VirtualDOM {
     constructor(params: { state: AppStateReader }) {
         Object.assign(this, params)
 
+        let sideNav = new SideNavView({
+            content: new ExplorerView({
+                explorerState: this.state.explorerState,
+            }),
+        })
         this.children = [
             {
                 class: 'fv-bg-background',
@@ -20,13 +26,11 @@ export class AppView implements VirtualDOM {
             },
             {
                 class: 'd-flex flex-grow-1',
-                style: { minHeight: '0px' },
-                children: [
-                    new ExplorerView({
-                        explorerState: this.state.explorerState,
-                    }),
-                    new PageView({ appState: this.state }),
-                ],
+                style: {
+                    position: 'relative',
+                    minHeight: '0px',
+                },
+                children: [sideNav, new PageView({ appState: this.state })],
             },
         ]
     }
