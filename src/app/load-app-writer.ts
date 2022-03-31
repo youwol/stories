@@ -5,7 +5,7 @@
  * @module load-app
  */
 import { Client } from '@youwol/cdn-client'
-import { load$ } from './app-writer/utils'
+import { load$ } from './common/utils'
 import { AppState, AppView } from './app-writer/app-state'
 import { render } from '@youwol/flux-view'
 
