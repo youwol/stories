@@ -3,10 +3,42 @@ import { BehaviorSubject } from 'rxjs'
 import { delay, filter } from 'rxjs/operators'
 
 type State = 'pined' | 'floatExpanded' | 'floatCollapsed'
+const baseStyle = {
+    paddingLeft: '10px',
+    paddingRight: '10px',
+    width: '250px',
+    minWidth: '250px',
+    maxWidth: '250px',
+    opacity: '1',
+}
+const styleFactory: Record<State, { [k: string]: string }> = {
+    pined: {
+        ...baseStyle,
+        position: 'static',
+    },
+    floatExpanded: {
+        ...baseStyle,
+        opacity: '0.95',
+        zIndex: '10',
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+    },
+    floatCollapsed: {
+        padding: '0px',
+        width: '5px',
+        minWidth: '5px',
+        maxWidth: '5px',
+        position: 'absolute',
+        top: '0px',
+        left: '0px',
+        overflow: 'hidden',
+    },
+}
 
 export class SideNavView implements VirtualDOM {
     public readonly class =
-        'h-100 fv-bg-background fv-text-primary side-nav overflow-auto'
+        'h-100 fv-bg-background fv-xx-lighter fv-text-primary side-nav overflow-auto'
     public readonly style: Stream$<State, { [k: string]: string }>
     public readonly state$ = new BehaviorSubject<State>('pined')
     public readonly children: VirtualDOM[]
@@ -38,33 +70,6 @@ export class SideNavView implements VirtualDOM {
             ),
         ]
 
-        const styleFactory: Record<State, { [k: string]: string }> = {
-            pined: {
-                paddingLeft: '5px',
-                paddingRight: '5px',
-                width: '250px',
-                position: 'static',
-                opacity: '1',
-            },
-            floatExpanded: {
-                paddingLeft: '5px',
-                paddingRight: '5px',
-                opacity: '0.95',
-                zIndex: '10',
-                width: '250px',
-                position: 'absolute',
-                top: '0px',
-                left: '0px',
-            },
-            floatCollapsed: {
-                padding: '0px',
-                width: '5px',
-                position: 'absolute',
-                top: '0px',
-                left: '0px',
-                overflow: 'hidden',
-            },
-        }
         this.style = attr$(this.state$, (state) => {
             return styleFactory[state]
         })
@@ -72,18 +77,35 @@ export class SideNavView implements VirtualDOM {
 }
 
 export class SideBarHeaderView implements VirtualDOM {
-    public readonly class = 'd-flex flex-row-reverse border-bottom'
+    public readonly class
     public readonly children: VirtualDOM[]
-
     public readonly state$: BehaviorSubject<State>
 
     constructor(params: { state$: BehaviorSubject<State> }) {
         Object.assign(this, params)
-        const baseClasses = 'p-1 fas fa-thumbtack fv-pointer'
+        this.class = attr$(this.state$, (state) =>
+            state == 'floatCollapsed'
+                ? 'd-none'
+                : 'd-flex fv-border-bottom-background-alt mb-3',
+        )
+        const baseClasses = 'p-1 fas fa-thumbtack fv-pointer fv-hover-xx-darker'
         this.children = [
             {
+                class: 'd-flex align-items-center fv-xx-darker',
+                children: [
+                    {
+                        class: 'fas fa-sitemap pr-1',
+                    },
+                    {
+                        innerText: 'structure',
+                    },
+                ],
+            },
+            {
+                class: 'flex-grow-1',
+            },
+            {
                 class: attr$(this.state$, (state) => {
-                    if (state == 'floatCollapsed') return 'd-none'
                     return state == 'pined'
                         ? `${baseClasses} fv-text-focus`
                         : baseClasses
