@@ -42,7 +42,7 @@ export abstract class ExplorerNode extends ImmutableTree.Node {
  * Story node of explorer's node
  */
 export class StoryNode extends ExplorerNode {
-    rootDocument: Document
+    public readonly rootDocument: Document
 
     constructor({
         story,
@@ -73,7 +73,7 @@ export class StoryNode extends ExplorerNode {
  * Document node of explorer's node
  */
 export class DocumentNode extends ExplorerNode {
-    document: Document
+    public readonly document: Document
 
     constructor({
         story,
