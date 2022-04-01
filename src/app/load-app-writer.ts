@@ -5,7 +5,7 @@
  * @module load-app
  */
 import { Client } from '@youwol/cdn-client'
-import { load$ } from './common/utils'
+import { load$ } from './common'
 import { AppState, AppView } from './app-writer/app-state'
 import { render } from '@youwol/flux-view'
 
@@ -16,8 +16,13 @@ const load = storyIdQueryParam
     ? load$(storyIdQueryParam, container, Client['initialLoadingScreen'])
     : load$('tmp-story', container, Client['initialLoadingScreen'])
 
-load.subscribe(({ story, rootDocument, permissions }) => {
-    const appState = new AppState({ story, rootDocument, permissions })
+load.subscribe(({ story, globalContents, rootDocument, permissions }) => {
+    const appState = new AppState({
+        story,
+        globalContents,
+        rootDocument,
+        permissions,
+    })
     const appView = new AppView({ state: appState })
     container.appendChild(render(appView))
 })

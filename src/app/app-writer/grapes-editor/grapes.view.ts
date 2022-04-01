@@ -17,7 +17,7 @@ import { CodeEditorView } from '../code-editor/code-editor.view'
 
 export class GrapesEditorView implements VirtualDOM {
     public readonly state: GrapesEditorState
-    public readonly class = 'w-100 d-flex'
+    public readonly class = 'w-100 d-flex h-100'
     public readonly children: VirtualDOM[]
     public readonly canvasView: CanvasView
     public readonly settingsView: SettingsView
@@ -68,7 +68,7 @@ export class GrapesEditorView implements VirtualDOM {
 
 export class CanvasView implements VirtualDOM {
     public readonly id = 'gjs'
-    public readonly class = 'flex-grow-1 p-2 fv-border-primary'
+    public readonly class = 'flex-grow-1 p-2'
     public readonly htmlElement$ = new ReplaySubject<
         HTMLElement$ & HTMLDivElement
     >(1)
@@ -83,7 +83,8 @@ export class CanvasView implements VirtualDOM {
 }
 
 export class SettingsView implements VirtualDOM {
-    public readonly class = 'flex-grow-1 gjs-one-bg fv-color-primary'
+    public readonly class =
+        'flex-grow-1 gjs-one-bg fv-border-left-background-alt'
     public readonly overallSettings: OverallSettings
     public readonly attributesEditor: AttributesEditor
     public readonly children: VirtualDOM[]

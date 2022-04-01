@@ -29,12 +29,20 @@ import * as grapesjs from 'grapesjs'
 import {
     BehaviorSubject,
     combineLatest,
+    from,
     merge,
     Observable,
     ReplaySubject,
 } from 'rxjs'
 
-import { distinctUntilChanged, map, mergeMap, skip, take } from 'rxjs/operators'
+import {
+    distinctUntilChanged,
+    map,
+    mergeMap,
+    skip,
+    take,
+    tap,
+} from 'rxjs/operators'
 import { AppState } from '../app-state'
 import { StorageManager } from './grapes.storage'
 import {
@@ -100,7 +108,10 @@ export class GrapesEditorState {
         Object.assign(this, params)
 
         this.storage = new StorageManager({ appState: this.appState })
-        this.subscriptions = [this.connectActions()]
+        this.subscriptions = [
+            this.connectActions(),
+            ...this.connectEnvGlobals(),
+        ]
         combineLatest([
             this.loadedNativeEditor$,
             this.appState.selectedNode$.pipe(
@@ -152,18 +163,22 @@ export class GrapesEditorState {
                         plugins,
                     ]
                 }),
-                mergeMap(([config, plugins]) => {
+                map(([config, plugins]) => {
                     this.nativeEditor = grapesjs.init(config)
                     this.synchronizePlugins(plugins, this.nativeEditor)
                     this.nativeEditor.StorageManager.add(
                         StorageManager.type,
                         this.storage,
                     )
-                    postInitConfiguration(this.nativeEditor, this.appState)
                     this.nativeEditor.render()
-                    this.nativeEditor.on('load', () => {
-                        installStartingCss(this.nativeEditor).then(() => {
-                            this.loadedNativeEditor$.next(this.nativeEditor)
+                    return this.nativeEditor
+                }),
+                resolveGlobals(this.appState),
+                mergeMap((editor) => {
+                    postInitConfiguration(editor, this.appState)
+                    editor.on('load', () => {
+                        installStartingCss(editor).then(() => {
+                            this.loadedNativeEditor$.next(editor)
                         })
                     })
                     return this.loadedNativeEditor$
@@ -185,6 +200,33 @@ export class GrapesEditorState {
             .subscribe(({ editor, mode }) => {
                 actionsFactory[mode](editor)
             })
+    }
+
+    connectEnvGlobals() {
+        const subCss = combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.globalCss$.pipe(skip(1)),
+        ]).subscribe(([editor, css]) => {
+            const head = editor.Canvas.getDocument().head
+            let styleElem = head.querySelector('style#global-css')
+            styleElem.innerHTML = css
+        })
+        const subJs = combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.globalJavascript$.pipe(skip(1)),
+        ])
+            .pipe(
+                mergeMap(([editor, js]) => {
+                    const promise = new Function(js)()(
+                        editor.Canvas.getWindow(),
+                    )
+                    return from(promise).pipe(map((data) => [editor, data]))
+                }),
+            )
+            .subscribe(([editor, data]) => {
+                editor.Canvas.getWindow().globalJavascript = data
+            })
+        return [subCss, subJs]
     }
 
     synchronizePlugins(plugins: string[], _editor: grapesjs.Editor) {
@@ -240,5 +282,38 @@ export class GrapesEditorState {
             })
             delete this.installedPlugins[pluginName]
         })
+    }
+}
+
+function resolveGlobals(appState: AppState) {
+    const evaluate = (content, editor) => {
+        return from(new Function(content)()(editor.Canvas.getWindow()))
+    }
+    return (source$: Observable<grapesjs.Editor>) => {
+        return source$.pipe(
+            mergeMap((editor) =>
+                combineLatest([
+                    appState.globalJavascript$.pipe(
+                        take(1),
+                        mergeMap((js) => evaluate(js, editor)),
+                    ),
+                    appState.globalComponents$.pipe(
+                        take(1),
+                        mergeMap((js) => evaluate(js, editor)),
+                    ),
+                    appState.globalCss$.pipe(take(1)),
+                ]).pipe(map((globals) => [editor, ...globals])),
+            ),
+            tap(([editor, globalJsData, globalComponents, globalCss]) => {
+                const head = editor.Canvas.getDocument().head
+                const styleElem = document.createElement('style')
+                styleElem.id = 'global-css'
+                styleElem.innerHTML = globalCss
+                head.appendChild(styleElem)
+                editor.Canvas.getWindow().globalJavascript = globalJsData
+                console.log(globalComponents)
+            }),
+            map(([editor]) => editor),
+        )
     }
 }

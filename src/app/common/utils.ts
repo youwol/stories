@@ -11,6 +11,7 @@ import {
     DocumentResponse,
     StoryResponse,
 } from '@youwol/http-clients/dist/lib/assets-gateway'
+import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 
 export function defaultStoryTitle() {
     return 'tmp-story'
@@ -50,6 +51,7 @@ export function load$(
 ): Observable<{
     story: StoryResponse
     rootDocument: DocumentResponse
+    globalContents: GetGlobalContentResponse
     permissions
 }> {
     container.innerHTML = ''
@@ -60,9 +62,14 @@ export function load$(
         new CdnMessageEvent('fetch_root', 'Fetch root document...'),
     )
     loadingScreen.next(
+        new CdnMessageEvent(
+            'fetch_global_contents',
+            'Fetch global contents document...',
+        ),
+    )
+    loadingScreen.next(
         new CdnMessageEvent('fetch_access', 'Retrieve access...'),
     )
-
     return forkJoin([
         client.raw.story.getStory$(storyId).pipe(
             handleError({
@@ -88,6 +95,19 @@ export function load$(
                     ),
                 ).pipe(mapTo(story))
             }),
+        ),
+        client.stories.getGlobalContents$(storyId).pipe(
+            handleError({
+                browserContext: 'load$ > client.stories.getGlobalContents$',
+            }),
+            tap(() =>
+                loadingScreen.next(
+                    new CdnMessageEvent(
+                        'fetch_global_contents',
+                        'Fetch global contents...done',
+                    ),
+                ),
+            ),
         ),
         client.raw.story.queryDocuments$(storyId, storyId).pipe(
             handleError({
@@ -120,8 +140,9 @@ export function load$(
         ),
     ]).pipe(
         tap(() => loadingScreen.done()),
-        map(([story, rootDocument, permissions]) => ({
+        map(([story, globalContents, rootDocument, permissions]) => ({
             story,
+            globalContents,
             rootDocument,
             permissions,
         })),
