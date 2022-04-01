@@ -16,7 +16,6 @@ pre {
 .youwol-definition {
     display: none;
 }
-
-.fv-hover-font-bolder:hover{
-    font-weight: bolder;
+.fv-tree-arianeLine{
+    display: none
 }
