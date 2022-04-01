@@ -1,5 +1,4 @@
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
-import { ImmutableTree } from '@youwol/fv-tree'
 import { filter } from 'rxjs/operators'
 import { AppState, SavingStatus } from '../app-state'
 import { ContextMenuState } from './context-menu/context-menu.view'
@@ -15,65 +14,52 @@ import {
     DocumentContentBody,
     DocumentResponse,
 } from '@youwol/http-clients/dist/lib/assets-gateway'
+import {
+    ExplorerBaseState,
+    ExplorerBaseView,
+    nodeViewElements,
+} from '../../common/explorer-base.view'
 
 /**
  * Logic side of [[ExplorerView]]
  */
-export class ExplorerState extends ImmutableTree.State<ExplorerNode> {
+export class ExplorerState extends ExplorerBaseState {
     public readonly appState: AppState
 
-    constructor({
-        rootDocument,
-        appState,
-    }: {
-        rootDocument: Document
-        appState: AppState
-    }) {
-        const rootNode = new StoryNode({ story: appState.story, rootDocument })
-        super({
-            rootNode,
-            selectedNode: appState.selectedNode$,
-            expandedNodes: [appState.story.storyId],
-        })
-        this.appState = appState
-        appState.selectNode(rootNode)
-        appState.deletedDocument$.subscribe((document) => {
+    constructor(params: { rootDocument: Document; appState: AppState }) {
+        super(params)
+
+        this.appState.deletedDocument$.subscribe((document) => {
             this.removeNode(document.documentId)
-            this.selectedNode$.next(this.getNode(rootNode.id))
+            this.selectedNode$.next(this.getNode(this.rootNode.id))
         })
-        appState.addedDocument$.subscribe(({ parentDocumentId, document }) => {
-            const childNode = new DocumentNode({
-                story: this.appState.story,
-                document,
-            })
-            this.addChild(parentDocumentId, childNode)
-        })
+        this.appState.addedDocument$.subscribe(
+            ({ parentDocumentId, document }) => {
+                const childNode = new DocumentNode({
+                    story: this.appState.story,
+                    document,
+                })
+                this.addChild(parentDocumentId, childNode)
+            },
+        )
     }
 }
 
 /**
  * View of a story's tree structure
  */
-export class ExplorerView extends ImmutableTree.View<ExplorerNode> {
-    public readonly appState: AppState
-
-    public readonly style = {
-        minWidth: '300px',
-    }
-    public readonly class = 'p-2 border fv-color-primary'
-
+export class ExplorerView extends ExplorerBaseView {
     constructor({ explorerState }: { explorerState: ExplorerState }) {
         super({
-            state: explorerState,
+            explorerState,
             headerView,
         })
 
-        this.appState = explorerState.appState
         this.connectedCallback = (
             explorerDiv: HTMLElement$ & HTMLDivElement,
         ) => {
             const contextState = new ContextMenuState({
-                appState: this.appState,
+                appState: this.appState as AppState,
                 explorerState: this.state as ExplorerState,
                 explorerDiv,
             })
@@ -122,27 +108,13 @@ function headerRenamed(
  * @returns the view
  */
 function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
-    let faClass = ''
-    let id = ''
-    let nodeClass = ''
-    if (node instanceof StoryNode) {
-        faClass = 'fas fa-book-open'
-        id = node.story.storyId
-        nodeClass = 'story'
-    }
-    if (node instanceof DocumentNode) {
-        faClass = 'fas fa-file'
-        id = node.document.documentId
-        nodeClass = 'document'
-    }
+    const { iconView, headerClasses } = nodeViewElements(node)
 
     return {
-        id,
-        class: `d-flex align-items-center fv-pointer fv-hover-bg-background-alt w-100 ${nodeClass}`,
+        id: node.id,
+        class: headerClasses,
         children: [
-            {
-                class: faClass + ' px-2',
-            },
+            iconView,
             child$(
                 node.signal$.pipe(
                     filter((signal) => signal.type == SignalType.Rename),

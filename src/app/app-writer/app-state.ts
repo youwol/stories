@@ -11,6 +11,7 @@ import {
     DocumentNode,
     ExplorerNode,
     StoryNode,
+    AppStateCommonInterface,
 } from '../common'
 
 import { TopBannerState, TopBannerView } from './top-banner'
@@ -19,6 +20,7 @@ import { GrapesEditorState } from './grapes-editor/grapes.state'
 import { mergeMap } from 'rxjs/operators'
 import { fetchLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
+import { SideNavView } from '../common/side-nav.view'
 
 export enum SavingStatus {
     modified = 'Modified',
@@ -29,7 +31,7 @@ export enum SavingStatus {
 /**
  * Global application state, logic side of [[AppView]]
  */
-export class AppState {
+export class AppState implements AppStateCommonInterface {
     static debounceTimeSave = 1000
     public readonly topBannerState: TopBannerState
 
@@ -173,16 +175,21 @@ export class AppView implements VirtualDOM {
 
     constructor(params: { state: AppState }) {
         Object.assign(this, params)
-
+        let sideNav = new SideNavView({
+            content: new ExplorerView({
+                explorerState: this.state.explorerState,
+            }),
+        })
         this.children = [
             new TopBannerView(this.state.topBannerState),
             {
                 class: 'd-flex flex-grow-1',
-                style: { minHeight: '0px' },
+                style: {
+                    position: 'relative',
+                    minHeight: '0px',
+                },
                 children: [
-                    new ExplorerView({
-                        explorerState: this.state.explorerState,
-                    }),
+                    sideNav,
                     new GrapesEditorView({
                         state: new GrapesEditorState({
                             appState: this.state,
