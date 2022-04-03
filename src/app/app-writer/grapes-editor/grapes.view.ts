@@ -10,7 +10,6 @@ import { BehaviorSubject, Observable, ReplaySubject, Subject } from 'rxjs'
 
 import { styleToggleBase, ToggleMenu } from '../utils/utils.view'
 import * as grapesjs from 'grapesjs'
-import { resizablePanel } from '@youwol/fv-group'
 import { ToolboxesPanel } from './toolboxes.view'
 import { AttributesPanel } from './utils.view'
 import { CodeEditorView } from '../code-editor/code-editor.view'
@@ -36,7 +35,13 @@ export class GrapesEditorView implements VirtualDOM {
             {
                 class: 'd-flex flex-column w-100 h-100',
                 children: [
-                    this.canvasView,
+                    {
+                        class: 'h-100 w-100 d-flex flex-column',
+                        children: [
+                            new OverallSettings(params),
+                            this.canvasView,
+                        ],
+                    },
                     child$(this.state.appState.codeEdition$, (code) => {
                         return code
                             ? new CodeEditorView({
@@ -47,9 +52,7 @@ export class GrapesEditorView implements VirtualDOM {
                     }),
                 ],
             },
-            resizablePanel(this.settingsView, 'Toolboxes', 'right', {
-                minWidth: 195,
-            }),
+            this.settingsView,
         ]
 
         const bodySettings = this.settingsView.attributesEditor.body
@@ -68,7 +71,7 @@ export class GrapesEditorView implements VirtualDOM {
 
 export class CanvasView implements VirtualDOM {
     public readonly id = 'gjs'
-    public readonly class = 'flex-grow-1 p-2'
+    public readonly class = 'flex-grow-1 px-2 pb-2'
     public readonly htmlElement$ = new ReplaySubject<
         HTMLElement$ & HTMLDivElement
     >(1)
@@ -90,13 +93,8 @@ export class SettingsView implements VirtualDOM {
     public readonly children: VirtualDOM[]
 
     constructor(params: { state: GrapesEditorState }) {
-        this.overallSettings = new OverallSettings(params)
         this.attributesEditor = new AttributesEditor(params)
-        this.children = [
-            this.overallSettings,
-            { class: 'mb-1 mx-2 border-top' },
-            this.attributesEditor,
-        ]
+        this.children = [this.attributesEditor]
     }
 }
 
@@ -133,7 +131,7 @@ export class DeviceModeToggle extends ToggleMenu<DeviceMode> {
 }
 
 export class OverallSettings implements VirtualDOM {
-    public readonly class = 'd-flex justify-content-between p-1'
+    public readonly class = 'd-flex justify-content-around'
     public readonly children: VirtualDOM[]
 
     constructor(params: { state: GrapesEditorState }) {
