@@ -226,7 +226,26 @@ export class GrapesEditorState {
             .subscribe(([editor, data]) => {
                 editor.Canvas.getWindow().globalJavascript = data
             })
-        return [subCss, subJs]
+        const subComponents = combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.globalComponents$.pipe(skip(1)),
+        ])
+            .pipe(
+                mergeMap(([editor, js]) => {
+                    const promise = new Function(js)()(window)
+                    return from(promise).pipe(map((data) => [editor, data]))
+                }),
+            )
+            .subscribe(([editor, data]) => {
+                window['globalPlugin'] = data
+                this.uninstallPlugin('globalPlugin')
+                this.synchronizePlugins(
+                    [...Object.keys(this.installedPlugins), 'globalPlugin'],
+                    editor,
+                )
+            })
+
+        return [subCss, subJs, subComponents]
     }
 
     synchronizePlugins(plugins: string[], _editor: grapesjs.Editor) {
