@@ -39,7 +39,8 @@ export class ExplorerState extends ExplorerBaseState {
                     story: this.appState.story,
                     document,
                 })
-                this.addChild(parentDocumentId, childNode)
+                if (Array.isArray(this.getNode(parentDocumentId).children))
+                    this.addChild(parentDocumentId, childNode)
             },
         )
     }
