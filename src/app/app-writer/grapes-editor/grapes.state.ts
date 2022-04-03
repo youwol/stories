@@ -273,15 +273,20 @@ export class GrapesEditorState {
             this.installedPlugins[pluginName] = { components, blocks }
         })
         pluginsToRemove.forEach((pluginName) => {
-            const { blocks, components } = this.installedPlugins[pluginName]
-            blocks.forEach((block) => {
-                this.nativeEditor.BlockManager.remove(block)
-            })
-            components.forEach((component) => {
-                this.nativeEditor.DomComponents.removeType(component)
-            })
-            delete this.installedPlugins[pluginName]
+            this.uninstallPlugin(pluginName)
         })
+    }
+
+    private uninstallPlugin(pluginName) {
+        if (!this.installedPlugins[pluginName]) return
+        const { blocks, components } = this.installedPlugins[pluginName]
+        blocks.forEach((block) => {
+            this.nativeEditor.BlockManager.remove(block)
+        })
+        components.forEach((component) => {
+            this.nativeEditor.DomComponents.removeType(component)
+        })
+        delete this.installedPlugins[pluginName]
     }
 }
 
