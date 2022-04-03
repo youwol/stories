@@ -66,3 +66,16 @@ export class ComponentsBottomNavTab extends Dockable.Tab {
         })
     }
 }
+
+export class CodePropertyEditorBottomNavTab extends Dockable.Tab {
+    constructor(params: { appState: AppState; code: Code }) {
+        super({
+            id: 'code-property-editor',
+            title: 'Property',
+            icon: 'fas fa-code',
+            content: () => {
+                return new CodeEditorView(params)
+            },
+        })
+    }
+}

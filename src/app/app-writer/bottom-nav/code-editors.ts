@@ -2,6 +2,8 @@ import { CodeEditorView } from '../code-editor/code-editor.view'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { VirtualDOM } from '@youwol/flux-view'
 import { AppState } from '../app-state'
+import { Code } from '../models'
+import { CodeRequirements } from '../../common'
 
 const configurationBase = {
     value: '',
@@ -21,7 +23,7 @@ export class EditorBottomNavView implements VirtualDOM {
         css: string[]
     }
     public readonly configuration
-    public readonly class = 'd-flex'
+    public readonly class = 'd-flex h-100'
     public readonly children: VirtualDOM[]
 
     constructor(params: {
@@ -29,10 +31,7 @@ export class EditorBottomNavView implements VirtualDOM {
         content$: BehaviorSubject<string>
         onRun: (content: string) => void
         configuration
-        requirements: {
-            scripts: string[]
-            css: string[]
-        }
+        requirements: CodeRequirements
     }) {
         Object.assign(this, params)
         const editor = new CodeEditorView({
@@ -121,6 +120,21 @@ export class JsEditor extends EditorBottomNavView {
                 css: [],
             },
             onRun,
+        })
+    }
+}
+
+export class CustomEditor extends CodeEditorView {
+    constructor({
+        appState,
+        settings,
+    }: {
+        appState: AppState
+        settings: Code
+    }) {
+        super({
+            appState: appState,
+            code: settings,
         })
     }
 }

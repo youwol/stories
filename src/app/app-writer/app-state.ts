@@ -23,6 +23,7 @@ import { Code } from './models'
 import { SideNavView } from '../common/side-nav.view'
 import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 import {
+    CodePropertyEditorBottomNavTab,
     ComponentsBottomNavTab,
     CssBottomNavTab,
     JsBottomNavTab,
@@ -189,11 +190,23 @@ export class AppState implements AppStateCommonInterface {
     }
 
     editCode(code: Code) {
-        this.codeEdition$.next(code)
+        const tabs = this.bottomNavState.tabs$.getValue()
+        const propertyTab = new CodePropertyEditorBottomNavTab({
+            appState: this,
+            code,
+        })
+        this.bottomNavState.tabs$.next([propertyTab, ...tabs])
+        this.bottomNavState.selected$.next('code-property-editor')
+        this.bottomNavState.viewState$.next('pined')
     }
 
     removeCodeEditor() {
+        this.bottomNavState.selected$.next('css')
+        const tabs = this.bottomNavState.tabs$
+            .getValue()
+            .filter((t) => !(t instanceof CodePropertyEditorBottomNavTab))
         this.codeEdition$.next(undefined)
+        this.bottomNavState.tabs$.next(tabs)
     }
 
     applyGlobals(globals: {
