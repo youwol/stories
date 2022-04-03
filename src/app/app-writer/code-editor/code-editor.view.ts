@@ -56,8 +56,7 @@ export class CodeEditorState {
 export class CodeEditorView implements VirtualDOM {
     public readonly appState: AppState
     public readonly state: CodeEditorState
-    public readonly class =
-        'fv-bg-background fv-text-primary d-flex flex-column w-100 h-50'
+    public readonly class = 'fv-bg-background fv-text-primary d-flex w-100'
     public readonly code: Code
     public readonly children: Array<VirtualDOM>
     public readonly style = {
@@ -72,7 +71,7 @@ export class CodeEditorView implements VirtualDOM {
         })
         this.children = [
             {
-                class: 'w-100 d-flex justify-content-center',
+                class: 'd-flex flex-column px-1',
                 children: [this.code.headerView(this.state)],
             },
             {
