@@ -21,17 +21,13 @@ import { mergeMap } from 'rxjs/operators'
 import { fetchLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { SideNavView } from '../common/side-nav.view'
-import {
-    BottomNav,
-    BottomNavState,
-    BottomNavViewState,
-} from './bottom-nav/bottom-nav'
 import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 import {
     ComponentsBottomNavTab,
     CssBottomNavTab,
     JsBottomNavTab,
 } from './bottom-nav/predefined-tabs'
+import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 
 export enum SavingStatus {
     modified = 'Modified',
@@ -45,7 +41,7 @@ export enum SavingStatus {
 export class AppState implements AppStateCommonInterface {
     static debounceTimeSave = 1000
     public readonly topBannerState: TopBannerState
-    public readonly bottomNavState: BottomNavState
+    public readonly bottomNavState: Dockable.State
 
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
@@ -101,8 +97,9 @@ export class AppState implements AppStateCommonInterface {
             this.globalContents.components,
         )
 
-        this.bottomNavState = new BottomNavState({
-            viewState$: new BehaviorSubject<BottomNavViewState>('collapsed'),
+        this.bottomNavState = new Dockable.State({
+            disposition: 'bottom',
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
             tabs$: new BehaviorSubject([
                 new CssBottomNavTab({ appState: this }),
                 new JsBottomNavTab({ appState: this }),
@@ -252,7 +249,7 @@ export class AppView implements VirtualDOM {
                     }),
                 ],
             },
-            new BottomNav({ state: this.state.bottomNavState }),
+            new Dockable.View({ state: this.state.bottomNavState }),
         ]
     }
 }
