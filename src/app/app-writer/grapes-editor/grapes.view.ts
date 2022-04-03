@@ -87,8 +87,7 @@ export class CanvasView implements VirtualDOM {
 
 export class SettingsView implements VirtualDOM {
     public readonly class =
-        'flex-grow-1 gjs-one-bg fv-border-left-background-alt'
-    public readonly overallSettings: OverallSettings
+        'h-100 d-flex flex-column gjs-one-bg fv-border-left-background-alt'
     public readonly attributesEditor: AttributesEditor
     public readonly children: VirtualDOM[]
 
@@ -143,6 +142,8 @@ export class OverallSettings implements VirtualDOM {
 }
 
 export class AttributesEditor implements VirtualDOM {
+    public readonly class = 'h-100 d-flex flex-column flex-grow-1'
+    public readonly style = { minHeight: '0px' }
     public readonly editorMode$ = new BehaviorSubject<EditorMode>('blocks')
     public readonly header: AttributesEditorHeader
     public readonly body: AttributesEditorBody
@@ -194,7 +195,8 @@ export class AttributesEditorHeader implements VirtualDOM {
 
 export class AttributesEditorBody implements VirtualDOM {
     public readonly editorMode$: Subject<EditorMode>
-    public readonly class = 'overflow-auto border border-dark panels-container'
+    public readonly class =
+        'overflow-auto border border-dark panels-container flex-grow-1'
     public readonly style = {
         height: 'calc(100% - 80px)',
     }
