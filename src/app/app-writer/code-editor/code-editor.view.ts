@@ -56,7 +56,8 @@ export class CodeEditorState {
 export class CodeEditorView implements VirtualDOM {
     public readonly appState: AppState
     public readonly state: CodeEditorState
-    public readonly class = 'fv-bg-background fv-text-primary d-flex w-100'
+    public readonly class =
+        'fv-bg-background fv-text-primary d-flex w-100 h-100'
     public readonly code: Code
     public readonly children: Array<VirtualDOM>
     public readonly style = {
@@ -76,9 +77,6 @@ export class CodeEditorView implements VirtualDOM {
             },
             {
                 class: 'w-100 flex-grow-1 overflow-auto',
-                style: {
-                    height: '50vh',
-                },
                 children: [
                     {
                         id: 'code-mirror-editor',
