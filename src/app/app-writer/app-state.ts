@@ -205,14 +205,18 @@ export class AppState implements AppStateCommonInterface {
     }
 
     editCode(code: Code) {
-        const tabs = this.bottomNavState.tabs$.getValue()
+        const tabs = this.bottomNavState.tabs$
+            .getValue()
+            .filter((t) => !(t instanceof CodePropertyEditorBottomNavTab))
         const propertyTab = new CodePropertyEditorBottomNavTab({
             appState: this,
             code,
         })
         this.bottomNavState.tabs$.next([propertyTab, ...tabs])
         this.bottomNavState.selected$.next('code-property-editor')
-        this.bottomNavState.viewState$.next('pined')
+        if (this.bottomNavState.viewState$.getValue() == 'collapsed') {
+            this.bottomNavState.viewState$.next('expanded')
+        }
     }
 
     removeCodeEditor() {
