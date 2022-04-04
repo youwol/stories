@@ -67,6 +67,21 @@ const styleFactory = (
         ...base,
         position: 'static',
     }
+    const pinedVariable: Record<Disposition, { [k: string]: string }> = {
+        bottom: {
+            minHeight: styleOptions.initialPanelSize,
+            maxHeight: styleOptions.initialPanelSize,
+        },
+        left: {
+            minWidth: styleOptions.initialPanelSize,
+            maxWidth: styleOptions.initialPanelSize,
+        },
+        right: {
+            minWidth: styleOptions.initialPanelSize,
+            maxWidth: styleOptions.initialPanelSize,
+        },
+    }
+
     const expandedBase = {
         ...base,
         opacity: '0.95',
@@ -117,7 +132,7 @@ const styleFactory = (
         },
     }
     return {
-        pined,
+        pined: { ...pined, ...pinedVariable[disposition] },
         expanded: { ...expandedBase, ...expandedVariable[disposition] },
         collapsed: { ...collapsedBase, ...collapsedVariable[disposition] },
     }
@@ -206,7 +221,9 @@ export class TabContent implements VirtualDOM {
     constructor(params: { state }) {
         Object.assign(this, params)
         this.class = attr$(this.state.viewState$, (viewState) => {
-            return viewState == 'collapsed' ? 'd-none' : 'flex-grow-1'
+            return viewState == 'collapsed'
+                ? 'd-none'
+                : 'flex-grow-1 fv-bg-background fv-x-lighter'
         })
         this.children = this.state.persistTabsView
             ? children$(this.state.tabs$, (tabs) => {
@@ -240,11 +257,11 @@ export class TabContent implements VirtualDOM {
 }
 
 export class HeaderView implements VirtualDOM {
-    static baseClasses = 'd-flex'
+    static baseClasses = 'd-flex fv-bg-background-alt'
     static classFactory: Record<Disposition, string> = {
-        bottom: `w-100 flex-row  fv-border-bottom-background-alt ${HeaderView.baseClasses}`,
-        left: `h-100 flex-column  fv-border-right-background-alt ${HeaderView.baseClasses}`,
-        right: `h-100 flex-column  fv-border-left-background-alt ${HeaderView.baseClasses}`,
+        bottom: `w-100 flex-row  fv-border-top-background ${HeaderView.baseClasses}`,
+        left: `h-100 flex-column  fv-border-right-background ${HeaderView.baseClasses}`,
+        right: `h-100 flex-column  fv-border-left-background ${HeaderView.baseClasses}`,
     }
 
     public readonly class: string
@@ -257,7 +274,6 @@ export class HeaderView implements VirtualDOM {
         connectedCallback: (element: HTMLDivElement) => void
     }) {
         Object.assign(this, params)
-        //this.connectedCallback = params.connectedCallback
         this.class = HeaderView.classFactory[this.state.disposition]
         const baseClasses = 'p-1 fas fa-thumbtack fv-pointer fv-hover-xx-darker'
         const pinView = {
@@ -288,7 +304,7 @@ export class HeaderView implements VirtualDOM {
 
 export class TabHeaderView implements VirtualDOM {
     static baseClasses =
-        'd-flex align-items-center fv-pointer fv-hover-bg-background-alt'
+        'd-flex align-items-center fv-pointer fv-hover-bg-background rounded'
     static classFactory: Record<Disposition, string> = {
         bottom: `flex-row ${TabHeaderView.baseClasses} px-2 mx-1`,
         left: `flex-column ${TabHeaderView.baseClasses} py-2 my-1`,
@@ -299,6 +315,7 @@ export class TabHeaderView implements VirtualDOM {
         left: `fv-border-right-focus`,
         right: `fv-border-left-focus`,
     }
+    static baseStyle = { borderWidth: '3px' }
     static styleFactory: Record<Disposition, { [k: string]: string }> = {
         bottom: {},
         left: {
@@ -333,7 +350,10 @@ export class TabHeaderView implements VirtualDOM {
     }
     constructor(params: { state: State; title: string; icon: string }) {
         Object.assign(this, params)
-        this.style = TabHeaderView.styleFactory[this.state.disposition]
+        this.style = {
+            ...TabHeaderView.baseStyle,
+            ...TabHeaderView.styleFactory[this.state.disposition],
+        }
         let baseClass = TabHeaderView.classFactory[this.state.disposition]
         this.class = attr$(this.state.selected$, (selected) => {
             return this.id == selected
