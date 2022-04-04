@@ -171,6 +171,7 @@ export class GrapesEditorState {
                 }),
                 map(([config, plugins]) => {
                     this.nativeEditor = grapesjs.init(config)
+                    this.nativeEditor.Components.addType('root', {})
                     this.synchronizePlugins(plugins, this.nativeEditor)
                     this.nativeEditor.StorageManager.add(
                         StorageManager.type,
