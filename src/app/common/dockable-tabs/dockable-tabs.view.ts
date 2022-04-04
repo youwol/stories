@@ -31,12 +31,13 @@ export class State {
     public readonly viewState$: BehaviorSubject<DisplayMode>
     public readonly tabs$: BehaviorSubject<Tab[]>
     public readonly selected$: Subject<string>
-
+    public readonly persistTabsView: boolean = false
     constructor(params: {
         disposition: Disposition
         viewState$: BehaviorSubject<DisplayMode>
         tabs$: BehaviorSubject<Tab[]>
         selected$: Subject<string>
+        persistTabsView?: boolean
     }) {
         Object.assign(this, params)
     }
@@ -198,7 +199,7 @@ export class View implements VirtualDOM {
 export class TabContent implements VirtualDOM {
     public readonly state: State
     public readonly class: Stream$<DisplayMode, string>
-    public readonly children: VirtualDOM[]
+    public readonly children: VirtualDOM[] | Stream$<Tab[], VirtualDOM[]>
     public readonly style = {
         minHeight: '0px',
     }
@@ -207,21 +208,34 @@ export class TabContent implements VirtualDOM {
         this.class = attr$(this.state.viewState$, (viewState) => {
             return viewState == 'collapsed' ? 'd-none' : 'flex-grow-1'
         })
-        this.children = [
-            child$(
-                combineLatest([
-                    this.state.viewState$,
-                    this.state.selected$,
-                    this.state.tabs$,
-                ]),
-                ([viewState, selected, tabs]) => {
-                    if (viewState == 'collapsed') return {}
-                    const selectedTab = tabs.find((tab) => tab.id == selected)
-                    if (!selectedTab) return {}
-                    return selectedTab.content()
-                },
-            ),
-        ]
+        this.children = this.state.persistTabsView
+            ? children$(this.state.tabs$, (tabs) => {
+                  return tabs.map((tab) => {
+                      return {
+                          class: attr$(this.state.selected$, (selected) =>
+                              selected == tab.id ? 'h-100 w-100' : 'd-none',
+                          ),
+                          children: [tab.content()],
+                      }
+                  })
+              })
+            : [
+                  child$(
+                      combineLatest([
+                          this.state.viewState$,
+                          this.state.selected$,
+                          this.state.tabs$,
+                      ]),
+                      ([viewState, selected, tabs]) => {
+                          if (viewState == 'collapsed') return {}
+                          const selectedTab = tabs.find(
+                              (tab) => tab.id == selected,
+                          )
+                          if (!selectedTab) return {}
+                          return selectedTab.content()
+                      },
+                  ),
+              ]
     }
 }
 
