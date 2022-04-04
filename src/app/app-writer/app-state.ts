@@ -14,7 +14,7 @@ import {
     AppStateCommonInterface,
 } from '../common'
 
-import { TopBannerState, TopBannerView } from './top-banner'
+import { TopBannerView } from './top-banner'
 import { GrapesEditorView } from './grapes-editor/grapes.view'
 import { GrapesEditorState } from './grapes-editor/grapes.state'
 import { mapTo, mergeMap } from 'rxjs/operators'
@@ -41,11 +41,13 @@ export enum SavingStatus {
  */
 export class AppState implements AppStateCommonInterface {
     static debounceTimeSave = 1000
-    public readonly topBannerState: TopBannerState
+
     public readonly bottomNavState: Dockable.State
     public readonly leftNavState: Dockable.State
 
     public readonly explorerState: ExplorerState
+    public readonly grapesEditorState: GrapesEditorState
+
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
 
     public readonly addedDocument$ = new ReplaySubject<{
@@ -88,10 +90,6 @@ export class AppState implements AppStateCommonInterface {
     }) {
         Object.assign(this, params)
 
-        this.topBannerState = new TopBannerState({
-            permissions: this.permissions,
-        })
-
         this.globalCss$ = new BehaviorSubject<string>(this.globalContents.css)
         this.globalJavascript$ = new BehaviorSubject<string>(
             this.globalContents.javascript,
@@ -117,7 +115,7 @@ export class AppState implements AppStateCommonInterface {
         })
         this.leftNavState = new Dockable.State({
             disposition: 'left',
-            viewState$: new BehaviorSubject<Dockable.DisplayMode>('pined'),
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
             tabs$: new BehaviorSubject([
                 new StructureTab({
                     explorerView: new ExplorerView({
@@ -137,6 +135,10 @@ export class AppState implements AppStateCommonInterface {
             this.bottomNavState.viewState$,
             this.leftNavState.viewState$,
         ).pipe(mapTo(true))
+
+        this.grapesEditorState = new GrapesEditorState({
+            appState: this,
+        })
     }
 
     selectNode(node: ExplorerNode) {
@@ -269,7 +271,7 @@ export class AppView implements VirtualDOM {
             styleOptions: { initialPanelSize: '300px' },
         })
         this.children = [
-            new TopBannerView(this.state.topBannerState),
+            new TopBannerView(this.state),
             {
                 class: 'd-flex flex-grow-1',
                 style: {
@@ -280,9 +282,7 @@ export class AppView implements VirtualDOM {
                     child$(sideNav.placeholder$, (d) => d),
                     sideNav,
                     new GrapesEditorView({
-                        state: new GrapesEditorState({
-                            appState: this.state,
-                        }),
+                        state: this.state.grapesEditorState,
                     }),
                 ],
             },

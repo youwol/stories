@@ -1,4 +1,4 @@
-import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
+import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 
 import { DeviceMode, DisplayMode, GrapesEditorState } from './grapes.state'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
@@ -6,7 +6,6 @@ import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 import { styleToggleBase, ToggleMenu } from '../utils/utils.view'
 import * as grapesjs from 'grapesjs'
 import { ToolboxesTab } from './toolboxes.view'
-import { CodeEditorView } from '../code-editor/code-editor.view'
 import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
 
 export class GrapesEditorView implements VirtualDOM {
@@ -32,7 +31,7 @@ export class GrapesEditorView implements VirtualDOM {
         let toolboxTab = new ToolboxesTab({ state: this.state })
         this.rightNavState = new Dockable.State({
             disposition: 'right',
-            viewState$: new BehaviorSubject<Dockable.DisplayMode>('pined'),
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
             tabs$: new BehaviorSubject([
                 blocksTabView,
                 styleTabView,
@@ -46,23 +45,7 @@ export class GrapesEditorView implements VirtualDOM {
         this.children = [
             {
                 class: 'd-flex flex-column w-100 h-100',
-                children: [
-                    {
-                        class: 'h-100 w-100 d-flex flex-column',
-                        children: [
-                            new OverallSettings(params),
-                            this.canvasView,
-                        ],
-                    },
-                    child$(this.state.appState.codeEdition$, (code) => {
-                        return code
-                            ? new CodeEditorView({
-                                  appState: this.state.appState,
-                                  code,
-                              })
-                            : {}
-                    }),
-                ],
+                children: [this.canvasView],
             },
             new Dockable.View({
                 state: this.rightNavState,

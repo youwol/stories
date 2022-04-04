@@ -1,72 +1,21 @@
 import { VirtualDOM } from '@youwol/flux-view'
-import { BehaviorSubject, of } from 'rxjs'
 import { TopBanner } from '@youwol/platform-essentials'
-import { Permissions } from '../common'
-import { fetchCodeMirror$ } from './utils/cdn-fetch'
-
-/**
- * Layout combination between [[RenderView]] &  [[EditorView]]
- */
-export enum ViewMode {
-    /**
-     * Only [[RenderView]] displayed
-     */
-    renderOnly = 'renderOnly',
-
-    /**
-     * Only [[EditorView]] displayed
-     */
-    editOnly = 'editOnly',
-
-    /**
-     * Both [[RenderView]] & [[EditorView]]
-     */
-    simultaneous = 'simultaneous',
-}
-
-/**
- * Encapsulates the state w/ top banner, see [[BannerActionsView]], [[TopBannerView]]
- */
-export class TopBannerState extends TopBanner.YouwolBannerState {
-    public readonly viewMode$: BehaviorSubject<ViewMode>
-    public readonly permissions: Permissions
-
-    /**
-     *
-     * @param parameters Constructor's parameters
-     * @param parameters.permissions user's permission w/ the story
-     */
-    constructor(parameters: { permissions: Permissions }) {
-        super({
-            cmEditorModule$: fetchCodeMirror$({
-                modules: [],
-                scripts: [],
-                css: [],
-            }),
-        })
-        Object.assign(this, parameters)
-
-        this.viewMode$ = new BehaviorSubject<ViewMode>(
-            this.permissions.write
-                ? ViewMode.simultaneous
-                : ViewMode.renderOnly,
-        )
-    }
-}
+import { OverallSettings } from './grapes-editor/grapes.view'
+import { AppState } from './app-state'
 
 /**
  * Main actions exposed in the [[TopBannerView]]
  */
 export class BannerActionsView implements VirtualDOM {
-    public readonly state: TopBannerState
-
     public readonly class =
         'd-flex justify-content-around my-auto custom-actions-view'
     public readonly children: VirtualDOM[]
 
-    constructor(params: { state: TopBannerState }) {
+    constructor(params: { appState: AppState }) {
         Object.assign(this, params)
-        this.children = []
+        this.children = [
+            new OverallSettings({ state: params.appState.grapesEditorState }),
+        ]
     }
 }
 
@@ -74,13 +23,11 @@ export class BannerActionsView implements VirtualDOM {
  * Top banner of the application
  */
 export class TopBannerView extends TopBanner.YouwolBannerView {
-    constructor(state: TopBannerState) {
+    constructor(appState: AppState) {
+        let state = new TopBanner.YouwolBannerState()
         super({
             state,
-            badgesView: new TopBanner.LockerBadge({
-                locked$: of(state.permissions.write),
-            }),
-            customActionsView: new BannerActionsView({ state }),
+            customActionsView: new BannerActionsView({ appState }),
             userMenuView: TopBanner.defaultUserMenu(state),
             youwolMenuView: TopBanner.defaultYouWolMenu(state),
         })
