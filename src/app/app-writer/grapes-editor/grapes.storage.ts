@@ -3,13 +3,15 @@ import {
     debounceTime,
     distinctUntilChanged,
     mergeMap,
-    skip,
     take,
+    skip,
     tap,
 } from 'rxjs/operators'
 import { handleError, ExplorerNode } from '../../common'
 import { AssetsGateway } from '@youwol/http-clients'
 import { BehaviorSubject, of } from 'rxjs'
+
+type Document = AssetsGateway.DocumentContentBody
 
 export interface GjsData {
     'gsj-html': string
@@ -20,12 +22,11 @@ export interface GjsData {
 
 export class StorageManager {
     static type = 'YouWolStorage'
-
     public readonly appState: AppState
     public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
 
     public documentsChange$: {
-        [k: string]: BehaviorSubject<AssetsGateway.DocumentContentBody>
+        [k: string]: BehaviorSubject<Document>
     } = {}
 
     constructor(params: { appState: AppState }) {
@@ -40,13 +41,19 @@ export class StorageManager {
                     if (this.documentsChange$[node.id]) {
                         return of(this.documentsChange$[node.id].getValue())
                     }
-                    return this.client.getContent$(
-                        node.getDocument().storyId,
-                        node.getDocument().documentId,
-                    )
-                }),
-                handleError({
-                    browserContext: 'Selected node raw content',
+                    return this.client
+                        .getContent$(
+                            node.getDocument().storyId,
+                            node.getDocument().documentId,
+                        )
+                        .pipe(
+                            handleError({
+                                browserContext: 'Selected node raw content',
+                            }),
+                            tap((resp) => {
+                                this.createCache(node.id, resp)
+                            }),
+                        )
                 }),
             )
             .subscribe((resp) => {
@@ -72,43 +79,41 @@ export class StorageManager {
             components: gjsData['gjs-components'],
             styles: gjsData['gjs-styles'],
         }
-        if (this.documentsChange$[documentId] == undefined) {
-            this.documentsChange$[documentId] = new BehaviorSubject(document)
-            this.documentsChange$[documentId]
-                .pipe(
-                    // The first trigger is just after load => it is skipped
-                    skip(1),
-                    distinctUntilChanged(
-                        (x, y) => x.components == y.components,
-                    ),
-                    tap(() =>
-                        this.appState.setDocumentStatus(
-                            documentId,
-                            'content-changed',
-                        ),
-                    ),
-                    debounceTime(1000),
-                    tap(() => {
-                        this.appState.setDocumentStatus(
-                            documentId,
-                            'content-saving',
-                        )
-                    }),
-                    mergeMap((toSave: AssetsGateway.DocumentContentBody) => {
-                        return this.client.updateContent$(
-                            this.appState.story.storyId,
-                            documentId,
-                            toSave,
-                        )
-                    }),
-                    handleError({ browserContext: 'save document' }),
-                )
-                .subscribe(() => {
-                    this.appState.setDocumentStatus(documentId, 'content-saved')
-                    clb()
-                })
-            return
-        }
         this.documentsChange$[documentId].next(document)
+    }
+
+    createCache(documentId: string, document: Document) {
+        this.documentsChange$[documentId] = new BehaviorSubject(document)
+        this.documentsChange$[documentId]
+            .pipe(
+                skip(1),
+                distinctUntilChanged((x, y) => {
+                    return x.components == y.components
+                }),
+                tap(() => {
+                    this.appState.setDocumentStatus(
+                        documentId,
+                        'content-changed',
+                    )
+                }),
+                debounceTime(AppState.debounceTimeSave),
+                tap(() => {
+                    this.appState.setDocumentStatus(
+                        documentId,
+                        'content-saving',
+                    )
+                }),
+                mergeMap((toSave: AssetsGateway.DocumentContentBody) => {
+                    return this.client.updateContent$(
+                        this.appState.story.storyId,
+                        documentId,
+                        toSave,
+                    )
+                }),
+                handleError({ browserContext: 'save document' }),
+            )
+            .subscribe(() => {
+                this.appState.setDocumentStatus(documentId, 'content-saved')
+            })
     }
 }
