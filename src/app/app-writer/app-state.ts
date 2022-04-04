@@ -1,5 +1,5 @@
-import { VirtualDOM } from '@youwol/flux-view'
-import { BehaviorSubject, from, ReplaySubject } from 'rxjs'
+import { child$, VirtualDOM } from '@youwol/flux-view'
+import { BehaviorSubject, from, merge, Observable, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from './explorer/explorer.view'
 import { AssetsGateway } from '@youwol/http-clients'
 import {
@@ -17,10 +17,10 @@ import {
 import { TopBannerState, TopBannerView } from './top-banner'
 import { GrapesEditorView } from './grapes-editor/grapes.view'
 import { GrapesEditorState } from './grapes-editor/grapes.state'
-import { mergeMap } from 'rxjs/operators'
+import { mapTo, mergeMap } from 'rxjs/operators'
 import { fetchLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
-import { SideNavView } from '../common/side-nav.view'
+import { StructureTab } from '../common/side-nav.view'
 import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 import {
     CodePropertyEditorBottomNavTab,
@@ -78,6 +78,7 @@ export class AppState implements AppStateCommonInterface {
     public readonly codeEdition$ = new BehaviorSubject<Code | undefined>(
         undefined,
     )
+    public readonly dispositionChanged$ = new Observable<true>()
 
     constructor(params: {
         story: Story
@@ -132,6 +133,10 @@ export class AppState implements AppStateCommonInterface {
         })
 
         this.plugins$.next(this.story.requirements.plugins)
+        this.dispositionChanged$ = merge(
+            this.bottomNavState.viewState$,
+            this.leftNavState.viewState$,
+        ).pipe(mapTo(true))
     }
 
     selectNode(node: ExplorerNode) {

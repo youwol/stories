@@ -135,6 +135,12 @@ export class GrapesEditorState {
                 // No op for now
             })
         })
+        combineLatest([
+            this.loadedNativeEditor$,
+            this.appState.dispositionChanged$,
+        ]).subscribe(([editor]) => {
+            editor.refresh()
+        })
     }
 
     load({
