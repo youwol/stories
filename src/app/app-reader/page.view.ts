@@ -3,6 +3,7 @@ import { AppStateReader } from './app-state'
 import { AssetsGateway } from '@youwol/http-clients'
 import { DocumentContent, handleError } from '../common'
 import { distinctUntilChanged, mergeMap } from 'rxjs/operators'
+import { from } from 'rxjs'
 
 export class PageView implements VirtualDOM {
     public readonly appState: AppStateReader
@@ -12,9 +13,19 @@ export class PageView implements VirtualDOM {
 
     constructor(params: { appState: AppStateReader }) {
         Object.assign(this, params)
+        const styleElem = document.createElement('style')
+        styleElem.id = 'global-css'
+        styleElem.innerHTML = this.appState.globalContents.css
+        document.head.appendChild(styleElem)
+
         this.children = [
             child$(
-                this.appState.selectedNode$.pipe(
+                from(
+                    new Function(this.appState.globalContents.javascript)()(
+                        window,
+                    ),
+                ).pipe(
+                    mergeMap(() => this.appState.selectedNode$),
                     distinctUntilChanged(
                         (node1, node2) => node1.id == node2.id,
                     ),

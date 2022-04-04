@@ -15,9 +15,11 @@ export class AppStateReader {
     public readonly topBannerState: TopBannerState
     public readonly leftNavState: Dockable.State
     public readonly explorerState: ExplorerState
+    public readonly globalContents: GetGlobalContentResponse
 
     constructor(params: {
         story: Story
+        globalContents: GetGlobalContentResponse
         rootDocument: Document
         permissions?
     }) {
