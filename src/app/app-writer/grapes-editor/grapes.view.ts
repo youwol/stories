@@ -139,6 +139,7 @@ export class OverallSettings implements VirtualDOM {
     constructor(params: { state: GrapesEditorState }) {
         this.children = [
             new DisplayModeToggle(params.state.displayMode$),
+            { class: 'mx-3' },
             new DeviceModeToggle(params.state.deviceMode$),
         ]
     }
