@@ -122,7 +122,8 @@ export class GrapesEditorState {
             editor.CssComposer.clear() // Clear styles
             editor.UndoManager.clear()
             editor.load(() => {
-                // No op for now
+                // Select the root component
+                editor.select(editor.getComponents().at(0))
             })
         })
 
