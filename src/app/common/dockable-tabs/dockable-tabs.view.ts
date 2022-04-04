@@ -5,7 +5,7 @@ import {
     Stream$,
     VirtualDOM,
 } from '@youwol/flux-view'
-import { BehaviorSubject, combineLatest, Subject } from 'rxjs'
+import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
 
 export type Disposition = 'left' | 'bottom' | 'right'
 export type DisplayMode = 'pined' | 'expanded' | 'collapsed'
@@ -59,6 +59,7 @@ const baseStyle = (disposition: Disposition) => {
 
 const styleFactory = (
     disposition: Disposition,
+    styleOptions: StyleOptions,
 ): Record<DisplayMode, { [k: string]: string }> => {
     const base = baseStyle(disposition)
     const pined = {
@@ -77,14 +78,20 @@ const styleFactory = (
         bottom: {
             bottom: '0px',
             left: '0px',
+            minHeight: styleOptions.initialPanelSize,
+            maxHeight: styleOptions.initialPanelSize,
         },
         left: {
             top: '0px',
             left: '0px',
+            minWidth: styleOptions.initialPanelSize,
+            maxWidth: styleOptions.initialPanelSize,
         },
         right: {
             top: '0px',
             right: '0px',
+            minWidth: styleOptions.initialPanelSize,
+            maxWidth: styleOptions.initialPanelSize,
         },
     }
 
@@ -94,12 +101,18 @@ const styleFactory = (
     const collapsedVariable: Record<Disposition, { [k: string]: string }> = {
         bottom: {
             height: 'fit-content',
+            minHeight: 'auto',
+            maxHeight: 'auto',
         },
         left: {
             width: 'fit-content',
+            minWidth: 'auto',
+            maxWidth: 'auto',
         },
         right: {
             width: 'fit-content',
+            minWidth: 'auto',
+            maxWidth: 'auto',
         },
     }
     return {
@@ -109,16 +122,26 @@ const styleFactory = (
     }
 }
 
+export interface StyleOptions {
+    initialPanelSize?: string
+}
+export function defaultStyleOptions(): StyleOptions {
+    return {
+        initialPanelSize: '300px',
+    }
+}
+
 export class View implements VirtualDOM {
-    static baseClasses = 'fv-bg-background fv-border-top-background-alt d-flex'
+    static baseClasses = 'fv-bg-background d-flex'
     static classFactory: Record<Disposition, string> = {
-        bottom: `w-100 flex-column ${View.baseClasses}`,
-        left: `h-100 flex-row ${View.baseClasses}`,
-        right: `h-100 flex-row ${View.baseClasses}`,
+        bottom: `w-100 flex-column fv-border-top-background-alt ${View.baseClasses}`,
+        left: `h-100 flex-row fv-border-left-background-alt  fv-border-right-background-alt ${View.baseClasses}`,
+        right: `h-100 flex-row fv-border-left-background-alt  fv-border-right-background-alt ${View.baseClasses}`,
     }
     public readonly state: State
     public readonly class: string
     public readonly children: VirtualDOM[]
+    public readonly styleOptions: StyleOptions
 
     public readonly onmouseenter = () => {
         if (this.state.viewState$.getValue() == 'collapsed') {
@@ -131,15 +154,43 @@ export class View implements VirtualDOM {
     }
     public readonly style: Stream$<DisplayMode, { [k: string]: string }>
 
-    constructor(params: { state: State }) {
-        Object.assign(this, params)
+    public readonly placeholder$ = new ReplaySubject<VirtualDOM>(1)
+
+    constructor(params: { state: State; styleOptions?: StyleOptions }) {
+        this.state = params.state
         this.class = View.classFactory[this.state.disposition]
-        this.children = [
-            new HeaderView({ state: this.state }),
-            new TabContent({ state: this.state }),
-        ]
+        this.styleOptions = {
+            ...defaultStyleOptions(),
+            ...(params.styleOptions || {}),
+        }
+        let headerView = new HeaderView({
+            state: this.state,
+            connectedCallback: (e) => {
+                const vDOM = {
+                    style: attr$(this.state.viewState$, (displayMode) => {
+                        return displayMode == 'expanded'
+                            ? {
+                                  width: `${e.offsetWidth}px`,
+                              }
+                            : { width: '0px' }
+                    }),
+                }
+                this.placeholder$.next(vDOM)
+            },
+        })
+        let contentView = new TabContent({ state: this.state })
+
+        this.children = [headerView, contentView]
+        if (
+            this.state.disposition == 'bottom' ||
+            this.state.disposition == 'right'
+        )
+            this.children.reverse()
+
         this.style = attr$(this.state.viewState$, (state) => {
-            return styleFactory[state]
+            return styleFactory(this.state.disposition, this.styleOptions)[
+                state
+            ]
         })
     }
 }
@@ -175,80 +226,117 @@ export class TabContent implements VirtualDOM {
 }
 
 export class HeaderView implements VirtualDOM {
-    static baseClasses = 'd-flex fv-border-bottom-background-alt'
+    static baseClasses = 'd-flex'
     static classFactory: Record<Disposition, string> = {
-        bottom: `w-100 flex-row ${HeaderView.baseClasses}`,
-        left: `h-100 flex-column ${HeaderView.baseClasses}`,
-        right: `h-100 flex-column ${HeaderView.baseClasses}`,
+        bottom: `w-100 flex-row  fv-border-bottom-background-alt ${HeaderView.baseClasses}`,
+        left: `h-100 flex-column  fv-border-right-background-alt ${HeaderView.baseClasses}`,
+        right: `h-100 flex-column  fv-border-left-background-alt ${HeaderView.baseClasses}`,
     }
 
     public readonly class: string
     public readonly state: State
     public readonly children //: VirtualDOM[]
+    public readonly connectedCallback: (element: HTMLDivElement) => void
 
-    constructor(params: { state }) {
+    constructor(params: {
+        state
+        connectedCallback: (element: HTMLDivElement) => void
+    }) {
         Object.assign(this, params)
+        //this.connectedCallback = params.connectedCallback
         this.class = HeaderView.classFactory[this.state.disposition]
-        const baseClasses =
-            'p-1 fas fa-thumbtack fv-pointer fv-hover-xx-darker mx-3'
+        const baseClasses = 'p-1 fas fa-thumbtack fv-pointer fv-hover-xx-darker'
+        const pinView = {
+            class: attr$(this.state.viewState$, (state) => {
+                return state == 'pined'
+                    ? `${baseClasses} fv-text-focus`
+                    : baseClasses
+            }),
+            onclick: () => {
+                this.state.viewState$.getValue() == 'pined'
+                    ? this.state.viewState$.next('expanded')
+                    : this.state.viewState$.next('pined')
+            },
+        }
         this.children = children$(this.state.tabs$, (tabs: Tab[]) => {
-            return tabs
-                .map((tab) => {
+            return [
+                pinView,
+                ...tabs.map((tab) => {
                     return new TabHeaderView({
                         ...tab,
-                        selected$: this.state.selected$,
+                        state: this.state,
                     }) as VirtualDOM
-                })
-                .concat([
-                    {
-                        class: 'flex-grow-1',
-                    },
-                    {
-                        class: attr$(this.state.viewState$, (state) => {
-                            return state == 'pined'
-                                ? `${baseClasses} fv-text-focus`
-                                : baseClasses
-                        }),
-                        onclick: () => {
-                            this.state.viewState$.getValue() == 'pined'
-                                ? this.state.viewState$.next('expanded')
-                                : this.state.viewState$.next('pined')
-                        },
-                    },
-                ])
+                }),
+            ]
         })
     }
 }
 
 export class TabHeaderView implements VirtualDOM {
+    static baseClasses =
+        'd-flex align-items-center fv-pointer fv-hover-bg-background-alt'
+    static classFactory: Record<Disposition, string> = {
+        bottom: `flex-row ${TabHeaderView.baseClasses} px-2 mx-1`,
+        left: `flex-column ${TabHeaderView.baseClasses} py-2 my-1`,
+        right: `flex-column ${TabHeaderView.baseClasses} py-2 my-1`,
+    }
+    static classFactorySelected: Record<Disposition, string> = {
+        bottom: `fv-border-top-focus `,
+        left: `fv-border-right-focus`,
+        right: `fv-border-left-focus`,
+    }
+    static styleFactory: Record<Disposition, { [k: string]: string }> = {
+        bottom: {},
+        left: {
+            width: 'fit-content',
+        },
+        right: {
+            width: 'fit-content',
+        },
+    }
+
+    static styleText: Record<Disposition, { [k: string]: string }> = {
+        bottom: {},
+        left: {
+            writingMode: 'vertical-rl',
+            textOrientation: 'mixed',
+        },
+        right: {
+            writingMode: 'vertical-rl',
+            textOrientation: 'mixed',
+        },
+    }
+    public readonly state: State
+    public readonly style: { [k: string]: string }
     public readonly class: Stream$<string, string>
     public readonly id: string
     public readonly title: string
-    public readonly selected$: Subject<string>
     public readonly icon: string
     public readonly children: VirtualDOM[]
 
     public readonly onclick = () => {
-        this.selected$.next(this.id)
+        this.state.selected$.next(this.id)
     }
-    constructor(params: {
-        title: string
-        icon: string
-        selected$: Subject<string>
-    }) {
+    constructor(params: { state: State; title: string; icon: string }) {
         Object.assign(this, params)
-        let baseClass =
-            'd-flex align-items-center mx-1 fv-pointer fv-hover-bg-background-alt px-2'
-        this.class = attr$(this.selected$, (selected) => {
+        this.style = TabHeaderView.styleFactory[this.state.disposition]
+        let baseClass = TabHeaderView.classFactory[this.state.disposition]
+        this.class = attr$(this.state.selected$, (selected) => {
             return this.id == selected
-                ? `${baseClass} fv-border-bottom-focus`
+                ? `${baseClass} ${
+                      TabHeaderView.classFactorySelected[this.state.disposition]
+                  }`
                 : baseClass
         })
         this.children = [
             {
                 class: this.icon,
             },
-            { class: 'ml-2', innerText: this.title },
+            {
+                class: this.state.disposition == 'bottom' ? 'ml-2' : 'mt-2',
+                style: TabHeaderView.styleText[this.state.disposition],
+                innerText: this.title,
+            },
         ]
     }
 }
