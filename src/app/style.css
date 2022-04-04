@@ -19,3 +19,6 @@ pre {
 .fv-tree-arianeLine{
     display: none
 }
+.gjs-one-bg{
+    background-color: rgba(0,0,0,0) !important;
+}

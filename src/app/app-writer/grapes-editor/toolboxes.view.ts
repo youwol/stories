@@ -1,9 +1,8 @@
 import { attr$, VirtualDOM } from '@youwol/flux-view'
-import { EditorMode, GrapesEditorState } from './grapes.state'
-import { Subject } from 'rxjs'
-import { AttributesPanel } from './utils.view'
+import { GrapesEditorState } from './grapes.state'
 import { AppState } from '../app-state'
 import { map } from 'rxjs/operators'
+import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
 
 interface Plugin {
     packageName: string
@@ -23,6 +22,34 @@ const availablePlugins: Plugin[] = [
         packageName: '@youwol/grapes-flux',
     },
 ]
+
+export class ToolboxesTab extends Dockable.Tab {
+    public readonly children: VirtualDOM[]
+
+    constructor(params: { state: GrapesEditorState }) {
+        super({
+            id: 'plugins',
+            title: 'Plugins',
+            icon: 'fas fa-toolbox',
+            content: () => {
+                return {
+                    class: 'w-100 h-100',
+                    children: [
+                        {
+                            class: 'p-2',
+                            children: availablePlugins.map((plugin) => {
+                                return new PluginView({
+                                    plugin,
+                                    state: params.state.appState,
+                                })
+                            }),
+                        },
+                    ],
+                }
+            },
+        })
+    }
+}
 
 export class PluginView implements VirtualDOM {
     public readonly class = 'd-flex align-items-center'
@@ -52,29 +79,6 @@ export class PluginView implements VirtualDOM {
             {
                 class: 'px-2',
                 innerText: this.plugin.packageName,
-            },
-        ]
-    }
-}
-
-export class ToolboxesPanel extends AttributesPanel {
-    public readonly children: VirtualDOM[]
-
-    constructor(params: {
-        target: EditorMode
-        editorMode$: Subject<EditorMode>
-        state: GrapesEditorState
-    }) {
-        super(params)
-        this.children = [
-            {
-                class: 'p-2',
-                children: availablePlugins.map((plugin) => {
-                    return new PluginView({
-                        plugin,
-                        state: this.state.appState,
-                    })
-                }),
             },
         ]
     }
