@@ -43,6 +43,7 @@ export class AppState implements AppStateCommonInterface {
     static debounceTimeSave = 1000
     public readonly topBannerState: TopBannerState
     public readonly bottomNavState: Dockable.State
+    public readonly leftNavState: Dockable.State
 
     public readonly explorerState: ExplorerState
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
@@ -108,10 +109,24 @@ export class AppState implements AppStateCommonInterface {
             ]),
             selected$: new BehaviorSubject<string>('css'),
         })
+
         this.explorerState = new ExplorerState({
             rootDocument: this.rootDocument,
             appState: this,
         })
+        this.leftNavState = new Dockable.State({
+            disposition: 'left',
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('pined'),
+            tabs$: new BehaviorSubject([
+                new StructureTab({
+                    explorerView: new ExplorerView({
+                        explorerState: this.explorerState,
+                    }),
+                }),
+            ]),
+            selected$: new BehaviorSubject<string>('structure'),
+        })
+
         this.selectedNode$.subscribe(() => {
             this.removeCodeEditor()
         })
@@ -240,10 +255,9 @@ export class AppView implements VirtualDOM {
 
     constructor(params: { state: AppState }) {
         Object.assign(this, params)
-        let sideNav = new SideNavView({
-            content: new ExplorerView({
-                explorerState: this.state.explorerState,
-            }),
+        let sideNav = new Dockable.View({
+            state: this.state.leftNavState,
+            styleOptions: { initialPanelSize: '300px' },
         })
         this.children = [
             new TopBannerView(this.state.topBannerState),
@@ -254,6 +268,7 @@ export class AppView implements VirtualDOM {
                     minHeight: '0px',
                 },
                 children: [
+                    child$(sideNav.placeholder$, (d) => d),
                     sideNav,
                     new GrapesEditorView({
                         state: new GrapesEditorState({
@@ -262,7 +277,10 @@ export class AppView implements VirtualDOM {
                     }),
                 ],
             },
-            new Dockable.View({ state: this.state.bottomNavState }),
+            new Dockable.View({
+                state: this.state.bottomNavState,
+                styleOptions: { initialPanelSize: '50%' },
+            }),
         ]
     }
 }

@@ -2,6 +2,9 @@ import { attr$, child$, Stream$, VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject } from 'rxjs'
 import { delay, filter } from 'rxjs/operators'
 
+import * as Dockable from './dockable-tabs/dockable-tabs.view'
+import { ExplorerBaseView } from './explorer-base.view'
+
 type State = 'pined' | 'floatExpanded' | 'floatCollapsed'
 const baseStyle = {
     paddingLeft: '10px',
@@ -34,6 +37,19 @@ const styleFactory: Record<State, { [k: string]: string }> = {
         left: '0px',
         overflow: 'hidden',
     },
+}
+
+export class StructureTab extends Dockable.Tab {
+    constructor(params: { explorerView: ExplorerBaseView }) {
+        super({
+            id: 'structure',
+            title: 'Structure',
+            icon: 'fas fa-sitemap',
+            content: () => {
+                return params.explorerView
+            },
+        })
+    }
 }
 
 export class SideNavView implements VirtualDOM {
