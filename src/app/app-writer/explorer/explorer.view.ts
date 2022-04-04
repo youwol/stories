@@ -67,6 +67,9 @@ export class ExplorerView extends ExplorerBaseView {
             return new ContextMenu.View({
                 state: contextState,
                 class: 'fv-bg-background border fv-color-primary',
+                style: {
+                    zIndex: 20,
+                },
             } as any)
         }
     }
