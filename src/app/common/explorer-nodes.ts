@@ -6,18 +6,13 @@ import { AssetsGateway } from '@youwol/http-clients'
 import { handleError } from './utils'
 
 /**
- * Node's signal's type enum
- */
-export enum SignalType {
-    Rename = 'Rename',
-}
-
-/**
  * Node's signal data-structure
  */
-interface NodeSignal {
-    type: SignalType
-}
+export type NodeSignal =
+    | 'rename'
+    | 'content-changed'
+    | 'content-saving'
+    | 'content-saved'
 
 /**
  * Base class of explorer's node

@@ -117,9 +117,7 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
         children: [
             iconView,
             child$(
-                node.signal$.pipe(
-                    filter((signal) => signal.type == SignalType.Rename),
-                ),
+                node.signal$.pipe(filter((signal) => signal == 'rename')),
                 () => {
                     return headerRenamed(
                         node as DocumentNode | StoryNode,

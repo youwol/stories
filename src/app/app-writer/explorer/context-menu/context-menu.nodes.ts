@@ -1,11 +1,6 @@
 import { ImmutableTree } from '@youwol/fv-tree'
 import { ExplorerState } from '../explorer.view'
-import {
-    DocumentNode,
-    ExplorerNode,
-    SignalType,
-    StoryNode,
-} from '../../../common'
+import { DocumentNode, ExplorerNode, StoryNode } from '../../../common'
 import { ContextMenuState } from './context-menu.view'
 
 /**
@@ -153,9 +148,7 @@ export class RenameNode<TNode extends ExplorerNode>
     }
 
     execute(_state: ContextMenuState) {
-        this.node.signal$.next({
-            type: SignalType.Rename,
-        })
+        this.node.signal$.next('rename')
     }
 }
 
