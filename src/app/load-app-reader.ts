@@ -18,8 +18,13 @@ load$(
     container,
     Client['initialLoadingScreen'],
     false,
-).subscribe(({ story, rootDocument, permissions }) => {
-    const state = new AppStateReader({ story, rootDocument, permissions })
+).subscribe(({ story, rootDocument, globalContents, permissions }) => {
+    const state = new AppStateReader({
+        story,
+        rootDocument,
+        globalContents,
+        permissions,
+    })
     const appView = new AppView({ state })
     container.appendChild(render(appView))
 })

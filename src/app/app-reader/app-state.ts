@@ -1,7 +1,10 @@
 import { Document, ExplorerNode, Permissions, Story } from '../common'
-import { ReplaySubject } from 'rxjs'
+import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { TopBannerState } from './top-banner'
-import { ExplorerState } from './explorer.view'
+import { ExplorerState, ExplorerView } from './explorer.view'
+import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
+import { StructureTab } from '../common/side-nav.view'
+import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 
 export class AppStateReader {
     public readonly story: Story
@@ -10,7 +13,7 @@ export class AppStateReader {
 
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
     public readonly topBannerState: TopBannerState
-
+    public readonly leftNavState: Dockable.State
     public readonly explorerState: ExplorerState
 
     constructor(params: {
@@ -26,6 +29,19 @@ export class AppStateReader {
         this.explorerState = new ExplorerState({
             rootDocument: this.rootDocument,
             appState: this,
+        })
+
+        this.leftNavState = new Dockable.State({
+            disposition: 'left',
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
+            tabs$: new BehaviorSubject([
+                new StructureTab({
+                    explorerView: new ExplorerView({
+                        explorerState: this.explorerState,
+                    }),
+                }),
+            ]),
+            selected$: new BehaviorSubject<string>('structure'),
         })
     }
 
