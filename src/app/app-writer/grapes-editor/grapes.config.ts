@@ -51,7 +51,12 @@ export function grapesConfig({
         plugins: [
             /* plugin are loaded dynamically latter*/
         ],
-        storageManager: { type: StorageManager.type },
+        storageManager: {
+            type: StorageManager.type,
+            autosave: true, // Store data automatically
+            autoload: true, // Autoload stored data on init
+            stepsBeforeSave: 1,
+        },
     }
 }
 

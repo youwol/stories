@@ -134,35 +134,24 @@ function headerView(state: ExplorerState, node: ExplorerNode): VirtualDOM {
                     },
                 },
             ),
-            child$(
-                state.appState.save$.pipe(
-                    filter(
-                        ({ document }) =>
-                            document.documentId ==
-                            node.getDocument().documentId,
-                    ),
-                ),
-                ({
-                    status,
-                }: {
-                    document: DocumentResponse
-                    content: DocumentContentBody
-                    status: SavingStatus
-                }) => {
-                    switch (status) {
-                        case SavingStatus.modified:
-                            return {
-                                class: 'fas fa-save p-1 ml-auto fv-pointer fv-hover-opacity-100 fv-opacity-50 fv-opacity-transition-500 explorer-save-item',
-                            }
-                        case SavingStatus.started:
-                            return {
-                                class: 'fas fa-spinner fa-spin p-1 ml-auto ',
-                            }
-                        default:
-                            return {}
-                    }
-                },
-            ),
+            child$(node.signal$, (signal) => {
+                switch (signal) {
+                    case 'content-saved':
+                        return {}
+                    case 'content-saving':
+                        return {
+                            style: { transform: 'scale(0.8)' },
+                            class: 'fas fa-save p-1 ml-auto',
+                        }
+                    case 'content-changed':
+                        return {
+                            style: { transform: 'scale(0.5)' },
+                            class: 'fas fa-circle p-1 ml-auto ',
+                        }
+                    default:
+                        return {}
+                }
+            }),
         ],
     }
 }

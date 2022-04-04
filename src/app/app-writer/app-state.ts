@@ -12,6 +12,7 @@ import {
     ExplorerNode,
     StoryNode,
     AppStateCommonInterface,
+    NodeSignal,
 } from '../common'
 
 import { TopBannerView } from './top-banner'
@@ -251,6 +252,11 @@ export class AppState implements AppStateCommonInterface {
         globals.css && this.globalCss$.next(globals.css)
         globals.javascript && this.globalJavascript$.next(globals.javascript)
         globals.components && this.globalComponents$.next(globals.components)
+    }
+
+    setDocumentStatus(document_id: string, status: NodeSignal) {
+        const node = this.explorerState.getNode(document_id)
+        node.signal$.next(status)
     }
 }
 
