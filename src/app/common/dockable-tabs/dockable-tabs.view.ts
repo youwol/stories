@@ -148,7 +148,7 @@ export function defaultStyleOptions(): StyleOptions {
 }
 
 export class View implements VirtualDOM {
-    static baseClasses = 'fv-bg-background d-flex'
+    static baseClasses = 'fv-bg-background d-flex fv-text-primary'
     static classFactory: Record<Disposition, string> = {
         bottom: `w-100 flex-column fv-border-top-background-alt ${View.baseClasses}`,
         left: `h-100 flex-row fv-border-left-background-alt  fv-border-right-background-alt ${View.baseClasses}`,
