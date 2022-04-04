@@ -1,19 +1,10 @@
 import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { filter } from 'rxjs/operators'
-import { AppState, SavingStatus } from '../app-state'
+import { AppState } from '../app-state'
 import { ContextMenuState } from './context-menu/context-menu.view'
 import { ContextMenu } from '@youwol/fv-context-menu'
-import {
-    DocumentNode,
-    ExplorerNode,
-    SignalType,
-    StoryNode,
-    Document,
-} from '../../common'
-import {
-    DocumentContentBody,
-    DocumentResponse,
-} from '@youwol/http-clients/dist/lib/assets-gateway'
+import { DocumentNode, ExplorerNode, StoryNode, Document } from '../../common'
+
 import {
     ExplorerBaseState,
     ExplorerBaseView,
