@@ -41,7 +41,7 @@ export class ExplorerBaseState extends ImmutableTree.State<ExplorerNode> {
 export class ExplorerBaseView extends ImmutableTree.View<ExplorerNode> {
     public readonly appState: AppStateCommonInterface
 
-    public readonly class = ''
+    public readonly class = 'py-2'
 
     constructor({
         explorerState,

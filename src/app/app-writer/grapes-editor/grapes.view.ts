@@ -67,7 +67,7 @@ export class GrapesEditorView implements VirtualDOM {
 
 export class CanvasView implements VirtualDOM {
     public readonly id = 'gjs'
-    public readonly class = 'flex-grow-1 px-2 pb-2'
+    public readonly class = 'flex-grow-1 p-2'
     public readonly htmlElement$ = new ReplaySubject<
         HTMLElement$ & HTMLDivElement
     >(1)
@@ -91,7 +91,7 @@ export class GrapesSettingsTab extends Dockable.Tab {
             ...params,
             content: () => {
                 return {
-                    class: 'h-100 w-100 overflow-auto',
+                    class: 'h-100 w-100 overflow-auto py-2',
                     connectedCallback: (
                         elem: HTMLElement$ & HTMLDivElement,
                     ) => {
