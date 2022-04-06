@@ -253,11 +253,6 @@ export class AppState implements AppStateCommonInterface {
         globals.javascript && this.globalJavascript$.next(globals.javascript)
         globals.components && this.globalComponents$.next(globals.components)
     }
-
-    setDocumentStatus(document_id: string, status: NodeSignal) {
-        const node = this.explorerState.getNode(document_id)
-        node.signal$.next(status)
-    }
 }
 
 /**

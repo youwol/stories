@@ -91,19 +91,22 @@ export class StorageManager {
                     return x.components == y.components
                 }),
                 tap(() => {
-                    this.appState.setDocumentStatus(
-                        documentId,
-                        'content-changed',
-                    )
+                    const node = this.appState.explorerState.getNode(documentId)
+                    return node.addProcess({
+                        type: 'content-changed',
+                        id: 'content-changed',
+                    })
                 }),
                 debounceTime(AppState.debounceTimeSave),
                 tap(() => {
-                    this.appState.setDocumentStatus(
-                        documentId,
-                        'content-saving',
-                    )
+                    const node = this.appState.explorerState.getNode(documentId)
+                    node.removeProcess('content-changed')
+                    node.addProcess({
+                        type: 'content-saving',
+                        id: 'content-saving',
+                    })
                 }),
-                mergeMap((toSave: AssetsGateway.DocumentContentBody) => {
+                mergeMap((toSave: StoriesBackend.DocumentContentBody) => {
                     return this.client.updateContent$(
                         this.appState.story.storyId,
                         documentId,
@@ -113,7 +116,8 @@ export class StorageManager {
                 handleError({ browserContext: 'save document' }),
             )
             .subscribe(() => {
-                this.appState.setDocumentStatus(documentId, 'content-saved')
+                const node = this.appState.explorerState.getNode(documentId)
+                node.removeProcess('content-saving')
             })
     }
 }
