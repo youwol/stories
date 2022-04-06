@@ -1,5 +1,5 @@
 import { forkJoin, from, Observable, of, OperatorFunction } from 'rxjs'
-import { AssetsGateway, HTTPError } from '@youwol/http-clients'
+import { AssetsGateway, HTTPError, StoriesBackend } from '@youwol/http-clients'
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 
 import {
@@ -7,11 +7,6 @@ import {
     fetchLoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
-import {
-    DocumentResponse,
-    StoryResponse,
-} from '@youwol/http-clients/dist/lib/assets-gateway'
-import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 
 export function defaultStoryTitle() {
     return 'tmp-story'
@@ -49,9 +44,9 @@ export function load$(
     loadingScreen: LoadingScreenView,
     loadPlugins: boolean = true,
 ): Observable<{
-    story: StoryResponse
-    rootDocument: DocumentResponse
-    globalContents: GetGlobalContentResponse
+    story: StoriesBackend.StoryResponse
+    rootDocument: StoriesBackend.DocumentResponse
+    globalContents: StoriesBackend.GetGlobalContentResponse
     permissions
 }> {
     container.innerHTML = ''
@@ -80,7 +75,7 @@ export function load$(
                     new CdnMessageEvent('fetch_story', 'Fetch story...done'),
                 ),
             ),
-            mergeMap((story: StoryResponse) => {
+            mergeMap((story: StoriesBackend.StoryResponse) => {
                 if (!story.requirements.loadingGraph || !loadPlugins) {
                     return of(story)
                 }

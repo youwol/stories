@@ -8,10 +8,10 @@ import {
     tap,
 } from 'rxjs/operators'
 import { handleError, ExplorerNode } from '../../common'
-import { AssetsGateway } from '@youwol/http-clients'
+import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import { BehaviorSubject, of } from 'rxjs'
 
-type Document = AssetsGateway.DocumentContentBody
+type Document = StoriesBackend.DocumentContentBody
 
 export interface GjsData {
     'gsj-html': string
@@ -73,7 +73,7 @@ export class StorageManager {
             return
         }
         const documentId = components[0].attributes.id
-        const document: AssetsGateway.DocumentContentBody = {
+        const document: StoriesBackend.DocumentContentBody = {
             html: gjsData['gjs-html'],
             css: gjsData['gjs-css'],
             components: gjsData['gjs-components'],
