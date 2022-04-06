@@ -6,7 +6,7 @@ import {
     ExplorerBaseView,
     nodeViewElements,
 } from '../common/explorer-base.view'
-import { VirtualDOM } from '@youwol/flux-view'
+import { children$, VirtualDOM } from '@youwol/flux-view'
 
 /**
  * Logic side of [[ExplorerView]]
@@ -46,6 +46,19 @@ function headerView(state: ExplorerBaseState, node: ExplorerNode): VirtualDOM {
                 tag: 'span',
                 style: { userSelect: 'none' },
                 innerText: node.name,
+            },
+            {
+                children: children$(node.processes$, (processes) => {
+                    return processes.map((p) => {
+                        if (p.type == 'children-fetching') {
+                            return {
+                                style: { transform: 'scale(0.8)' },
+                                class: 'fas fa-spinner fa-spin p-1 ml-auto',
+                            }
+                        }
+                        return {}
+                    })
+                }),
             },
         ],
     }
