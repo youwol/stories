@@ -12,13 +12,12 @@ import {
     ExplorerNode,
     StoryNode,
     AppStateCommonInterface,
-    NodeSignal,
 } from '../common'
 
 import { TopBannerView } from './top-banner'
 import { GrapesEditorView } from './grapes-editor/grapes.view'
 import { GrapesEditorState } from './grapes-editor/grapes.state'
-import { mapTo, mergeMap } from 'rxjs/operators'
+import { map, mapTo, mergeMap } from 'rxjs/operators'
 import { fetchLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
@@ -30,6 +29,7 @@ import {
     JsBottomNavTab,
 } from './bottom-nav/predefined-tabs'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
+import { HttpHandler } from './http-handler'
 
 export enum SavingStatus {
     modified = 'Modified',
@@ -74,6 +74,7 @@ export class AppState implements AppStateCommonInterface {
     public readonly rootDocument: Document
     public readonly permissions: Permissions
 
+    public readonly httpHandler: HttpHandler
     public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
     public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
         .stories
@@ -114,6 +115,14 @@ export class AppState implements AppStateCommonInterface {
             rootDocument: this.rootDocument,
             appState: this,
         })
+
+        this.httpHandler = new HttpHandler({
+            storyId: this.story.storyId,
+            command$: this.explorerState.directUpdates$.pipe(
+                map((updates) => updates.map((update) => update.command)),
+            ),
+        })
+
         this.leftNavState = new Dockable.State({
             disposition: 'left',
             viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
