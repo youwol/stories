@@ -7,7 +7,8 @@ import {
     AppStateCommonInterface,
     DocumentNode,
 } from '../common'
-import { VirtualDOM } from '@youwol/flux-view'
+import THeaderView = ImmutableTree.THeaderView
+import TDropAreaView = ImmutableTree.TDropAreaView
 
 /**
  * Logic side of [[ExplorerView]]
@@ -45,17 +46,16 @@ export class ExplorerBaseView extends ImmutableTree.View<ExplorerNode> {
     constructor({
         explorerState,
         headerView,
+        dropAreaView,
     }: {
         explorerState: ExplorerBaseState
-        headerView: (
-            state: ExplorerBaseState,
-            node: ExplorerNode,
-            root: ExplorerNode,
-        ) => VirtualDOM
+        headerView: THeaderView<ExplorerNode>
+        dropAreaView?: TDropAreaView<ExplorerNode>
     }) {
         super({
             state: explorerState,
             headerView,
+            dropAreaView,
         })
         this.appState = explorerState.appState
     }
