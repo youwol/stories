@@ -1,8 +1,8 @@
 import { ImmutableTree } from '@youwol/fv-tree'
-import { Observable, ReplaySubject } from 'rxjs'
-import { map } from 'rxjs/operators'
+import { BehaviorSubject, Observable, of, ReplaySubject } from 'rxjs'
+import { map, mergeMap, tap } from 'rxjs/operators'
 import { Document, Story } from './interfaces'
-import { AssetsGateway } from '@youwol/http-clients'
+import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import { handleError } from './utils'
 
 /**
@@ -12,25 +12,45 @@ export type NodeSignal =
     | 'rename'
     | 'content-changed'
     | 'content-saving'
-    | 'content-saved'
+    | 'children-fetching'
 
 /**
  * Base class of explorer's node
  */
 export abstract class ExplorerNode extends ImmutableTree.Node {
     name: string
-
-    signal$ = new ReplaySubject<NodeSignal>()
-
+    position: number
+    signal$: ReplaySubject<NodeSignal>
+    processes$ = new BehaviorSubject<{ id: string; type: NodeSignal }[]>([])
     story: Story
 
-    protected constructor({ id, name, children, story }) {
+    protected constructor({ id, name, children, story, signal$, position }) {
         super({ id, children })
         this.name = name
         this.story = story
+        this.signal$ = signal$
+        this.position = position
     }
 
     abstract getDocument(): Document
+
+    addProcess(process: { type: NodeSignal; id?: string }) {
+        const pid = process.id || `${Math.floor(Math.random() * 1e6)}`
+        const runningProcesses = this.processes$
+            .getValue()
+            .filter((p) => p.id != pid)
+        this.processes$.next([
+            ...runningProcesses,
+            { id: pid, type: process.type },
+        ])
+        return pid
+    }
+
+    removeProcess(id: string) {
+        this.processes$.next(
+            this.processes$.getValue().filter((p) => p.id != id),
+        )
+    }
 }
 
 /**
@@ -48,13 +68,20 @@ export class StoryNode extends ExplorerNode {
         rootDocument: Document
         children?
     }) {
+        const signal$ = new ReplaySubject<NodeSignal>(1)
         super({
             id: rootDocument.documentId,
             story,
+            position: 0,
             name: story.title,
+            signal$,
             children:
                 children ||
-                getChildrenOfDocument$(story, rootDocument.documentId),
+                getChildrenOfDocument$(
+                    story,
+                    rootDocument.documentId,
+                    () => this,
+                ),
         })
         this.rootDocument = rootDocument
     }
@@ -79,12 +106,16 @@ export class DocumentNode extends ExplorerNode {
         document: Document
         children?
     }) {
+        const signal$ = new ReplaySubject<NodeSignal>(1)
         super({
             id: document.documentId,
             story,
+            position: document.position,
             name: document.title,
+            signal$,
             children:
-                children || getChildrenOfDocument$(story, document.documentId),
+                children ||
+                getChildrenOfDocument$(story, document.documentId, () => this),
         })
         this.document = document
     }
@@ -100,20 +131,35 @@ export class DocumentNode extends ExplorerNode {
  *
  * @param story associated story
  * @param parentDocumentId parent document id
+ * @param parentNode parent node getter
  * @returns the list of children node
  */
 function getChildrenOfDocument$(
     story: Story,
     parentDocumentId: string,
+    parentNode: () => ExplorerNode,
 ): Observable<DocumentNode[]> {
-    return new AssetsGateway.AssetsGatewayClient().raw.story
-        .queryDocuments$(story.storyId, parentDocumentId)
-        .pipe(
-            handleError({ browserContext: 'Get children of document' }),
-            map((resp) => {
-                return resp.documents.map((document: Document) => {
-                    return new DocumentNode({ story, document })
-                })
-            }),
-        )
+    return of({}).pipe(
+        tap(() => {
+            parentNode().addProcess({
+                type: 'children-fetching',
+                id: 'children-fetching',
+            })
+        }),
+        mergeMap(() =>
+            new AssetsGateway.AssetsGatewayClient().raw.story.queryDocuments$(
+                story.storyId,
+                parentDocumentId,
+            ),
+        ),
+        handleError({ browserContext: 'Get children of document' }),
+        tap((_) => {
+            parentNode().removeProcess('children-fetching')
+        }),
+        map((resp: StoriesBackend.DocumentsResponse) => {
+            return resp.documents.map((document: Document) => {
+                return new DocumentNode({ story, document })
+            })
+        }),
+    )
 }
