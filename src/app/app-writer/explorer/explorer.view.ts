@@ -198,11 +198,15 @@ class DragInInsertView implements VirtualDOM {
     ondragover = (ev) => {
         ev.preventDefault()
     }
-    ondragenter = (ev) => {
-        ev.target.classList.add('fv-bg-focus')
+    ondragenter = (ev: MouseEvent) => {
+        const elem: HTMLElement = ev.target as HTMLElement
+        elem.classList.add('fv-bg-focus')
+        elem.parentElement.parentElement.classList.add('drag-as-child')
     }
     ondragleave = (ev) => {
+        const elem: HTMLElement = ev.target as HTMLElement
         ev.target.classList.remove('fv-bg-focus')
+        elem.parentElement.parentElement.classList.remove('drag-as-child')
     }
     ondrop = (ev: DragEvent) => {
         let This = ev.target as unknown as DragInInsertView
