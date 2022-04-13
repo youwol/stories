@@ -215,14 +215,13 @@ class DragInInsertView implements VirtualDOM {
                 ? this.children[this.index]
                 : undefined
         let newPosition = this.children[0].position - 1
-        if (this.index > 0) {
+        if (this.index == this.children.length) {
+            newPosition = this.children[this.index - 1].position + 1
+        } else if (this.index > 0) {
             newPosition =
                 0.5 *
                 (this.children[this.index - 1].position +
                     this.children[this.index].position)
-        }
-        if (this.index == this.children.length) {
-            newPosition = this.children[this.index - 1].position + 1
         }
 
         this.state.moveNode(
