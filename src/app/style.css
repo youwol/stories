@@ -19,6 +19,9 @@ pre {
 .fv-tree-arianeLine{
     display: none
 }
+.drag-as-child > .fv-tree-arianeLine{
+    display: block
+}
 .gjs-one-bg{
     background-color: rgba(0,0,0,0) !important;
 }
