@@ -35,7 +35,7 @@ export class AppStateReader {
 
         this.leftNavState = new Dockable.State({
             disposition: 'left',
-            viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>('pined'),
             tabs$: new BehaviorSubject([
                 new StructureTab({
                     explorerView: new ExplorerView({
