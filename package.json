@@ -1,6 +1,6 @@
 {
     "name": "@youwol/stories",
-    "version": "0.1.1-wip",
+    "version": "0.1.1",
     "description": "YouWol Stories application",
     "author": "greinisch@youwol.com",
     "main": "dist/index.html",
