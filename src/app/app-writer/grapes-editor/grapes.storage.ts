@@ -23,7 +23,8 @@ export interface GjsData {
 export class StorageManager {
     static type = 'YouWolStorage'
     public readonly appState: AppState
-    public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
+    public readonly client = new AssetsGateway.AssetsGatewayClient()
+        .rawDeprecated.story
 
     public documentsChange$: {
         [k: string]: BehaviorSubject<Document>

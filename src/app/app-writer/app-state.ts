@@ -75,7 +75,8 @@ export class AppState implements AppStateCommonInterface {
     public readonly permissions: Permissions
 
     public readonly httpHandler: HttpHandler
-    public readonly client = new AssetsGateway.AssetsGatewayClient().raw.story
+    public readonly client = new AssetsGateway.AssetsGatewayClient()
+        .rawDeprecated.story
     public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
         .stories
 
@@ -251,7 +252,10 @@ export class AppState implements AppStateCommonInterface {
         components?: string
     }) {
         this.storiesClient
-            .updateGlobalContents$(this.story.storyId, globals)
+            .updateGlobalContents$({
+                storyId: this.story.storyId,
+                body: globals,
+            })
             .pipe(
                 handleError({
                     browserContext: 'appState.applyGlobals',

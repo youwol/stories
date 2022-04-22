@@ -44,9 +44,13 @@ export class HttpHandler {
     }) {
         console.log('Move', { nodeId, destinationParentId, position })
         this.storiesClient
-            .moveDocument$(this.storyId, nodeId, {
-                position,
-                parent: destinationParentId,
+            .moveDocument$({
+                storyId: this.storyId,
+                documentId: nodeId,
+                body: {
+                    position,
+                    parent: destinationParentId,
+                },
             })
             .subscribe((resp) => console.log(resp))
     }

@@ -45,7 +45,7 @@ export function load$(
     loadPlugins: boolean = true,
 ): Observable<{
     story: StoriesBackend.StoryResponse
-    rootDocument: StoriesBackend.DocumentResponse
+    rootDocument: StoriesBackend.GetDocumentResponse
     globalContents: StoriesBackend.GetGlobalContentResponse
     permissions
 }> {
@@ -66,7 +66,7 @@ export function load$(
         new CdnMessageEvent('fetch_access', 'Retrieve access...'),
     )
     return forkJoin([
-        client.raw.story.getStory$(storyId).pipe(
+        client.rawDeprecated.story.getStory$(storyId).pipe(
             handleError({
                 browserContext: 'load$ > client.raw.story.getStory$',
             }),
@@ -91,7 +91,7 @@ export function load$(
                 ).pipe(mapTo(story))
             }),
         ),
-        client.stories.getGlobalContents$(storyId).pipe(
+        client.stories.getGlobalContents$({ storyId }).pipe(
             handleError({
                 browserContext: 'load$ > client.stories.getGlobalContents$',
             }),
@@ -104,7 +104,7 @@ export function load$(
                 ),
             ),
         ),
-        client.raw.story.queryDocuments$(storyId, storyId).pipe(
+        client.rawDeprecated.story.queryDocuments$(storyId, storyId).pipe(
             handleError({
                 browserContext: 'load$ > client.raw.story.queryDocuments$',
             }),
@@ -118,7 +118,7 @@ export function load$(
             ),
             map((resp) => resp.documents[0]),
         ),
-        client.assets.getAccess$(btoa(storyId)).pipe(
+        client.assetsDeprecated.getAccess$(btoa(storyId)).pipe(
             handleError({ browserContext: 'load$ > client.assets.getAccess$' }),
             tap(() =>
                 loadingScreen.next(

@@ -147,7 +147,7 @@ function getChildrenOfDocument$(
             })
         }),
         mergeMap(() =>
-            new AssetsGateway.AssetsGatewayClient().raw.story.queryDocuments$(
+            new AssetsGateway.AssetsGatewayClient().rawDeprecated.story.queryDocuments$(
                 story.storyId,
                 parentDocumentId,
             ),
@@ -156,7 +156,7 @@ function getChildrenOfDocument$(
         tap((_) => {
             parentNode().removeProcess('children-fetching')
         }),
-        map((resp: StoriesBackend.DocumentsResponse) => {
+        map((resp: StoriesBackend.QueryDocumentsResponse) => {
             return resp.documents.map((document: Document) => {
                 return new DocumentNode({ story, document })
             })
