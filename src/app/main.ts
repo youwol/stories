@@ -46,7 +46,6 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
             modules: [
                 'lodash',
                 'rxjs',
-                '@youwol/flux-core',
                 '@youwol/flux-view',
                 '@youwol/fv-group',
                 '@youwol/fv-button',
@@ -54,7 +53,6 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
                 '@youwol/fv-tabs',
                 '@youwol/fv-input',
                 '@youwol/fv-context-menu',
-                '@youwol/flux-fv-widgets',
                 '@youwol/platform-essentials',
                 'grapes',
             ],
