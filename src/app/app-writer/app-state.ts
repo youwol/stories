@@ -14,7 +14,7 @@ import {
     AppStateCommonInterface,
 } from '../common'
 
-import { TopBannerView } from './top-banner'
+import { StoryTopBannerView } from './top-banner'
 import { GrapesEditorView } from './grapes-editor/grapes.view'
 import { GrapesEditorState } from './grapes-editor/grapes.state'
 import { map, mapTo, mergeMap } from 'rxjs/operators'
@@ -282,8 +282,7 @@ export class AppState implements AppStateCommonInterface {
  */
 export class AppView implements VirtualDOM {
     public readonly state: AppState
-    public readonly class =
-        'fv-bg-background fv-text-primary d-flex flex-column w-100 h-100'
+    public readonly class = 'fv-text-primary d-flex flex-column w-100 h-100'
 
     public readonly children: Array<VirtualDOM>
 
@@ -294,7 +293,7 @@ export class AppView implements VirtualDOM {
             styleOptions: { initialPanelSize: '300px' },
         })
         this.children = [
-            new TopBannerView(this.state),
+            new StoryTopBannerView(this.state),
             {
                 class: 'd-flex flex-grow-1 overflow-auto',
                 style: {
