@@ -1,5 +1,5 @@
 import { child$, VirtualDOM } from '@youwol/flux-view'
-import { TopBannerView } from './top-banner'
+import { StoryTopBannerView } from './top-banner'
 import { AppStateReader } from './app-state'
 import { PageView } from './page.view'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
@@ -21,7 +21,7 @@ export class AppView implements VirtualDOM {
         this.children = [
             {
                 class: 'fv-bg-background',
-                children: [new TopBannerView(this.state.topBannerState)],
+                children: [new StoryTopBannerView()],
             },
             {
                 class: 'd-flex flex-grow-1 overflow-auto',
