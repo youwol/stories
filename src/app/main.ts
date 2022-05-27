@@ -23,7 +23,7 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
                 'rxjs',
                 '@youwol/flux-view',
                 '@youwol/fv-tree',
-                '@youwol/platform-essentials',
+                '@youwol/os-top-banner',
             ],
             css: [
                 'bootstrap#4.4.1~bootstrap.min.css',
@@ -53,7 +53,7 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
                 '@youwol/fv-tabs',
                 '@youwol/fv-input',
                 '@youwol/fv-context-menu',
-                '@youwol/platform-essentials',
+                '@youwol/os-top-banner',
                 'grapes',
             ],
             css: [
