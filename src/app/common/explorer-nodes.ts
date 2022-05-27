@@ -147,10 +147,10 @@ function getChildrenOfDocument$(
             })
         }),
         mergeMap(() =>
-            new AssetsGateway.AssetsGatewayClient().rawDeprecated.story.queryDocuments$(
-                story.storyId,
+            new AssetsGateway.AssetsGatewayClient().stories.queryDocuments$({
+                storyId: story.storyId,
                 parentDocumentId,
-            ),
+            }),
         ),
         handleError({ browserContext: 'Get children of document' }),
         tap((_) => {

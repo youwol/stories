@@ -9,8 +9,7 @@ export class PageView implements VirtualDOM {
     public readonly appState: AppStateReader
     public readonly class = 'flex-grow-1 h-100 p-1'
     public readonly children
-    public readonly client = new AssetsGateway.AssetsGatewayClient()
-        .rawDeprecated.story
+    public readonly client = new AssetsGateway.AssetsGatewayClient().stories
 
     constructor(params: { appState: AppStateReader }) {
         Object.assign(this, params)
@@ -31,10 +30,10 @@ export class PageView implements VirtualDOM {
                         (node1, node2) => node1.id == node2.id,
                     ),
                     mergeMap((node) => {
-                        return this.client.getContent$(
-                            node.story.storyId,
-                            node.id,
-                        )
+                        return this.client.getContent$({
+                            storyId: node.story.storyId,
+                            documentId: node.id,
+                        })
                     }),
                     handleError({
                         browserContext: 'PageView.constructor.getContent',

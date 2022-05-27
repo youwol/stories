@@ -1,5 +1,10 @@
 import { forkJoin, from, Observable, of, OperatorFunction } from 'rxjs'
-import { AssetsGateway, HTTPError, StoriesBackend } from '@youwol/http-clients'
+import {
+    AssetsGateway,
+    HTTPError,
+    AssetsBackend,
+    StoriesBackend,
+} from '@youwol/http-clients'
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 
 import {
@@ -66,7 +71,7 @@ export function load$(
         new CdnMessageEvent('fetch_access', 'Retrieve access...'),
     )
     return forkJoin([
-        client.rawDeprecated.story.getStory$(storyId).pipe(
+        client.stories.getStory$({ storyId }).pipe(
             handleError({
                 browserContext: 'load$ > client.raw.story.getStory$',
             }),
@@ -104,21 +109,23 @@ export function load$(
                 ),
             ),
         ),
-        client.rawDeprecated.story.queryDocuments$(storyId, storyId).pipe(
-            handleError({
-                browserContext: 'load$ > client.raw.story.queryDocuments$',
-            }),
-            tap(() =>
-                loadingScreen.next(
-                    new CdnMessageEvent(
-                        'fetch_root',
-                        'Fetch root document...done',
+        client.stories
+            .queryDocuments$({ storyId: storyId, parentDocumentId: storyId })
+            .pipe(
+                handleError({
+                    browserContext: 'load$ > client.raw.story.queryDocuments$',
+                }),
+                tap(() =>
+                    loadingScreen.next(
+                        new CdnMessageEvent(
+                            'fetch_root',
+                            'Fetch root document...done',
+                        ),
                     ),
                 ),
+                map((resp) => resp.documents[0]),
             ),
-            map((resp) => resp.documents[0]),
-        ),
-        client.assetsDeprecated.getAccess$(btoa(storyId)).pipe(
+        client.assets.queryAccessInfo$({ assetId: btoa(storyId) }).pipe(
             handleError({ browserContext: 'load$ > client.assets.getAccess$' }),
             tap(() =>
                 loadingScreen.next(
@@ -129,7 +136,7 @@ export function load$(
                 ),
             ),
             map(
-                (access: AssetsGateway.AccessInfo) =>
+                (access: AssetsBackend.QueryAccessInfoResponse) =>
                     access.consumerInfo.permissions,
             ),
         ),

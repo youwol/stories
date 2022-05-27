@@ -23,8 +23,7 @@ export interface GjsData {
 export class StorageManager {
     static type = 'YouWolStorage'
     public readonly appState: AppState
-    public readonly client = new AssetsGateway.AssetsGatewayClient()
-        .rawDeprecated.story
+    public readonly client = new AssetsGateway.AssetsGatewayClient().stories
 
     public documentsChange$: {
         [k: string]: BehaviorSubject<Document>
@@ -43,10 +42,10 @@ export class StorageManager {
                         return of(this.documentsChange$[node.id].getValue())
                     }
                     return this.client
-                        .getContent$(
-                            node.getDocument().storyId,
-                            node.getDocument().documentId,
-                        )
+                        .getContent$({
+                            storyId: node.getDocument().storyId,
+                            documentId: node.getDocument().documentId,
+                        })
                         .pipe(
                             handleError({
                                 browserContext: 'Selected node raw content',
@@ -107,12 +106,12 @@ export class StorageManager {
                         id: 'content-saving',
                     })
                 }),
-                mergeMap((toSave: StoriesBackend.DocumentContentBody) => {
-                    return this.client.updateContent$(
-                        this.appState.story.storyId,
-                        documentId,
-                        toSave,
-                    )
+                mergeMap((toSave: StoriesBackend.UpdateContentBody) => {
+                    return this.client.updateContent$({
+                        storyId: this.appState.story.storyId,
+                        documentId: documentId,
+                        body: toSave,
+                    })
                 }),
                 handleError({ browserContext: 'save document' }),
             )

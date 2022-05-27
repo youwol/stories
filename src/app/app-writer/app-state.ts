@@ -75,8 +75,7 @@ export class AppState implements AppStateCommonInterface {
     public readonly permissions: Permissions
 
     public readonly httpHandler: HttpHandler
-    public readonly client = new AssetsGateway.AssetsGatewayClient()
-        .rawDeprecated.story
+
     public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
         .stories
 
@@ -162,8 +161,12 @@ export class AppState implements AppStateCommonInterface {
             documentId: doc.documentId,
             title: newName,
         }
-        this.client
-            .updateDocument$(doc.storyId, doc.documentId, body)
+        this.storiesClient
+            .updateDocument$({
+                storyId: doc.storyId,
+                documentId: doc.documentId,
+                body,
+            })
             .pipe(handleError({ browserContext: 'rename document' }))
             .subscribe((newDoc: Document) => {
                 node instanceof DocumentNode
@@ -177,10 +180,13 @@ export class AppState implements AppStateCommonInterface {
     }
 
     addDocument(parentDocumentId: string, title: string) {
-        this.client
-            .createDocument$(this.story.storyId, {
-                parentDocumentId: parentDocumentId,
-                title,
+        this.storiesClient
+            .createDocument$({
+                storyId: this.story.storyId,
+                body: {
+                    parentDocumentId: parentDocumentId,
+                    title,
+                },
             })
             .pipe(handleError({ browserContext: 'add document' }))
             .subscribe((document: Document) => {
@@ -190,8 +196,11 @@ export class AppState implements AppStateCommonInterface {
 
     deleteDocument(document: Document) {
         this.deletedDocument$.next(document)
-        this.client
-            .deleteDocument$(document.storyId, document.documentId)
+        this.storiesClient
+            .deleteDocument$({
+                storyId: document.storyId,
+                documentId: document.documentId,
+            })
             .pipe(handleError({ browserContext: 'delete document' }))
             .subscribe(() => {
                 // This is intentional: make the request happening
@@ -205,8 +214,8 @@ export class AppState implements AppStateCommonInterface {
             this.plugins$.next(actualPlugins.filter((p) => p != packageName))
             return
         }
-        this.client
-            .addPlugin$(this.story.storyId, { packageName })
+        this.storiesClient
+            .addPlugin$({ storyId: this.story.storyId, body: { packageName } })
             .pipe(
                 handleError({ browserContext: 'add plugin' }),
                 mergeMap((resp) => {
