@@ -101,7 +101,7 @@ export class GrapesEditorState {
 
     public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
     public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
-
+    public readonly selectedTab$ = new BehaviorSubject<string>('blocks')
     public readonly subscriptions = []
 
     constructor(params: { appState: AppState }) {
