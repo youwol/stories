@@ -12,6 +12,8 @@ import {
     fetchLoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
+import { ChildApplicationAPI } from '@youwol/os-core'
+import { child$ } from '@youwol/flux-view'
 
 export function defaultStoryTitle() {
     return 'tmp-story'
@@ -199,3 +201,34 @@ export function new$(
     ) as Observable<{ appState: AppState; appView: AppView }>
 }
  */
+export function setApplicationProperties({
+    mode,
+}: {
+    mode: 'reader' | 'writer'
+}) {
+    const storyId = new URLSearchParams(window.location.search).get('id')
+    ChildApplicationAPI.setProperties({
+        snippet: {
+            class: 'd-flex align-items-center px-1',
+            children: [
+                {
+                    class: `px-1 fas ${mode == 'reader' ? 'fa-eye' : 'fa-pen'}`,
+                },
+                child$(
+                    new AssetsGateway.Client().assets
+                        .getAsset$({ assetId: window.btoa(storyId) })
+                        .pipe(
+                            handleError({
+                                browserContext: 'setApplicationProperties',
+                            }),
+                        ),
+                    (asset) => {
+                        return {
+                            innerText: asset.name,
+                        }
+                    },
+                ),
+            ],
+        },
+    })
+}
