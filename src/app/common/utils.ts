@@ -221,11 +221,12 @@ export function new$(container: HTMLElement, loadingScreen: LoadingScreenView) {
 }
 
 export function setApplicationProperties({
+    storyId,
     mode,
 }: {
+    storyId: string
     mode: 'reader' | 'writer'
 }) {
-    const storyId = new URLSearchParams(window.location.search).get('id')
     ChildApplicationAPI.setProperties({
         snippet: {
             class: 'd-flex align-items-center px-1',

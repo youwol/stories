@@ -14,7 +14,10 @@ export class AppView implements VirtualDOM {
     constructor(params: { state: AppStateReader }) {
         Object.assign(this, params)
 
-        setApplicationProperties({ mode: 'reader' })
+        setApplicationProperties({
+            storyId: this.state.story.storyId,
+            mode: 'reader',
+        })
 
         let sideNav = new Dockable.View({
             state: this.state.leftNavState,
