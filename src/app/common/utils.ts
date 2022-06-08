@@ -9,14 +9,17 @@ import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 
 import {
     CdnMessageEvent,
+    Client,
     fetchLoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
 import { child$ } from '@youwol/flux-view'
+import { NewAssetResponse } from '@youwol/http-clients/src/lib/assets-gateway'
+import { CreateStoryResponse } from '@youwol/http-clients/src/lib/stories-backend/interfaces'
 
 export function defaultStoryTitle() {
-    return 'tmp-story'
+    return `story-${new Date().toLocaleString()}`
 }
 
 export function handleError<T>({
@@ -37,6 +40,21 @@ export function handleError<T>({
     }
 }
 
+export function launch$(loadPlugins: boolean) {
+    const storyIdQueryParam = new URLSearchParams(window.location.search).get(
+        'id',
+    )
+    const container = document.getElementById('content')
+
+    return storyIdQueryParam
+        ? load$(
+              storyIdQueryParam,
+              container,
+              Client['initialLoadingScreen'],
+              loadPlugins,
+          )
+        : new$(container, Client['initialLoadingScreen'])
+}
 /**
  *
  * @param storyId id of the story to load
@@ -159,11 +177,7 @@ export function load$(
  * @param loadingScreen loading screen to append loading events
  * @returns application state & application view
  */
-/*
-export function new$(
-    container: HTMLElement,
-    loadingScreen: LoadingScreenView,
-): Observable<{ appState: AppState; appView: AppView }> {
+export function new$(container: HTMLElement, loadingScreen: LoadingScreenView) {
     container.innerHTML = ''
 
     const client = new AssetsGateway.AssetsGatewayClient()
@@ -176,15 +190,20 @@ export function new$(
             browserContext: 'create$ > client.explorer.getDefaultUserDrive$',
         }),
         mergeMap((defaultDrive) => {
-            return client.assets.story
-                .create$(defaultDrive.downloadFolderId, {
-                    title: defaultStoryTitle(),
-                    storyId: 'tmp-story',
+            return client.stories
+                .create$({
+                    body: {
+                        title: defaultStoryTitle(),
+                    },
+                    queryParameters: { folderId: defaultDrive.tmpFolderId },
                 })
                 .pipe(
                     handleError({
                         browserContext: 'create$ > client.assets.story.create$',
                     }),
+                    map(
+                        (resp) => resp as NewAssetResponse<CreateStoryResponse>,
+                    ),
                 )
         }),
         tap(() => {
@@ -196,11 +215,11 @@ export function new$(
             )
         }),
         mergeMap((asset) => {
-            return load$(asset.rawId, container, loadingScreen)
+            return load$(asset.rawId, container, loadingScreen, false)
         }),
-    ) as Observable<{ appState: AppState; appView: AppView }>
+    )
 }
- */
+
 export function setApplicationProperties({
     mode,
 }: {
