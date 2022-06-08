@@ -1,27 +1,13 @@
-import { attr$, VirtualDOM } from '@youwol/flux-view'
+import { attr$, children$, VirtualDOM } from '@youwol/flux-view'
 import { GrapesEditorState } from './grapes.state'
 import { AppState } from '../app-state'
 import { map } from 'rxjs/operators'
 import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
+import { Installer, ChildApplicationAPI } from '@youwol/os-core'
 
 interface Plugin {
     packageName: string
 }
-
-const availablePlugins: Plugin[] = [
-    {
-        packageName: '@youwol/grapes-text-editors',
-    },
-    {
-        packageName: '@youwol/grapes-coding-playgrounds',
-    },
-    {
-        packageName: '@youwol/grapes-basics',
-    },
-    {
-        packageName: '@youwol/grapes-flux',
-    },
-]
 
 export class ToolboxesTab extends Dockable.Tab {
     public readonly children: VirtualDOM[]
@@ -33,21 +19,85 @@ export class ToolboxesTab extends Dockable.Tab {
             icon: 'fas fa-toolbox',
             content: () => {
                 return {
-                    class: 'w-100 h-100',
+                    class: 'w-100 h-100 d-flex flex-column px-2',
                     children: [
-                        {
-                            class: 'p-2',
-                            children: availablePlugins.map((plugin) => {
-                                return new PluginView({
-                                    plugin,
-                                    state: params.state.appState,
-                                })
-                            }),
-                        },
+                        new TitleView(),
+                        new HintView(),
+                        new PluginsListView(params),
                     ],
                 }
             },
         })
+    }
+}
+
+class TitleView implements VirtualDOM {
+    public readonly class = ' text-center my-2'
+    public readonly innerText = 'Plugins'
+    public readonly style = {
+        fontSize: 'x-large',
+        fontWeight: 'bold',
+    }
+}
+
+class HintView implements VirtualDOM {
+    static docUrl =
+        '/applications/@youwol/stories/latest?id=5f48f380-9f0b-4854-ad7a-788d70c1ce6b&mode=reader'
+    public readonly class = ' text-justify my-1 px-2'
+    public readonly children: VirtualDOM[]
+
+    constructor() {
+        this.children = [
+            {
+                tag: 'i',
+                innerText: 'Find-out more plugins and how to install them',
+                children: [
+                    {
+                        tag: 'span',
+                        class: 'fv-pointer fv-bg-background-alt rounded border fv-hover-xx-lighter mx-1 px-1',
+                        innerText: 'here',
+                        onclick: () => {
+                            ChildApplicationAPI.getOsInstance()
+                                .createInstance$({
+                                    cdnPackage: '@youwol/stories',
+                                    parameters: {
+                                        id: '5f48f380-9f0b-4854-ad7a-788d70c1ce6b',
+                                        mode: 'reader',
+                                    },
+                                    version: 'latest',
+                                    focus: true,
+                                })
+                                .subscribe()
+                        },
+                    },
+                ],
+            },
+        ]
+    }
+}
+
+export class PluginsListView implements VirtualDOM {
+    public readonly class = 'w-100 flex-grow-1 overflow-auto my-1'
+    public readonly children
+    constructor(params: { state: GrapesEditorState }) {
+        this.children = children$(
+            Installer.getInstallManifest$().pipe(
+                map(({ applicationsData }) => {
+                    const toolboxes =
+                        applicationsData['@youwol/stories'] &&
+                        applicationsData['@youwol/stories'].toolboxes
+                    return toolboxes || []
+                }),
+            ),
+            (toolboxes: string[]) => {
+                return toolboxes.map((toolbox) => {
+                    return new PluginView({
+                        plugin: { packageName: toolbox },
+                        state: params.state.appState,
+                    })
+                })
+            },
+        )
     }
 }
 

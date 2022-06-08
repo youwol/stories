@@ -1,4 +1,4 @@
-import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
+import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 
 import { DeviceMode, DisplayMode, GrapesEditorState } from './grapes.state'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
@@ -25,7 +25,7 @@ export class GrapesEditorView implements VirtualDOM {
 
         this.canvasView = new CanvasView()
 
-        let blocksTabView = new BlocksTab()
+        let blocksTabView = new BlocksTab(params)
         let styleTabView = new StyleTab()
         let layersTabView = new LayersTab()
         let toolboxTab = new ToolboxesTab({ state: this.state })
@@ -38,7 +38,7 @@ export class GrapesEditorView implements VirtualDOM {
                 layersTabView,
                 toolboxTab,
             ]),
-            selected$: new BehaviorSubject<string>('blocks'),
+            selected$: params.state.selectedTab$,
             persistTabsView: true,
         })
 
@@ -86,12 +86,13 @@ export class GrapesSettingsTab extends Dockable.Tab {
         HTMLElement$ & HTMLDivElement
     >(1)
 
-    constructor(params: { id; title; icon }) {
+    constructor(params: { id; title; icon; headerChild? }) {
         super({
             ...params,
             content: () => {
                 return {
                     class: 'h-100 w-100 overflow-auto py-2',
+                    children: [params.headerChild],
                     connectedCallback: (
                         elem: HTMLElement$ & HTMLDivElement,
                     ) => {
@@ -103,12 +104,39 @@ export class GrapesSettingsTab extends Dockable.Tab {
     }
 }
 export class BlocksTab extends GrapesSettingsTab {
-    constructor() {
+    constructor(params: { state: GrapesEditorState }) {
         super({
             id: 'blocks',
             title: 'Blocks',
             icon: 'fas fa-th-large',
+            headerChild: child$(params.state.appState.plugins$, (plugins) => {
+                return plugins.length > 0 ? {} : new BlocksHintView(params)
+            }),
         })
+    }
+}
+class BlocksHintView implements VirtualDOM {
+    public readonly class = ' text-justify my-1 px-2'
+    public readonly children: VirtualDOM[]
+
+    constructor(params: { state: GrapesEditorState }) {
+        this.children = [
+            {
+                tag: 'i',
+                innerText:
+                    'No plugins activated, you can activate them through the tab',
+                children: [
+                    {
+                        tag: 'span',
+                        class: 'fv-pointer fv-bg-background-alt rounded border fv-hover-xx-lighter mx-1 px-1',
+                        innerText: 'Plugins',
+                        onclick: () => {
+                            params.state.selectedTab$.next('plugins')
+                        },
+                    },
+                ],
+            },
+        ]
     }
 }
 

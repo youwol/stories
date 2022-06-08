@@ -12,6 +12,7 @@ import {
     ExplorerNode,
     StoryNode,
     AppStateCommonInterface,
+    setApplicationProperties,
 } from '../common'
 
 import { StoryTopBannerView } from './top-banner'
@@ -288,6 +289,12 @@ export class AppView implements VirtualDOM {
 
     constructor(params: { state: AppState }) {
         Object.assign(this, params)
+
+        setApplicationProperties({
+            storyId: this.state.story.storyId,
+            mode: 'writer',
+        })
+
         let sideNav = new Dockable.View({
             state: this.state.leftNavState,
             styleOptions: { initialPanelSize: '300px' },

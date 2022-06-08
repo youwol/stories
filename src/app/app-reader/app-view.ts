@@ -3,6 +3,7 @@ import { StoryTopBannerView } from './top-banner'
 import { AppStateReader } from './app-state'
 import { PageView } from './page.view'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
+import { setApplicationProperties } from '../common'
 
 export class AppView implements VirtualDOM {
     public readonly state: AppStateReader
@@ -12,6 +13,11 @@ export class AppView implements VirtualDOM {
 
     constructor(params: { state: AppStateReader }) {
         Object.assign(this, params)
+
+        setApplicationProperties({
+            storyId: this.state.story.storyId,
+            mode: 'reader',
+        })
 
         let sideNav = new Dockable.View({
             state: this.state.leftNavState,
