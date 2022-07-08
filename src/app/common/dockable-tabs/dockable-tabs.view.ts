@@ -223,7 +223,7 @@ export class TabContent implements VirtualDOM {
         this.class = attr$(this.state.viewState$, (viewState) => {
             return viewState == 'collapsed'
                 ? 'd-none'
-                : 'flex-grow-1 fv-bg-background fv-x-lighter'
+                : 'flex-grow-1 fv-bg-background fv-x-lighter overflow-auto'
         })
         this.children = this.state.persistTabsView
             ? children$(this.state.tabs$, (tabs) => {
