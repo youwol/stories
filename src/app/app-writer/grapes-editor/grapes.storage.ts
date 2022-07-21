@@ -45,7 +45,7 @@ export class StorageManager {
         Object.assign(this, params)
     }
 
-    load(_keys, _clb, _clbErr) {
+    load(_keys, clb, _clbErr) {
         this.appState.selectedNode$
             .pipe(
                 take(1),
