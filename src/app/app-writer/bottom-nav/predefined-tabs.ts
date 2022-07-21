@@ -2,9 +2,12 @@ import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
 import { CssEditor, JsEditor } from './code-editors'
 import { AppState } from '../app-state'
 import { BehaviorSubject } from 'rxjs'
-import { CodeEditorView } from '../code-editor/code-editor.view'
+import { CodeEditorView } from '../code-editor'
 import { Code } from '../models'
 
+/**
+ * @category View.Tab
+ */
 export class CssBottomNavTab extends Dockable.Tab {
     constructor(params: { appState: AppState }) {
         super({
@@ -25,6 +28,9 @@ export class CssBottomNavTab extends Dockable.Tab {
     }
 }
 
+/**
+ * @category View.Tab
+ */
 export class JsBottomNavTab extends Dockable.Tab {
     constructor(params: { appState: AppState }) {
         super({
@@ -46,6 +52,9 @@ export class JsBottomNavTab extends Dockable.Tab {
     }
 }
 
+/**
+ * @category View.Tab
+ */
 export class ComponentsBottomNavTab extends Dockable.Tab {
     constructor(params: { appState: AppState }) {
         super({
@@ -67,6 +76,9 @@ export class ComponentsBottomNavTab extends Dockable.Tab {
     }
 }
 
+/**
+ * @category View.Tab
+ */
 export class CodePropertyEditorBottomNavTab extends Dockable.Tab {
     constructor(params: { appState: AppState; code: Code }) {
         super({

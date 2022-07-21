@@ -16,10 +16,22 @@ import { DocumentNode, ExplorerNode, StoryNode } from '../../../common'
 
 /**
  * Logic side of [[ContextMenuView]]
+ *
+ * @category State
+ * @category Getting Started
  */
 export class ContextMenuState extends ContextMenu.State {
+    /**
+     * @group States
+     */
     public readonly appState: AppState
+    /**
+     * @group States
+     */
     public readonly explorerState: ExplorerState
+    /**
+     * @group Immutable Constants
+     */
     public readonly explorerDiv: HTMLDivElement
 
     constructor({
@@ -60,16 +72,36 @@ export class ContextMenuState extends ContextMenu.State {
 
 /**
  * Context-menu view
+ *
+ * @category View
+ * @category Getting Started
  */
 export class ContextMenuView implements VirtualDOM {
+    /**
+     * @category Immutables DOM Constants
+     */
     public readonly id = 'context-menu-view'
+
+    /**
+     * @category Immutables DOM Constants
+     */
     public readonly children: Array<VirtualDOM>
 
+    /**
+     * @category Immutables Constants
+     */
     public readonly connectedCallback: (
         element: HTMLElement$ & HTMLDivElement,
     ) => void
 
+    /**
+     * @category States
+     */
     public readonly state: ContextMenuState
+
+    /**
+     * @category Immutables Constants
+     */
     public readonly selectedNode: ExplorerNode
 
     constructor(params: {
@@ -122,6 +154,7 @@ export class ContextMenuView implements VirtualDOM {
  * Creates context menu tree-view's node view
  * @param node context menu node
  * @returns the view
+ * @category View
  */
 function headerView(node: ContextTreeNode): VirtualDOM {
     return {

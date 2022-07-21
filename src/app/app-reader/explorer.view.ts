@@ -10,8 +10,13 @@ import { children$, VirtualDOM } from '@youwol/flux-view'
 
 /**
  * Logic side of [[ExplorerView]]
+ *
+ * @category State
  */
 export class ExplorerState extends ExplorerBaseState {
+    /**
+     * @group States
+     */
     public readonly appState: AppStateReader
 
     constructor(params: { rootDocument: Document; appState: AppStateReader }) {
@@ -21,6 +26,8 @@ export class ExplorerState extends ExplorerBaseState {
 
 /**
  * View of a story's tree structure
+ *
+ * @category View
  */
 export class ExplorerView extends ExplorerBaseView {
     constructor(params: { explorerState: ExplorerState }) {
@@ -31,11 +38,12 @@ export class ExplorerView extends ExplorerBaseView {
 /**
  * Create explorer's node view
  *
- * @param state explorer state
+ * @param _state explorer state
  * @param node node to display
  * @returns the view
+ * @category View
  */
-function headerView(state: ExplorerBaseState, node: ExplorerNode): VirtualDOM {
+function headerView(_state: ExplorerBaseState, node: ExplorerNode): VirtualDOM {
     const { iconView, headerClasses } = nodeViewElements(node)
     return {
         id: node.id,

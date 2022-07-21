@@ -20,11 +20,23 @@ export interface GjsData {
     'gsj-components': string
 }
 
+/**
+ * @category HTTP
+ */
 export class StorageManager {
     static type = 'YouWolStorage'
+    /**
+     * @group States
+     */
     public readonly appState: AppState
+    /**
+     * @group HTTP
+     */
     public readonly client = new AssetsGateway.AssetsGatewayClient().stories
 
+    /**
+     * @group Observables
+     */
     public documentsChange$: {
         [k: string]: BehaviorSubject<Document>
     } = {}
@@ -33,7 +45,7 @@ export class StorageManager {
         Object.assign(this, params)
     }
 
-    load(keys, clb, _clbErr) {
+    load(_keys, _clb, _clbErr) {
         this.appState.selectedNode$
             .pipe(
                 take(1),
@@ -66,7 +78,7 @@ export class StorageManager {
             })
     }
 
-    store(gjsData, clb, _clbErr) {
+    store(gjsData, _clb, _clbErr) {
         const components = JSON.parse(gjsData['gjs-components'])
         if (components.length == 0) {
             // this is when the canvas is cleared before reloading the new document

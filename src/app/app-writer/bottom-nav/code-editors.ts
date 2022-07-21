@@ -1,10 +1,13 @@
-import { CodeEditorView } from '../code-editor/code-editor.view'
+import { CodeEditorView } from '../code-editor'
 import { BehaviorSubject, Subject } from 'rxjs'
 import { VirtualDOM } from '@youwol/flux-view'
 import { AppState } from '../app-state'
 import { Code } from '../models'
 import { CodeRequirements } from '../../common'
 
+/**
+ * @category Configuration
+ */
 const configurationBase = {
     value: '',
     lineNumbers: true,
@@ -13,17 +16,52 @@ const configurationBase = {
     indentUnit: 4,
 }
 
+/**
+ * @category View
+ * @category Getting Started
+ */
 export class EditorBottomNavView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly appState: AppState
+
+    /**
+     * @group Observables
+     */
     public readonly run$ = new Subject<string>()
+
+    /**
+     * @group Observables
+     */
     public readonly content$: BehaviorSubject<string>
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly onRun: (content: string) => void
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly requirements: {
         scripts: string[]
         css: string[]
     }
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly configuration
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'd-flex h-100'
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
 
     constructor(params: {
@@ -67,6 +105,9 @@ export class EditorBottomNavView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View
+ */
 export class CssEditor extends EditorBottomNavView {
     constructor({
         appState,
@@ -93,6 +134,9 @@ export class CssEditor extends EditorBottomNavView {
     }
 }
 
+/**
+ * @category View
+ */
 export class JsEditor extends EditorBottomNavView {
     constructor({
         appState,
@@ -124,6 +168,9 @@ export class JsEditor extends EditorBottomNavView {
     }
 }
 
+/**
+ * @category View
+ */
 export class CustomEditor extends CodeEditorView {
     constructor({
         appState,

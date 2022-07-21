@@ -5,6 +5,14 @@ import { GrapesEditorState } from './grapes.state'
 import { StorageManager } from './grapes.storage'
 import { AppState } from '../app-state'
 
+/**
+ *
+ * @param canvas
+ * @param blocks
+ * @param style
+ * @param layers
+ * @category Configuration
+ */
 export function grapesConfig({
     canvas,
     blocks,
@@ -61,18 +69,14 @@ export function grapesConfig({
 }
 
 export function installStartingCss(editor: grapesjs.Editor) {
-    return install(
-        {
-            css: [
-                'bootstrap#4.4.1~bootstrap.min.css',
-                'fontawesome#5.12.1~css/all.min.css',
-                '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
-            ],
-        },
-        {
-            executingWindow: editor.Canvas.getWindow(),
-        },
-    )
+    return install({
+        css: [
+            'bootstrap#4.4.1~bootstrap.min.css',
+            'fontawesome#5.12.1~css/all.min.css',
+            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
+        ],
+        executingWindow: editor.Canvas.getWindow(),
+    })
 }
 
 export function postInitConfiguration(

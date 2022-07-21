@@ -3,19 +3,49 @@ import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { DeviceMode, DisplayMode, GrapesEditorState } from './grapes.state'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 
-import { styleToggleBase, ToggleMenu } from '../utils/utils.view'
+import { styleToggleBase, ToggleMenu } from '../utils'
 import * as grapesjs from 'grapesjs'
 import { ToolboxesTab } from './toolboxes.view'
 import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
 
+/**
+ * @category View
+ * @category Getting Started
+ */
 export class GrapesEditorView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly state: GrapesEditorState
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'w-100 d-flex h-100'
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly canvasView: CanvasView
+
+    /**
+     * @group Observables
+     */
     public readonly editor$: Observable<grapesjs.Editor>
+
+    /**
+     * @group States
+     */
     public readonly rightNavState: Dockable.State
 
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly connectedCallback: (
         elem: HTMLElement$ & HTMLDivElement,
     ) => void
@@ -65,13 +95,30 @@ export class GrapesEditorView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View
+ */
 export class CanvasView implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly id = 'gjs'
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'flex-grow-1 p-2'
+
+    /**
+     * @group Observables
+     */
     public readonly htmlElement$ = new ReplaySubject<
         HTMLElement$ & HTMLDivElement
     >(1)
 
+    /**
+     * @group Immutable DOM Constants
+     */
     connectedCallback: (elem: HTMLElement$ & HTMLDivElement) => void
 
     constructor() {
@@ -81,7 +128,13 @@ export class CanvasView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View.Tab
+ */
 export class GrapesSettingsTab extends Dockable.Tab {
+    /**
+     * @group Observables
+     */
     public readonly htmlElement$ = new ReplaySubject<
         HTMLElement$ & HTMLDivElement
     >(1)
@@ -103,6 +156,10 @@ export class GrapesSettingsTab extends Dockable.Tab {
         })
     }
 }
+
+/**
+ * @category View.Tab
+ */
 export class BlocksTab extends GrapesSettingsTab {
     constructor(params: { state: GrapesEditorState }) {
         super({
@@ -115,6 +172,7 @@ export class BlocksTab extends GrapesSettingsTab {
         })
     }
 }
+
 class BlocksHintView implements VirtualDOM {
     public readonly class = ' text-justify my-1 px-2'
     public readonly children: VirtualDOM[]
@@ -139,7 +197,9 @@ class BlocksHintView implements VirtualDOM {
         ]
     }
 }
-
+/**
+ * @category View.Tab
+ */
 export class StyleTab extends GrapesSettingsTab {
     constructor() {
         super({
@@ -149,7 +209,9 @@ export class StyleTab extends GrapesSettingsTab {
         })
     }
 }
-
+/**
+ * @category View.Tab
+ */
 export class LayersTab extends GrapesSettingsTab {
     constructor() {
         super({
@@ -159,9 +221,18 @@ export class LayersTab extends GrapesSettingsTab {
         })
     }
 }
-
+/**
+ * @category View
+ */
 export class OverallSettings implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'd-flex justify-content-around'
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
 
     constructor(params: { state: GrapesEditorState }) {
@@ -172,7 +243,9 @@ export class OverallSettings implements VirtualDOM {
         ]
     }
 }
-
+/**
+ * @category View
+ */
 export class DisplayModeToggle extends ToggleMenu<DisplayMode> {
     constructor(public readonly deviceMode$) {
         super({
@@ -187,7 +260,9 @@ export class DisplayModeToggle extends ToggleMenu<DisplayMode> {
         })
     }
 }
-
+/**
+ * @category View
+ */
 export class DeviceModeToggle extends ToggleMenu<DeviceMode> {
     constructor(public readonly deviceMode$) {
         super({

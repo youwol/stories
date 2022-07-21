@@ -12,10 +12,18 @@ import TDropAreaView = ImmutableTree.TDropAreaView
 
 /**
  * Logic side of [[ExplorerView]]
+ * @category State
  */
 export class ExplorerBaseState extends ImmutableTree.State<ExplorerNode> {
+    /**
+     * @group States
+     */
     public readonly appState: AppStateCommonInterface
+    /**
+     * @group Immutable Constants
+     */
     public readonly rootNode: StoryNode
+
     constructor({
         rootDocument,
         appState,
@@ -37,10 +45,19 @@ export class ExplorerBaseState extends ImmutableTree.State<ExplorerNode> {
 
 /**
  * View of a story's tree structure
+ *
+ * @category View
+ *
  */
 export class ExplorerBaseView extends ImmutableTree.View<ExplorerNode> {
+    /**
+     * @group States
+     */
     public readonly appState: AppStateCommonInterface
 
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'py-2'
 
     constructor({
@@ -61,6 +78,11 @@ export class ExplorerBaseView extends ImmutableTree.View<ExplorerNode> {
     }
 }
 
+/**
+ *
+ * @param node
+ * @catgeory View
+ */
 export function nodeViewElements(node: ExplorerNode) {
     type NodeType = 'StoryNode' | 'DocumentNode'
     let type: NodeType

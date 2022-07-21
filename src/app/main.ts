@@ -16,60 +16,49 @@ const loadingScreen = new LoadingScreenView()
 loadingScreen.render()
 
 if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
-    await install(
-        {
-            modules: [
-                'lodash',
-                'rxjs',
-                '@youwol/flux-view',
-                '@youwol/fv-tree',
-                '@youwol/os-top-banner',
-            ],
-            css: [
-                'bootstrap#4.4.1~bootstrap.min.css',
-                'fontawesome#5.12.1~css/all.min.css',
-                '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
-            ],
+    await install({
+        modules: [
+            { name: '@youwol/fv-tree', version: '0.x' },
+            { name: '@youwol/os-top-banner', version: '0.x' },
+        ],
+        css: [
+            'bootstrap#4.4.1~bootstrap.min.css',
+            'fontawesome#5.12.1~css/all.min.css',
+            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
+        ],
+        onEvent: (ev) => {
+            loadingScreen.next(ev)
         },
-        {
-            onEvent: (ev) => {
-                loadingScreen.next(ev)
-            },
-        },
-    )
+    })
 
     Client['initialLoadingScreen'] = loadingScreen
     await import('./load-app-reader')
 } else {
-    await install(
-        {
-            modules: [
-                'lodash',
-                'rxjs',
-                '@youwol/flux-view',
-                '@youwol/fv-group',
-                '@youwol/fv-button',
-                '@youwol/fv-tree',
-                '@youwol/fv-tabs',
-                '@youwol/fv-input',
-                '@youwol/fv-context-menu',
-                '@youwol/os-top-banner',
-                'grapes',
-            ],
-            css: [
-                'bootstrap#4.4.1~bootstrap.min.css',
-                'fontawesome#5.12.1~css/all.min.css',
-                '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
-                'highlight.js#11.2.0~styles/default.min.css',
-                'grapes#latest~css/grapes.min.css',
-            ],
+    await install({
+        modules: [
+            'lodash',
+            'rxjs',
+            '@youwol/flux-view',
+            '@youwol/fv-group',
+            '@youwol/fv-button',
+            '@youwol/fv-tree',
+            '@youwol/fv-tabs',
+            '@youwol/fv-input',
+            '@youwol/fv-context-menu',
+            '@youwol/os-top-banner',
+            'grapes',
+        ],
+        css: [
+            'bootstrap#4.4.1~bootstrap.min.css',
+            'fontawesome#5.12.1~css/all.min.css',
+            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
+            'highlight.js#11.2.0~styles/default.min.css',
+            'grapes#latest~css/grapes.min.css',
+        ],
+        onEvent: (ev) => {
+            loadingScreen.next(ev)
         },
-        {
-            onEvent: (ev) => {
-                loadingScreen.next(ev)
-            },
-        },
-    )
+    })
     Client['initialLoadingScreen'] = loadingScreen
 
     await import('./load-app-writer')

@@ -2,16 +2,38 @@ import { HTMLElement$, VirtualDOM } from '@youwol/flux-view'
 import { AppState } from '../app-state'
 import { Code } from '../models'
 import { BehaviorSubject, combineLatest, ReplaySubject, Subject } from 'rxjs'
-import { fetchCodeMirror$ } from '../utils/cdn-fetch'
+import { fetchCodeMirror$ } from '../utils'
 import { map } from 'rxjs/operators'
 import CodeMirror from 'codemirror'
 import { CodeRequirements } from '../../common'
 
+/**
+ * @category State
+ */
 export class CodeEditorState {
+    /**
+     * @group Immutable Constants
+     */
     public readonly codeMirrorConfiguration: { [k: string]: unknown }
+
+    /**
+     * @group Observables
+     */
     public readonly codeMirrorEditor$ = new ReplaySubject<CodeMirror.Editor>()
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly requirements: CodeRequirements
+
+    /**
+     * @group Observables
+     */
     public readonly htmlElementContainer$ = new Subject<HTMLDivElement>()
+
+    /**
+     * @group Observables
+     */
     public readonly content$: BehaviorSubject<string>
 
     constructor(params: {
@@ -53,13 +75,36 @@ export class CodeEditorState {
     }
 }
 
+/**
+ * @category View
+ * @category Getting Started
+ */
 export class CodeEditorView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly appState: AppState
+    /**
+     * @group States
+     */
     public readonly state: CodeEditorState
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class =
         'fv-bg-background fv-text-primary d-flex w-100 h-100'
+    /**
+     * @group Immutable Constants
+     */
     public readonly code: Code
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: Array<VirtualDOM>
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly style = {
         'font-size': 'initial',
     }

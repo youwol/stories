@@ -10,7 +10,7 @@ import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 import {
     CdnMessageEvent,
     Client,
-    fetchLoadingGraph,
+    installLoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
@@ -105,14 +105,12 @@ export function load$(
                     return of(story)
                 }
                 return from(
-                    fetchLoadingGraph(
-                        story.requirements.loadingGraph as any,
-                        window,
-                        {},
-                        (event) => {
+                    installLoadingGraph({
+                        loadingGraph: story.requirements.loadingGraph as any,
+                        onEvent: (event) => {
                             loadingScreen.next(event)
                         },
-                    ),
+                    }),
                 ).pipe(mapTo(story))
             }),
         ),

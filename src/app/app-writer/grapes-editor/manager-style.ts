@@ -1,3 +1,6 @@
+/**
+ * @category Configuration
+ */
 export function getStylesSectors() {
     return [
         {

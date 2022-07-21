@@ -1,5 +1,4 @@
 import { AssetsBackend, StoriesBackend } from '@youwol/http-clients'
-import { CssInput, ModulesInput, ScriptsInput } from '@youwol/cdn-client/dist'
 import { ReplaySubject } from 'rxjs'
 import { ExplorerNode } from './explorer-nodes'
 
@@ -17,7 +16,7 @@ export interface AppStateCommonInterface {
 export type ContentChangedOrigin = 'editor' | 'loaded'
 
 export interface CodeRequirements {
-    modules?: ModulesInput
-    scripts?: ScriptsInput
-    css?: CssInput
+    modules?: string[]
+    scripts?: string[]
+    css?: string[]
 }

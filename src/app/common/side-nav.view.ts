@@ -6,6 +6,9 @@ import * as Dockable from './dockable-tabs/dockable-tabs.view'
 import { ExplorerBaseView } from './explorer-base.view'
 
 type State = 'pined' | 'floatExpanded' | 'floatCollapsed'
+/**
+ * @category Configuration
+ */
 const baseStyle = {
     paddingLeft: '10px',
     paddingRight: '10px',
@@ -14,6 +17,10 @@ const baseStyle = {
     maxWidth: '250px',
     opacity: '1',
 }
+
+/**
+ * @category Factory
+ */
 const styleFactory: Record<State, { [k: string]: string }> = {
     pined: {
         ...baseStyle,
@@ -39,6 +46,9 @@ const styleFactory: Record<State, { [k: string]: string }> = {
     },
 }
 
+/**
+ * @category View.Tab
+ */
 export class StructureTab extends Dockable.Tab {
     constructor(params: { explorerView: ExplorerBaseView }) {
         super({
@@ -52,17 +62,37 @@ export class StructureTab extends Dockable.Tab {
     }
 }
 
+/**
+ * @category View
+ */
 export class SideNavView implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class =
         'h-100 fv-bg-background fv-xx-lighter fv-text-primary side-nav overflow-auto'
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly style: Stream$<State, { [k: string]: string }>
+    /**
+     * @group Observables
+     */
     public readonly state$ = new BehaviorSubject<State>('pined')
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
-
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly onmouseenter = () => {
         if (this.state$.getValue() == 'floatCollapsed')
             this.state$.next('floatExpanded')
     }
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly onmouseleave = () => {
         if (this.state$.getValue() == 'floatExpanded')
             this.state$.next('floatCollapsed')
@@ -91,10 +121,21 @@ export class SideNavView implements VirtualDOM {
         })
     }
 }
-
+/**
+ * @category View
+ */
 export class SideBarHeaderView implements VirtualDOM {
-    public readonly class
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class: Stream$<State, string>
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
+    /**
+     * @group Observables
+     */
     public readonly state$: BehaviorSubject<State>
 
     constructor(params: { state$: BehaviorSubject<State> }) {

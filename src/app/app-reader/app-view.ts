@@ -5,10 +5,24 @@ import { PageView } from './page.view'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { setApplicationProperties } from '../common'
 
+/**
+ * @category Getting Started
+ * @category View
+ */
 export class AppView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly state: AppStateReader
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'd-flex flex-column w-100 h-100'
 
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: Array<VirtualDOM>
 
     constructor(params: { state: AppStateReader }) {

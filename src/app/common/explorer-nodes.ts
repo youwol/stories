@@ -16,13 +16,32 @@ export type NodeSignal =
 
 /**
  * Base class of explorer's node
+ *
+ * @category Explorer's Node
  */
 export abstract class ExplorerNode extends ImmutableTree.Node {
-    name: string
-    position: number
-    signal$: ReplaySubject<NodeSignal>
-    processes$ = new BehaviorSubject<{ id: string; type: NodeSignal }[]>([])
-    story: Story
+    /**
+     * @group Immutable Constants
+     */
+    public readonly name: string
+    /**
+     * @group Immutable Constants
+     */
+    public readonly position: number
+    /**
+     * @group Observables
+     */
+    public readonly signal$: ReplaySubject<NodeSignal>
+    /**
+     * @group Observables
+     */
+    public readonly processes$ = new BehaviorSubject<
+        { id: string; type: NodeSignal }[]
+    >([])
+    /**
+     * @group Immutable Constants
+     */
+    public readonly story: Story
 
     protected constructor({ id, name, children, story, signal$, position }) {
         super({ id, children })
@@ -55,8 +74,13 @@ export abstract class ExplorerNode extends ImmutableTree.Node {
 
 /**
  * Story node of explorer's node
+ *
+ * @category Explorer's Node
  */
 export class StoryNode extends ExplorerNode {
+    /**
+     * @group Immutable Constants
+     */
     public readonly rootDocument: Document
 
     constructor({
@@ -93,8 +117,13 @@ export class StoryNode extends ExplorerNode {
 
 /**
  * Document node of explorer's node
+ *
+ * @category Explorer's Node
  */
 export class DocumentNode extends ExplorerNode {
+    /**
+     * @group Immutable Constants
+     */
     public readonly document: Document
 
     constructor({

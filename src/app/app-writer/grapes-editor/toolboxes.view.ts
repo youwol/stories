@@ -1,4 +1,4 @@
-import { attr$, children$, VirtualDOM } from '@youwol/flux-view'
+import { attr$, children$, Stream$, VirtualDOM } from '@youwol/flux-view'
 import { GrapesEditorState } from './grapes.state'
 import { AppState } from '../app-state'
 import { map } from 'rxjs/operators'
@@ -9,6 +9,9 @@ interface Plugin {
     packageName: string
 }
 
+/**
+ * @category View.Tab
+ */
 export class ToolboxesTab extends Dockable.Tab {
     public readonly children: VirtualDOM[]
 
@@ -76,9 +79,19 @@ class HintView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View
+ */
 export class PluginsListView implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'w-100 flex-grow-1 overflow-auto my-1'
-    public readonly children
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: Stream$<string[], VirtualDOM[]>
+
     constructor(params: { state: GrapesEditorState }) {
         this.children = children$(
             Installer.getInstallManifest$().pipe(
@@ -86,7 +99,7 @@ export class PluginsListView implements VirtualDOM {
                     const toolboxes =
                         applicationsData['@youwol/stories'] &&
                         applicationsData['@youwol/stories'].toolboxes
-                    return toolboxes || []
+                    return (toolboxes || []) as string[]
                 }),
             ),
             (toolboxes: string[]) => {
@@ -101,11 +114,29 @@ export class PluginsListView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View
+ */
 export class PluginView implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'd-flex align-items-center'
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly children: VirtualDOM[]
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly plugin: Plugin
+    /**
+     * @group States
+     */
     public readonly state: AppState
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly onclick = () => {
         this.state.togglePlugin(this.plugin.packageName)
     }

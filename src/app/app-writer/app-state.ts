@@ -1,6 +1,6 @@
 import { child$, VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, from, merge, Observable, ReplaySubject } from 'rxjs'
-import { ExplorerState, ExplorerView } from './explorer/explorer.view'
+import { ExplorerState, ExplorerView } from './explorer'
 import { AssetsGateway } from '@youwol/http-clients'
 import {
     handleError,
@@ -16,10 +16,9 @@ import {
 } from '../common'
 
 import { StoryTopBannerView } from './top-banner'
-import { GrapesEditorView } from './grapes-editor/grapes.view'
-import { GrapesEditorState } from './grapes-editor/grapes.state'
+import { GrapesEditorView, GrapesEditorState } from './grapes-editor'
 import { map, mapTo, mergeMap } from 'rxjs/operators'
-import { fetchLoadingGraph } from '@youwol/cdn-client'
+import { installLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
 import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
@@ -28,10 +27,13 @@ import {
     ComponentsBottomNavTab,
     CssBottomNavTab,
     JsBottomNavTab,
-} from './bottom-nav/predefined-tabs'
+} from './bottom-nav'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { HttpHandler } from './http-handler'
 
+/**
+ * @category Data Structure
+ */
 export enum SavingStatus {
     modified = 'Modified',
     started = 'Started',
@@ -39,51 +41,129 @@ export enum SavingStatus {
 }
 
 /**
- * Global application state, logic side of [[AppView]]
+ * Application state, logic side of [[AppView]]
+ *
+ * @category State
  */
 export class AppState implements AppStateCommonInterface {
+    /**
+     * @group Immutable Constants
+     */
     static debounceTimeSave = 1000
 
+    /**
+     * @group States
+     */
     public readonly bottomNavState: Dockable.State
+
+    /**
+     * @group States
+     */
     public readonly leftNavState: Dockable.State
 
+    /**
+     * @group States
+     */
     public readonly explorerState: ExplorerState
+
+    /**
+     * @group States
+     */
     public readonly grapesEditorState: GrapesEditorState
 
+    /**
+     * @group Observables
+     */
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
 
+    /**
+     * @group Observables
+     */
     public readonly addedDocument$ = new ReplaySubject<{
         document: Document
         parentDocumentId: string
     }>(1)
+
+    /**
+     * @group Observables
+     */
     public readonly deletedDocument$ = new ReplaySubject<Document>(1)
 
+    /**
+     * @group Observables
+     */
     public readonly save$ = new ReplaySubject<{
         document: Document
         content: DocumentContent
         status: SavingStatus
     }>(1)
 
+    /**
+     * @group Observables
+     */
     public readonly plugins$ = new BehaviorSubject<string[]>([])
 
+    /**
+     * @group Observables
+     */
     public readonly globalCss$: BehaviorSubject<string>
+
+    /**
+     * @group Observables
+     */
     public readonly globalJavascript$: BehaviorSubject<string>
+
+    /**
+     * @group Observables
+     */
     public readonly globalComponents$: BehaviorSubject<string>
 
-    public readonly story: Story
-    public readonly globalContents: GetGlobalContentResponse
-    public readonly rootDocument: Document
-    public readonly permissions: Permissions
-
-    public readonly httpHandler: HttpHandler
-
-    public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
-        .stories
-
+    /**
+     * @group Observables
+     */
     public readonly codeEdition$ = new BehaviorSubject<Code | undefined>(
         undefined,
     )
+    /**
+     * @group Observables
+     */
     public readonly dispositionChanged$ = new Observable<true>()
+
+    /**
+     * Initial story loaded.
+     *
+     * @group Immutable Constants
+     */
+    public readonly story: Story
+
+    /**
+     * Initial global contents.
+     *
+     * @group Immutable Constants
+     */
+    public readonly globalContents: GetGlobalContentResponse
+
+    /**
+     * @group Immutable Constants
+     */
+    public readonly rootDocument: Document
+
+    /**
+     * User's permissions on the story
+     * @group Immutable Constants
+     */
+    public readonly permissions: Permissions
+
+    /**
+     * @group HTTP
+     */
+    public readonly httpHandler: HttpHandler
+
+    /**
+     * @group HTTP
+     */
+    public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
+        .stories
 
     constructor(params: {
         story: Story
@@ -221,9 +301,9 @@ export class AppState implements AppStateCommonInterface {
                 handleError({ browserContext: 'add plugin' }),
                 mergeMap((resp) => {
                     return from(
-                        fetchLoadingGraph(
-                            resp.requirements.loadingGraph as any,
-                        ),
+                        installLoadingGraph({
+                            loadingGraph: resp.requirements.loadingGraph as any,
+                        }),
                     )
                 }),
             )
@@ -279,12 +359,25 @@ export class AppState implements AppStateCommonInterface {
 }
 
 /**
- * Global application's view
+ * Application's view
+ *
+ * @category Getting Started
+ * @category View
  */
 export class AppView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly state: AppState
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly class = 'fv-text-primary d-flex flex-column w-100 h-100'
 
+    /**
+     * @group Immutable Constants
+     */
     public readonly children: Array<VirtualDOM>
 
     constructor(params: { state: AppState }) {

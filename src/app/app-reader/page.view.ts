@@ -5,10 +5,25 @@ import { DocumentContent, handleError } from '../common'
 import { distinctUntilChanged, mergeMap } from 'rxjs/operators'
 import { from } from 'rxjs'
 
+/**
+ * @category View
+ */
 export class PageView implements VirtualDOM {
+    /**
+     * @group States
+     */
     public readonly appState: AppStateReader
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'flex-grow-1 h-100 p-1'
-    public readonly children
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children: VirtualDOM[]
+    /**
+     * @group HTTP
+     */
     public readonly client = new AssetsGateway.AssetsGatewayClient().stories
 
     constructor(params: { appState: AppStateReader }) {
@@ -47,9 +62,23 @@ export class PageView implements VirtualDOM {
     }
 }
 
+/**
+ * @category View
+ */
 export class PageContent implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly class = 'h-100 w-100'
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly innerHTML: string
+
+    /**
+     * @group Immutable DOM Constants
+     */
     public readonly connectedCallback: (
         elem: HTMLDivElement & HTMLElement$,
     ) => void

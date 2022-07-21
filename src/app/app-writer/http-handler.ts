@@ -3,6 +3,9 @@ import { ImmutableTree } from '@youwol/fv-tree'
 import { ExplorerNode } from '../common'
 import { AssetsGateway } from '@youwol/http-clients'
 
+/**
+ * @category Data Structure
+ */
 export class MetadataMoveCmd {
     constructor(
         public readonly parentId: string,
@@ -10,10 +13,23 @@ export class MetadataMoveCmd {
     ) {}
 }
 
+/**
+ * @category HTTP
+ */
 export class HttpHandler {
-    storyId: string
-    storiesClient = new AssetsGateway.AssetsGatewayClient().stories
-    command$: Observable<ImmutableTree.Command<ExplorerNode>[]>
+    /**
+     * @group Immutable Constants
+     */
+    public readonly storyId: string
+    /**
+     * @group HTTP
+     */
+    public readonly storiesClient = new AssetsGateway.AssetsGatewayClient()
+        .stories
+    /**
+     * @group Observables
+     */
+    public readonly command$: Observable<ImmutableTree.Command<ExplorerNode>[]>
 
     constructor(params: {
         storyId: string

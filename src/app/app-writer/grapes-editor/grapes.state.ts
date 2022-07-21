@@ -60,6 +60,9 @@ export type DeviceMode =
 
 export type EditorMode = 'blocks' | 'styles' | 'layers' | 'toolbox'
 
+/**
+ * @category Factory
+ */
 export const actionsFactory: Record<
     DisplayMode | DeviceMode,
     (editor: grapesjs.Editor) => void
@@ -86,22 +89,56 @@ export const actionsFactory: Record<
     },
 }
 
+/**
+ * @category State
+ */
 export class GrapesEditorState {
     static privateClasses: string[] = []
 
+    /**
+     * @group States
+     */
     public readonly appState: AppState
+    /**
+     * @group HTTP
+     */
     public readonly storage: StorageManager
 
+    /**
+     * @group Mutable
+     */
     public readonly installedPlugins: {
         [packName: string]: { blocks: string[]; components: string[] }
     } = {}
 
+    /**
+     * @group State
+     */
     nativeEditor: grapesjs.Editor
+
+    /**
+     * @group Observables
+     */
     public readonly loadedNativeEditor$ = new ReplaySubject<grapesjs.Editor>(1)
 
+    /**
+     * @group Observables
+     */
     public readonly displayMode$ = new BehaviorSubject<DisplayMode>('edit')
+
+    /**
+     * @group Observables
+     */
     public readonly deviceMode$ = new BehaviorSubject<DeviceMode>('desktop')
+
+    /**
+     * @group Observables
+     */
     public readonly selectedTab$ = new BehaviorSubject<string>('blocks')
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly subscriptions = []
 
     constructor(params: { appState: AppState }) {

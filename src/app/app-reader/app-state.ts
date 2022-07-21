@@ -3,21 +3,49 @@ import { BehaviorSubject, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from './explorer.view'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { StructureTab } from '../common/side-nav.view'
-import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
+import { StoriesBackend } from '@youwol/http-clients'
 
+/**
+ * @category State
+ */
 export class AppStateReader {
+    /**
+     * @group Immutable Constants
+     */
     public readonly story: Story
+
+    /**
+     * @group Immutable Constants
+     */
     public readonly rootDocument: Document
+    /**
+     * @group Immutable Constants
+     */
     public readonly permissions: Permissions
 
+    /**
+     * @group Observables
+     */
     public readonly selectedNode$ = new ReplaySubject<ExplorerNode>(1)
+
+    /**
+     * @group States
+     */
     public readonly leftNavState: Dockable.State
+
+    /**
+     * @group States
+     */
     public readonly explorerState: ExplorerState
-    public readonly globalContents: GetGlobalContentResponse
+
+    /**
+     * @group Immutable Constants
+     */
+    public readonly globalContents: StoriesBackend.GetGlobalContentResponse
 
     constructor(params: {
         story: Story
-        globalContents: GetGlobalContentResponse
+        globalContents: StoriesBackend.GetGlobalContentResponse
         rootDocument: Document
         permissions?
     }) {
