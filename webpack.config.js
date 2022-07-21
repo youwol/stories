@@ -61,6 +61,7 @@ module.exports = {
             '@youwol/fv-tabs': "window['@youwol/fv-tabs']",
             '@youwol/fv-button': "window['@youwol/fv-button']",
             '@youwol/fv-context-menu': "window['@youwol/fv-context-menu']",
+            '@youwol/os-core': "window['@youwol/os-core']",
             '@youwol/os-top-banner': "window['@youwol/os-top-banner']",
             'highlight.js': 'hljs',
         },
@@ -90,7 +91,7 @@ module.exports = {
             },
         ],
     },
-    devtool: 'cheap-module-source-map',
+    devtool: 'source-map',
     devServer: {
         //contentBase: path.resolve(__dirname, "./src"),
         historyApiFallback: true,
