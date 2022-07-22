@@ -1,6 +1,6 @@
 module.exports = {
     entryPoints: ['./src/app/index.ts'],
-    exclude: ['./src/tests', './src/app/top-banner'],
+    exclude: ['./src/tests'],
     out: 'dist/docs',
     theme: 'default',
     categorizeByGroup: false,
