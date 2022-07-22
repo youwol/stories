@@ -1,10 +1,14 @@
 # Stories
 
+The [**Stories** application](https://platform.youwol.com/applications/@youwol/stories/latest) is a 
+hierarchical document editor. 
 
-Application stories.
+User guide can be found [here](https://platform.youwol.com/documentation/@youwol/stories).
 
+Developers' documentation, coverage and bundle's analysis can be found
+[here](https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories).
 
-## Installation, Build & Test 
+## Installation, Build & Test
 
 To install the required dependencies:
 
@@ -24,27 +28,25 @@ To build for production:
 yarn build:prod
 ```
 
-Tests require py-youwol to run on port 2001 using the configuration defined [here](https://github.com/youwol/integration-tests-conf).
+Tests require [py-youwol](https://platform.youwol.com/documentation/py-youwol)
+to run on port 2001 using the configuration defined [here](https://github.com/youwol/integration-tests-conf).
 
 ```shell
 yarn test
 ```
 
 To start the 'dev-server':
-- add `CdnOverride(packageName="@youwol/stories", port=3001)` in your yw_config in the `dispatches` list.
-- run py-youwol
+- add `CdnOverride(packageName="@youwol/stories", port=3001)` in your
+  [YouWol configuration file](https://platform.youwol.com/documentation/py-youwol/configuration)
+  (in the `dispatches` list).
+- run [py-youwol](https://platform.youwol.com/documentation/py-youwol)
 - then execute
-```shell
-yarn start
-```
+  ```shell
+  yarn start
+  ```
 
 To generate code documentation:
 
 ```shell
 yarn doc
 ```
-
-## Documentation
-
-Documentation of the library can be found [here](https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories).
-
