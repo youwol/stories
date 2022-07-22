@@ -36,17 +36,14 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
 } else {
     await install({
         modules: [
-            'lodash',
-            'rxjs',
-            '@youwol/flux-view',
-            '@youwol/fv-group',
-            '@youwol/fv-button',
-            '@youwol/fv-tree',
-            '@youwol/fv-tabs',
-            '@youwol/fv-input',
-            '@youwol/fv-context-menu',
-            '@youwol/os-top-banner',
-            'grapes',
+            '@youwol/fv-group#0.x',
+            '@youwol/fv-button#0.x',
+            '@youwol/fv-tree#0.x',
+            '@youwol/fv-tabs#0.x',
+            '@youwol/fv-input#0.x',
+            '@youwol/fv-context-menu#0.x',
+            '@youwol/os-top-banner#0.x',
+            'grapes#0.x',
         ],
         css: [
             'bootstrap#4.4.1~bootstrap.min.css',
