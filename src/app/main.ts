@@ -18,8 +18,8 @@ loadingScreen.render()
 if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
     await install({
         modules: [
-            { name: '@youwol/fv-tree', version: '0.x' },
-            { name: '@youwol/os-top-banner', version: '0.x' },
+            '@youwol/fv-tree#0.x',
+            '@youwol/os-top-banner#0.x'
         ],
         css: [
             'bootstrap#4.4.1~bootstrap.min.css',
