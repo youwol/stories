@@ -74,7 +74,7 @@ const exportedSymbols = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.0',
+    version:'0.2.1',
     shortDescription:"YouWol Stories application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
