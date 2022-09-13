@@ -9,10 +9,11 @@ const runTimeDependencies = {
         "@youwol/flux-view": "^1.0.0",
         "@youwol/fv-context-menu": "^0.1.0",
         "rxjs": "^6.5.5",
-        "grapesjs": "0.18.3",
+        "grapesjs": "0.18.3"
+    },
+    "differed": {
         "codemirror": "^5.52.0"
     },
-    "differed": {},
     "includedInBundle": []
 }
 const externals = {
