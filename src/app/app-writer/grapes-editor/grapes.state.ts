@@ -253,7 +253,7 @@ export class GrapesEditorState {
             this.appState.globalCss$.pipe(skip(1)),
         ]).subscribe(([editor, css]) => {
             const head = editor.Canvas.getDocument().head
-            let styleElem = head.querySelector('style#global-css')
+            const styleElem = head.querySelector('style#global-css')
             styleElem.innerHTML = css
         })
         const subJs = combineLatest([
@@ -312,18 +312,18 @@ export class GrapesEditorState {
                 grapesEditor: this.nativeEditor,
                 idFactory: (name) => `${pluginName}#${name}`,
             }
-            let components = []
+            const components = []
             plugin.getComponents().forEach((ComponentClass) => {
-                let component = new ComponentClass(input)
+                const component = new ComponentClass(input)
                 this.nativeEditor.DomComponents.addType(
                     component.componentType,
                     component,
                 )
                 components.push(component.componentType)
             })
-            let blocks = []
+            const blocks = []
             plugin.getBlocks().forEach((BlockClass) => {
-                let block = new BlockClass(input)
+                const block = new BlockClass(input)
                 this.nativeEditor.BlockManager.add(block.blockType, {
                     ...block,
                     category: {
@@ -342,7 +342,9 @@ export class GrapesEditorState {
     }
 
     private uninstallPlugin(pluginName) {
-        if (!this.installedPlugins[pluginName]) return
+        if (!this.installedPlugins[pluginName]) {
+            return
+        }
         const { blocks, components } = this.installedPlugins[pluginName]
         blocks.forEach((block) => {
             this.nativeEditor.BlockManager.remove(block)
