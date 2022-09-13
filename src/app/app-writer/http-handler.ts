@@ -38,11 +38,12 @@ export class HttpHandler {
         Object.assign(this, params)
         this.command$.subscribe((commands) => {
             commands.forEach((c) => {
+                const meta = c.metadata as {parentId:string, position:number}
                 if (c instanceof ImmutableTree.MoveNodeCommand) {
                     this.moveNode({
                         nodeId: c.movedNode.id,
-                        destinationParentId: c.metadata.parentId,
-                        position: c.metadata.position,
+                        destinationParentId: meta.parentId,
+                        position: meta.position,
                     })
                 }
             })
