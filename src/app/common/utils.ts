@@ -15,8 +15,9 @@ import {
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
 import { child$ } from '@youwol/flux-view'
-import { NewAssetResponse } from '@youwol/http-clients/src/lib/assets-gateway'
-import { CreateStoryResponse } from '@youwol/http-clients/src/lib/stories-backend/interfaces'
+
+type NewAssetResponse<T> = AssetsGateway.NewAssetResponse<T>
+type CreateStoryResponse = StoriesBackend.CreateStoryResponse
 
 export function defaultStoryTitle() {
     return `story-${new Date().toLocaleString()}`

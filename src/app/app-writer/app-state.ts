@@ -1,7 +1,7 @@
 import { child$, VirtualDOM } from '@youwol/flux-view'
 import { BehaviorSubject, from, merge, Observable, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from './explorer'
-import { AssetsGateway } from '@youwol/http-clients'
+import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import {
     handleError,
     Document,
@@ -21,7 +21,6 @@ import { map, mapTo, mergeMap } from 'rxjs/operators'
 import { installLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
-import { GetGlobalContentResponse } from '@youwol/http-clients/dist/lib/stories-backend'
 import {
     CodePropertyEditorBottomNavTab,
     ComponentsBottomNavTab,
@@ -31,6 +30,8 @@ import {
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { HttpHandler } from './http-handler'
 
+
+type GetGlobalContentResponse = StoriesBackend.GetGlobalContentResponse
 /**
  * @category Data Structure
  */
