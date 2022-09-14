@@ -1,13 +1,13 @@
 
 const runTimeDependencies = {
     "load": {
-        "@youwol/os-core": "^0.1.0",
-        "@youwol/fv-tree": "^0.2.0",
-        "@youwol/os-top-banner": "^0.1.0",
-        "@youwol/cdn-client": "^1.0.0",
-        "@youwol/http-clients": "^1.0.0",
-        "@youwol/flux-view": "^1.0.0",
-        "@youwol/fv-context-menu": "^0.1.0",
+        "@youwol/os-core": "^0.1.1",
+        "@youwol/fv-tree": "^0.2.3",
+        "@youwol/os-top-banner": "^0.1.1",
+        "@youwol/cdn-client": "^1.0.2",
+        "@youwol/http-clients": "^1.0.2",
+        "@youwol/flux-view": "^1.0.3",
+        "@youwol/fv-context-menu": "^0.1.1",
         "rxjs": "^6.5.5",
         "grapesjs": "0.18.3"
     },
@@ -74,7 +74,7 @@ const exportedSymbols = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.1',
+    version:'0.2.2',
     shortDescription:"YouWol Stories application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
@@ -83,9 +83,8 @@ export const setup = {
     apiVersion:'02',
     runTimeDependencies,
     externals,
-    exportedSymbols
-}
-
-export function getExportedSymbolName(module:string){
-    return `${exportedSymbols[module].exportedSymbol}_APIv${exportedSymbols[module].apiKey}`
+    exportedSymbols,
+    getDependencySymbolExported: (module:string) => {
+        return `${exportedSymbols[module].exportedSymbol}_APIv${exportedSymbols[module].apiKey}`
+    }
 }

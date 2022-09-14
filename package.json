@@ -1,7 +1,7 @@
 {
     "name": "@youwol/stories",
     "description": "YouWol Stories application",
-    "version": "0.2.1",
+    "version": "0.2.2",
     "author": "greinisch@youwol.com",
     "homepage": "https://github.com/youwol/stories#README.md",
     "main": "dist/index.html",
@@ -65,26 +65,26 @@
         ]
     },
     "dependencies": {
-        "@youwol/os-core": "^0.1.0",
-        "@youwol/fv-tree": "^0.2.0",
-        "@youwol/os-top-banner": "^0.1.0",
-        "@youwol/cdn-client": "^1.0.0",
-        "@youwol/http-clients": "^1.0.0",
-        "@youwol/flux-view": "^1.0.0",
-        "@youwol/fv-context-menu": "^0.1.0",
+        "@youwol/os-core": "^0.1.1",
+        "@youwol/fv-tree": "^0.2.3",
+        "@youwol/os-top-banner": "^0.1.1",
+        "@youwol/cdn-client": "^1.0.2",
+        "@youwol/http-clients": "^1.0.2",
+        "@youwol/flux-view": "^1.0.3",
+        "@youwol/fv-context-menu": "^0.1.1",
         "rxjs": "^6.5.5",
         "grapesjs": "0.18.3",
         "codemirror": "^5.52.0"
     },
     "youwol": {
         "cdnDependencies": {
-            "@youwol/os-core": "^0.1.0",
-            "@youwol/fv-tree": "^0.2.0",
-            "@youwol/os-top-banner": "^0.1.0",
-            "@youwol/cdn-client": "^1.0.0",
-            "@youwol/http-clients": "^1.0.0",
-            "@youwol/flux-view": "^1.0.0",
-            "@youwol/fv-context-menu": "^0.1.0",
+            "@youwol/os-core": "^0.1.1",
+            "@youwol/fv-tree": "^0.2.3",
+            "@youwol/os-top-banner": "^0.1.1",
+            "@youwol/cdn-client": "^1.0.2",
+            "@youwol/http-clients": "^1.0.2",
+            "@youwol/flux-view": "^1.0.3",
+            "@youwol/fv-context-menu": "^0.1.1",
             "rxjs": "^6.5.5",
             "grapesjs": "0.18.3"
         }
