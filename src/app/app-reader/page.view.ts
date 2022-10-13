@@ -1,9 +1,14 @@
-import { child$, HTMLElement$, VirtualDOM } from '@youwol/flux-view'
+import {
+    attr$,
+    childrenWithReplace$,
+    HTMLElement$,
+    VirtualDOM,
+} from '@youwol/flux-view'
 import { AppStateReader } from './app-state'
 import { AssetsGateway } from '@youwol/http-clients'
 import { DocumentContent, handleError } from '../common'
-import { distinctUntilChanged, mergeMap } from 'rxjs/operators'
-import { from } from 'rxjs'
+import { filter, map, mergeMap, scan, shareReplay, tap } from 'rxjs/operators'
+import { combineLatest, from } from 'rxjs'
 
 /**
  * @category View
@@ -16,11 +21,11 @@ export class PageView implements VirtualDOM {
     /**
      * @group Immutable DOM Constants
      */
-    public readonly class = 'flex-grow-1 h-100 p-1'
+    public readonly class = 'flex-grow-1 h-100 p-1 d-flex flex-column'
     /**
      * @group Immutable DOM Constants
      */
-    public readonly children: VirtualDOM[]
+    public readonly children //: VirtualDOM[]
     /**
      * @group HTTP
      */
@@ -28,37 +33,59 @@ export class PageView implements VirtualDOM {
 
     constructor(params: { appState: AppStateReader }) {
         Object.assign(this, params)
-        const styleElem = document.createElement('style')
-        styleElem.id = 'global-css'
-        styleElem.innerHTML = this.appState.globalContents.css
-        document.head.appendChild(styleElem)
+        const styleGlobal = document.createElement('style')
+        styleGlobal.id = 'global-css'
+        styleGlobal.innerHTML = this.appState.globalContents.css
+        document.head.appendChild(styleGlobal)
 
-        this.children = [
-            child$(
-                from(
-                    new Function(this.appState.globalContents.javascript)()(
-                        window,
-                    ),
-                ).pipe(
-                    mergeMap(() => this.appState.selectedNode$),
-                    distinctUntilChanged(
-                        (node1, node2) => node1.id == node2.id,
-                    ),
-                    mergeMap((node) => {
-                        return this.client.getContent$({
-                            storyId: node.story.storyId,
-                            documentId: node.id,
-                        })
-                    }),
-                    handleError({
-                        browserContext: 'PageView.constructor.getContent',
-                    }),
-                ),
-                (page) => {
-                    return new PageContent(page)
-                },
+        const allDocumentsInMemory$ = this.appState.preloadDocuments$.pipe(
+            scan((acc, e) => [...acc, ...e], []),
+            shareReplay({ bufferSize: 1, refCount: true }),
+        )
+
+        const currentPage$ = combineLatest([
+            this.appState.selectedNode$,
+            allDocumentsInMemory$,
+        ]).pipe(
+            //withLatestFrom(allDocumentsInMemory$),
+            map(([node, docs]) => {
+                return docs.find((doc) => doc.id == node.id)
+            }),
+            // it happens that allDocumentsInMemory$ are not yet updated w/ selectedNode$, it will...
+            filter((page) => page != undefined),
+            tap((page) => {
+                let stylePage = document.head.querySelector('style#gjs-css')
+                if (!stylePage) {
+                    stylePage = document.createElement('style')
+                    stylePage.id = 'gjs-css'
+                    document.head.appendChild(stylePage)
+                }
+                stylePage.innerHTML = page.content.css
+            }),
+            shareReplay({ bufferSize: 1, refCount: true }),
+        )
+
+        this.children = childrenWithReplace$(
+            from(
+                new Function(this.appState.globalContents.javascript)()(window),
+            ).pipe(
+                mergeMap(() => allDocumentsInMemory$),
+                handleError({
+                    browserContext: 'PageView.constructor.getContent',
+                }),
             ),
-        ]
+            (page) => {
+                return {
+                    class: attr$(currentPage$, (currentPage) =>
+                        currentPage.id == page.id ? 'h-100 w-100' : 'd-none',
+                    ),
+                    children: [new PageContent(page.content)],
+                }
+            },
+            {
+                comparisonOperator: (a, b) => a.id == b.id,
+            },
+        )
     }
 }
 
@@ -84,13 +111,6 @@ export class PageContent implements VirtualDOM {
     ) => void
 
     constructor(page: DocumentContent) {
-        let styleElem = document.head.querySelector('style#gjs-css')
-        if (!styleElem) {
-            styleElem = document.createElement('style')
-            styleElem.id = 'gjs-css'
-            document.head.appendChild(styleElem)
-        }
-        styleElem.innerHTML = page.css
         this.innerHTML = page.html
         this.connectedCallback = () => {
             const scripts = document.body.querySelectorAll('script')
