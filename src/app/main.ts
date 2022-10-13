@@ -16,11 +16,11 @@ const loadingScreen = new LoadingScreenView()
 loadingScreen.render()
 
 if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
-    const required = ['@youwol/fv-tree', '@youwol/os-top-banner' ]
+    const required = ['@youwol/fv-tree', '@youwol/os-top-banner']
     await install({
-        modules: Object.entries(setup.runTimeDependencies.load).filter(([k])=> required.includes(k)).map(
-            ([k, v]) => `${k}#${v}`,
-        ),
+        modules: Object.entries(setup.runTimeDependencies.externals)
+            .filter(([k]) => required.includes(k))
+            .map(([k, v]) => `${k}#${v}`),
         css: [
             'bootstrap#4.4.1~bootstrap.min.css',
             'fontawesome#5.12.1~css/all.min.css',
@@ -30,7 +30,6 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
             loadingScreen.next(ev)
         },
     })
-
     Client['initialLoadingScreen'] = loadingScreen
     await import('./load-app-reader')
 } else {
@@ -44,12 +43,12 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
         '@youwol/fv-input',
         '@youwol/fv-context-menu',
         '@youwol/os-top-banner',
-        'grapesjs'
+        'grapesjs',
     ]
     await install({
-        modules: Object.entries(setup.runTimeDependencies.load).filter(([k])=> required.includes(k)).map(
-            ([k, v]) => `${k}#${v}`,
-        ),
+        modules: Object.entries(setup.runTimeDependencies.externals)
+            .filter(([k]) => required.includes(k))
+            .map(([k, v]) => `${k}#${v}`),
         css: [
             'bootstrap#4.4.1~bootstrap.min.css',
             'fontawesome#5.12.1~css/all.min.css',
