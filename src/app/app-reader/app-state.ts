@@ -60,6 +60,11 @@ export class AppStateReader {
     /**
      * @group Observables
      */
+    public readonly globalJavascript$: BehaviorSubject<string>
+
+    /**
+     * @group Observables
+     */
     public readonly preloadDocuments$: Observable<
         { id: string; content: StoriesBackend.DocumentContentBody }[]
     >
@@ -76,7 +81,19 @@ export class AppStateReader {
         permissions?
     }) {
         Object.assign(this, params)
-
+        this.globalJavascript$ = new BehaviorSubject<string>(
+            this.globalContents.javascript,
+        )
+        this.globalJavascript$
+            .pipe(
+                mergeMap((js) => {
+                    const promise = new Function(js)()(window)
+                    return from(promise).pipe(map((data) => data))
+                }),
+            )
+            .subscribe((data) => {
+                window['globalJavascript'] = data
+            })
         this.explorerState = new ExplorerState({
             rootDocument: this.rootDocument,
             appState: this,
