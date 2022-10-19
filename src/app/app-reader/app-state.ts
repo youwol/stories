@@ -19,6 +19,26 @@ import {
     tap,
 } from 'rxjs/operators'
 
+function getConfiguration() {
+    const searchParams = new URLSearchParams(window.location.search)
+    const userConfig =
+        searchParams.has('config') &&
+        JSON.parse(
+            window.atob(
+                searchParams.has('config') && searchParams.get('config'),
+            ),
+        )
+    return {
+        explorer: {
+            viewState:
+                (userConfig &&
+                    userConfig.explorer &&
+                    userConfig.explorer.viewState) ||
+                'pined',
+        },
+    }
+}
+
 /**
  * @category State
  */
@@ -99,9 +119,12 @@ export class AppStateReader {
             appState: this,
         })
 
+        const config = getConfiguration()
         this.leftNavState = new Dockable.State({
             disposition: 'left',
-            viewState$: new BehaviorSubject<Dockable.DisplayMode>('pined'),
+            viewState$: new BehaviorSubject<Dockable.DisplayMode>(
+                config.explorer.viewState as Dockable.DisplayMode,
+            ),
             tabs$: new BehaviorSubject([
                 new StructureTab({
                     explorerView: new ExplorerView({
@@ -124,6 +147,26 @@ export class AppStateReader {
     getDocumentsPreload$(): Observable<
         { id: string; content: StoriesBackend.DocumentContentBody }[]
     > {
+        const nextSibling = (node) => {
+            const parent = this.explorerState.getParent(node.id)
+            if (!parent) {
+                return undefined
+            }
+            const siblings = parent.resolvedChildren()
+
+            const index_current = [...siblings]
+                .sort(
+                    (a: ExplorerNode, b: ExplorerNode) =>
+                        a.position - b.position,
+                )
+                .findIndex((n) => n.id == node.id)
+
+            if (index_current < siblings.length) {
+                return siblings[index_current + 1]
+            }
+            nextSibling(parent)
+        }
+
         const storiesClient = new AssetsGateway.AssetsGatewayClient().stories
         return this.explorerState.selectedNode$.pipe(
             distinctUntilChanged((node1, node2) => node1.id == node2.id),
@@ -138,27 +181,9 @@ export class AppStateReader {
                 const sortedChildren = [...children].sort(
                     (a, b) => a.position - b.position,
                 )
-                if (!this.explorerState.getParent(node.id)) {
-                    return { node, firstChild: sortedChildren[0] }
-                }
-                const siblings = this.explorerState
-                    .getParent(node.id)
-                    .resolvedChildren()
-
-                const index_current = [...siblings]
-                    .sort(
-                        (a: ExplorerNode, b: ExplorerNode) =>
-                            a.position - b.position,
-                    )
-                    .findIndex((n) => n.id == node.id)
-                if (index_current + 1 >= siblings.length) {
-                    return { node, firstChild: sortedChildren[0] }
-                }
-                return {
-                    node,
-                    firstChild: sortedChildren[0],
-                    nextSibling: siblings[index_current + 1],
-                }
+                return sortedChildren.length > 0
+                    ? { node, next: sortedChildren[0] }
+                    : { node, next: nextSibling(node) }
             }),
             map((nodes) => Object.values(nodes).filter((n) => n != undefined)),
             map((nodes) =>
