@@ -1,5 +1,12 @@
 import { AppState } from '../app-state'
-import { debounceTime, mergeMap, take, skip, tap } from 'rxjs/operators'
+import {
+    debounceTime,
+    distinctUntilChanged,
+    mergeMap,
+    skip,
+    take,
+    tap,
+} from 'rxjs/operators'
 import { handleError, ExplorerNode } from '../../common'
 import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import { BehaviorSubject, of } from 'rxjs'
@@ -89,8 +96,33 @@ export class StorageManager {
 
     createCache(documentId: string, document: Document) {
         this.documentsChange$[documentId] = new BehaviorSubject(document)
+        const order = (record: {
+            components: string
+            css: string
+            html: string
+            styles: string
+        }) => {
+            // ordering is needed as (initial) documents from remote storage & documents sent by grapesjs
+            // are not ordered the same way
+            return ['components', 'css', 'html', 'styles'].reduce(
+                (acc, e) => ({ ...acc, [e]: record[e] }),
+                {},
+            )
+        }
         this.documentsChange$[documentId]
             .pipe(
+                // This is especially relevant at load time since 2 events with same content but different
+                // properties' order are emitted
+                distinctUntilChanged((record0, record1) => {
+                    return (
+                        JSON.stringify(order(record0)) ==
+                        JSON.stringify(order(record1))
+                    )
+                }),
+                // Skip saving of the initial load, usually not a big deal.
+                // However, if the story is downloading from the remote but not yet downloaded,
+                // saving it right away will cause an error. By the time the user modify the document, it is likely
+                // that the story's download finished.
                 skip(1),
                 tap(() => {
                     const node = this.appState.explorerState.getNode(documentId)
