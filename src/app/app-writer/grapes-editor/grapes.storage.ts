@@ -1,12 +1,5 @@
 import { AppState } from '../app-state'
-import {
-    debounceTime,
-    distinctUntilChanged,
-    mergeMap,
-    take,
-    skip,
-    tap,
-} from 'rxjs/operators'
+import { debounceTime, mergeMap, take, skip, tap } from 'rxjs/operators'
 import { handleError, ExplorerNode } from '../../common'
 import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import { BehaviorSubject, of } from 'rxjs'
@@ -99,9 +92,6 @@ export class StorageManager {
         this.documentsChange$[documentId]
             .pipe(
                 skip(1),
-                distinctUntilChanged((x, y) => {
-                    return x.components == y.components
-                }),
                 tap(() => {
                     const node = this.appState.explorerState.getNode(documentId)
                     return node.addProcess({
