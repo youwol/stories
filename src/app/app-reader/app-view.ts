@@ -33,7 +33,7 @@ export class AppView implements VirtualDOM {
             mode: 'reader',
         })
 
-        let sideNav = new Dockable.View({
+        const sideNav = new Dockable.View({
             state: this.state.leftNavState,
             styleOptions: { initialPanelSize: '300px' },
         })

@@ -68,7 +68,7 @@ export function load$(
     storyId: string,
     container: HTMLElement,
     loadingScreen: LoadingScreenView,
-    loadPlugins: boolean = true,
+    loadPlugins = true,
 ): Observable<{
     story: StoriesBackend.StoryResponse
     rootDocument: StoriesBackend.GetDocumentResponse

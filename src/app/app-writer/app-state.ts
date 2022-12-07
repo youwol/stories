@@ -289,7 +289,7 @@ export class AppState implements AppStateCommonInterface {
     }
 
     togglePlugin(packageName: string) {
-        let actualPlugins = this.plugins$.getValue()
+        const actualPlugins = this.plugins$.getValue()
 
         if (actualPlugins.includes(packageName)) {
             this.plugins$.next(actualPlugins.filter((p) => p != packageName))
@@ -388,7 +388,7 @@ export class AppView implements VirtualDOM {
             mode: 'writer',
         })
 
-        let sideNav = new Dockable.View({
+        const sideNav = new Dockable.View({
             state: this.state.leftNavState,
             styleOptions: { initialPanelSize: '300px' },
         })

@@ -32,6 +32,7 @@ export class State {
     public readonly tabs$: BehaviorSubject<Tab[]>
     public readonly selected$: Subject<string>
     public readonly persistTabsView: boolean = false
+
     constructor(params: {
         disposition: Disposition
         viewState$: BehaviorSubject<DisplayMode>
@@ -50,11 +51,9 @@ const baseStyle = (disposition: Disposition) => {
             opacity: '1',
         }
     }
-    if (disposition == 'left' || 'right') {
-        return {
-            width: '300px',
-            opacity: '1',
-        }
+    return {
+        width: '300px',
+        opacity: '1',
     }
 }
 
@@ -141,6 +140,7 @@ const styleFactory = (
 export interface StyleOptions {
     initialPanelSize?: string
 }
+
 export function defaultStyleOptions(): StyleOptions {
     return {
         initialPanelSize: '300px',
@@ -165,8 +165,9 @@ export class View implements VirtualDOM {
         }
     }
     public readonly onmouseleave = () => {
-        if (this.state.viewState$.getValue() == 'expanded')
+        if (this.state.viewState$.getValue() == 'expanded') {
             this.state.viewState$.next('collapsed')
+        }
     }
     public readonly style: Stream$<DisplayMode, { [k: string]: string }>
 
@@ -179,7 +180,7 @@ export class View implements VirtualDOM {
             ...defaultStyleOptions(),
             ...(params.styleOptions || {}),
         }
-        let headerView = new HeaderView({
+        const headerView = new HeaderView({
             state: this.state,
             connectedCallback: (e) => {
                 const vDOM = {
@@ -194,14 +195,15 @@ export class View implements VirtualDOM {
                 this.placeholder$.next(vDOM)
             },
         })
-        let contentView = new TabContent({ state: this.state })
+        const contentView = new TabContent({ state: this.state })
 
         this.children = [headerView, contentView]
         if (
             this.state.disposition == 'bottom' ||
             this.state.disposition == 'right'
-        )
+        ) {
             this.children.reverse()
+        }
 
         this.style = attr$(this.state.viewState$, (state) => {
             return styleFactory(this.state.disposition, this.styleOptions)[
@@ -218,6 +220,7 @@ export class TabContent implements VirtualDOM {
     public readonly style = {
         minHeight: '0px',
     }
+
     constructor(params: { state }) {
         Object.assign(this, params)
         this.class = attr$(this.state.viewState$, (viewState) => {
@@ -244,11 +247,15 @@ export class TabContent implements VirtualDOM {
                           this.state.tabs$,
                       ]),
                       ([viewState, selected, tabs]) => {
-                          if (viewState == 'collapsed') return {}
+                          if (viewState == 'collapsed') {
+                              return {}
+                          }
                           const selectedTab = tabs.find(
                               (tab) => tab.id == selected,
                           )
-                          if (!selectedTab) return {}
+                          if (!selectedTab) {
+                              return {}
+                          }
                           return selectedTab.content()
                       },
                   ),
@@ -348,13 +355,14 @@ export class TabHeaderView implements VirtualDOM {
     public readonly onclick = () => {
         this.state.selected$.next(this.id)
     }
+
     constructor(params: { state: State; title: string; icon: string }) {
         Object.assign(this, params)
         this.style = {
             ...TabHeaderView.baseStyle,
             ...TabHeaderView.styleFactory[this.state.disposition],
         }
-        let baseClass = TabHeaderView.classFactory[this.state.disposition]
+        const baseClass = TabHeaderView.classFactory[this.state.disposition]
         this.class = attr$(this.state.selected$, (selected) => {
             return this.id == selected
                 ? `${baseClass} ${

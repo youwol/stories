@@ -86,8 +86,12 @@ export class ExplorerBaseView extends ImmutableTree.View<ExplorerNode> {
 export function nodeViewElements(node: ExplorerNode) {
     type NodeType = 'StoryNode' | 'DocumentNode'
     let type: NodeType
-    if (node instanceof StoryNode) type = 'StoryNode'
-    if (node instanceof DocumentNode) type = 'DocumentNode'
+    if (node instanceof StoryNode) {
+        type = 'StoryNode'
+    }
+    if (node instanceof DocumentNode) {
+        type = 'DocumentNode'
+    }
 
     const iconsClass: Record<NodeType, string> = {
         StoryNode: 'fas fa-book-open',

@@ -55,10 +55,10 @@ export class GrapesEditorView implements VirtualDOM {
 
         this.canvasView = new CanvasView()
 
-        let blocksTabView = new BlocksTab(params)
-        let styleTabView = new StyleTab()
-        let layersTabView = new LayersTab()
-        let toolboxTab = new ToolboxesTab({ state: this.state })
+        const blocksTabView = new BlocksTab(params)
+        const styleTabView = new StyleTab()
+        const layersTabView = new LayersTab()
+        const toolboxTab = new ToolboxesTab({ state: this.state })
         this.rightNavState = new Dockable.State({
             disposition: 'right',
             viewState$: new BehaviorSubject<Dockable.DisplayMode>('collapsed'),
