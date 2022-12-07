@@ -30,7 +30,6 @@ import {
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { HttpHandler } from './http-handler'
 
-
 type GetGlobalContentResponse = StoriesBackend.GetGlobalContentResponse
 /**
  * @category Data Structure
