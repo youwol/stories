@@ -11,3 +11,5 @@ jobs:
   nestor_ci:
     name: Typescript
     uses: youwol/nestor/.github/workflows/typescript-ci.yml@v1
+    with:
+      skip: 'audit' # TG-73 : temporary workaround security alert GHSA-589f-c66p-hxr4
