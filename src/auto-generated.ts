@@ -95,7 +95,7 @@ const entries = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.5-wip',
+    version:'0.2.5',
     shortDescription:"YouWol Stories application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
@@ -130,7 +130,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/stories#0.2.5-wip~dist/@youwol/stories/${entry.name}.js`
+            `@youwol/stories#0.2.5~dist/@youwol/stories/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
