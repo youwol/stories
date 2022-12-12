@@ -12,6 +12,7 @@ import {
     Client,
     installLoadingGraph,
     LoadingScreenView,
+    LoadingGraph,
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
 import { child$ } from '@youwol/flux-view'
@@ -107,7 +108,8 @@ export function load$(
                 }
                 return from(
                     installLoadingGraph({
-                        loadingGraph: story.requirements.loadingGraph as any,
+                        loadingGraph: story.requirements
+                            .loadingGraph as LoadingGraph,
                         onEvent: (event) => {
                             loadingScreen.next(event)
                         },
