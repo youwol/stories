@@ -43,8 +43,9 @@ export class ExplorerState extends ExplorerBaseState {
                     story: this.appState.story,
                     document,
                 })
-                if (Array.isArray(this.getNode(parentDocumentId).children))
+                if (Array.isArray(this.getNode(parentDocumentId).children)) {
                     this.addChild(parentDocumentId, childNode)
+                }
             },
         )
     }
@@ -81,7 +82,7 @@ export class ExplorerView extends ExplorerBaseView {
                 style: {
                     zIndex: 20,
                 },
-            } as any)
+            })
         }
     }
 }
@@ -296,7 +297,7 @@ class DragInInsertView implements VirtualDOM {
      * @group Immutable DOM Constants
      */
     ondrop = (ev: DragEvent) => {
-        let This = ev.target as unknown as DragInInsertView
+        const This = ev.target as unknown as DragInInsertView
         const nodeAbove =
             this.index < this.children.length
                 ? this.children[this.index]

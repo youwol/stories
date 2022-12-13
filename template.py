@@ -36,7 +36,10 @@ template = Template(
                 # differed
                 'codemirror': '^5.52.0',
             }
-        )
+        ),
+        devTime={
+            "@types/codemirror": "^5.60.5"
+        }
     ),
     userGuide=True,
     devServer=DevServer(

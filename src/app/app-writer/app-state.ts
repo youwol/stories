@@ -18,7 +18,7 @@ import {
 import { StoryTopBannerView } from './top-banner'
 import { GrapesEditorView, GrapesEditorState } from './grapes-editor'
 import { map, mapTo, mergeMap } from 'rxjs/operators'
-import { installLoadingGraph } from '@youwol/cdn-client'
+import { installLoadingGraph, LoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
 import {
@@ -29,7 +29,6 @@ import {
 } from './bottom-nav'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { HttpHandler } from './http-handler'
-
 
 type GetGlobalContentResponse = StoriesBackend.GetGlobalContentResponse
 /**
@@ -290,7 +289,7 @@ export class AppState implements AppStateCommonInterface {
     }
 
     togglePlugin(packageName: string) {
-        let actualPlugins = this.plugins$.getValue()
+        const actualPlugins = this.plugins$.getValue()
 
         if (actualPlugins.includes(packageName)) {
             this.plugins$.next(actualPlugins.filter((p) => p != packageName))
@@ -303,7 +302,8 @@ export class AppState implements AppStateCommonInterface {
                 mergeMap((resp) => {
                     return from(
                         installLoadingGraph({
-                            loadingGraph: resp.requirements.loadingGraph as any,
+                            loadingGraph: resp.requirements
+                                .loadingGraph as LoadingGraph,
                         }),
                     )
                 }),
@@ -389,7 +389,7 @@ export class AppView implements VirtualDOM {
             mode: 'writer',
         })
 
-        let sideNav = new Dockable.View({
+        const sideNav = new Dockable.View({
             state: this.state.leftNavState,
             styleOptions: { initialPanelSize: '300px' },
         })

@@ -87,15 +87,17 @@ export class SideNavView implements VirtualDOM {
      * @group Immutable DOM Constants
      */
     public readonly onmouseenter = () => {
-        if (this.state$.getValue() == 'floatCollapsed')
+        if (this.state$.getValue() == 'floatCollapsed') {
             this.state$.next('floatExpanded')
+        }
     }
     /**
      * @group Immutable DOM Constants
      */
     public readonly onmouseleave = () => {
-        if (this.state$.getValue() == 'floatExpanded')
+        if (this.state$.getValue() == 'floatExpanded') {
             this.state$.next('floatCollapsed')
+        }
     }
     connectedCallback = (elem: HTMLDivElement) => {
         elem.style.transition = 'width 0.1s ease'

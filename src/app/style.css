@@ -9,19 +9,15 @@
     padding: 0.25em !important;
 }
 
-pre {
-    color: aliceblue !important;
-}
-
 .youwol-definition {
     display: none;
 }
-.fv-tree-arianeLine{
-    display: none
+.fv-tree-arianeLine {
+    display: none;
 }
-.drag-as-child > .fv-tree-arianeLine{
-    display: block
+.drag-as-child > .fv-tree-arianeLine {
+    display: block;
 }
-.gjs-one-bg{
+.gjs-one-bg {
     background-color: rgb(33, 37, 41) !important;
 }
