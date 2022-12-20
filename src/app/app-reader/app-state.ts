@@ -3,12 +3,8 @@ import { BehaviorSubject, from, Observable, ReplaySubject } from 'rxjs'
 import { ExplorerState, ExplorerView } from './explorer.view'
 import * as Dockable from '../common/dockable-tabs/dockable-tabs.view'
 import { StructureTab } from '../common/side-nav.view'
-import {
-    AssetsGateway,
-    StoriesBackend,
-    raiseHTTPErrors,
-} from '@youwol/http-clients'
-
+import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
+import { raiseHTTPErrors } from '@youwol/http-primitives'
 import {
     distinctUntilChanged,
     map,

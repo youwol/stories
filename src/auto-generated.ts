@@ -1,12 +1,13 @@
 
 const runTimeDependencies = {
     "externals": {
-        "@youwol/os-core": "^0.1.1",
+        "@youwol/os-core": "^0.1.5",
         "@youwol/fv-tree": "^0.2.3",
         "@youwol/os-top-banner": "^0.1.1",
         "@youwol/cdn-client": "^1.0.2",
-        "@youwol/http-clients": "^1.0.2",
-        "@youwol/flux-view": "^1.0.3",
+        "@youwol/http-clients": "^2.0.3",
+        "@youwol/http-primitives": "^0.1.2",
+        "@youwol/flux-view": "^1.0.4",
         "@youwol/fv-context-menu": "^0.1.1",
         "rxjs": "^6.5.5",
         "grapesjs": "0.18.3",
@@ -19,7 +20,8 @@ const externals = {
     "@youwol/fv-tree": "window['@youwol/fv-tree_APIv02']",
     "@youwol/os-top-banner": "window['@youwol/os-top-banner_APIv01']",
     "@youwol/cdn-client": "window['@youwol/cdn-client_APIv1']",
-    "@youwol/http-clients": "window['@youwol/http-clients_APIv1']",
+    "@youwol/http-clients": "window['@youwol/http-clients_APIv2']",
+    "@youwol/http-primitives": "window['@youwol/http-primitives_APIv01']",
     "@youwol/flux-view": "window['@youwol/flux-view_APIv1']",
     "@youwol/fv-context-menu": "window['@youwol/fv-context-menu_APIv01']",
     "rxjs": "window['rxjs_APIv6']",
@@ -45,8 +47,12 @@ const exportedSymbols = {
         "exportedSymbol": "@youwol/cdn-client"
     },
     "@youwol/http-clients": {
-        "apiKey": "1",
+        "apiKey": "2",
         "exportedSymbol": "@youwol/http-clients"
+    },
+    "@youwol/http-primitives": {
+        "apiKey": "01",
+        "exportedSymbol": "@youwol/http-primitives"
     },
     "@youwol/flux-view": {
         "apiKey": "1",
@@ -79,6 +85,7 @@ const mainEntry : Object = {
         "@youwol/os-top-banner",
         "@youwol/cdn-client",
         "@youwol/http-clients",
+        "@youwol/http-primitives",
         "@youwol/flux-view",
         "@youwol/fv-context-menu",
         "rxjs",
@@ -95,7 +102,7 @@ const entries = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.5',
+    version:'0.2.7',
     shortDescription:"YouWol Stories application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
@@ -130,7 +137,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/stories#0.2.5~dist/@youwol/stories/${entry.name}.js`
+            `@youwol/stories#0.2.7~dist/@youwol/stories/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),

@@ -1,10 +1,10 @@
 import { forkJoin, from, Observable, of, OperatorFunction } from 'rxjs'
 import {
     AssetsGateway,
-    HTTPError,
     AssetsBackend,
     StoriesBackend,
 } from '@youwol/http-clients'
+import { HTTPError } from '@youwol/http-primitives'
 import { map, mapTo, mergeMap, tap } from 'rxjs/operators'
 
 import {
@@ -12,7 +12,6 @@ import {
     Client,
     installLoadingGraph,
     LoadingScreenView,
-    LoadingGraph,
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
 import { child$ } from '@youwol/flux-view'
@@ -108,8 +107,7 @@ export function load$(
                 }
                 return from(
                     installLoadingGraph({
-                        loadingGraph: story.requirements
-                            .loadingGraph as LoadingGraph,
+                        loadingGraph: story.requirements.loadingGraph,
                         onEvent: (event) => {
                             loadingScreen.next(event)
                         },

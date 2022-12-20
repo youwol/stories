@@ -18,7 +18,7 @@ import {
 import { StoryTopBannerView } from './top-banner'
 import { GrapesEditorView, GrapesEditorState } from './grapes-editor'
 import { map, mapTo, mergeMap } from 'rxjs/operators'
-import { installLoadingGraph, LoadingGraph } from '@youwol/cdn-client'
+import { installLoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
 import {
@@ -302,8 +302,7 @@ export class AppState implements AppStateCommonInterface {
                 mergeMap((resp) => {
                     return from(
                         installLoadingGraph({
-                            loadingGraph: resp.requirements
-                                .loadingGraph as LoadingGraph,
+                            loadingGraph: resp.requirements.loadingGraph,
                         }),
                     )
                 }),
