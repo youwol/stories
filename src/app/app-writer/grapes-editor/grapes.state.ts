@@ -152,10 +152,7 @@ export class GrapesEditorState {
         Object.assign(this, params)
 
         this.storage = new StorageManager({ appState: this.appState })
-        this.subscriptions = [
-            this.connectActions(),
-            //...this.connectEnvGlobals(),
-        ]
+        this.subscriptions = [this.connectActions()]
         const pageLoaded$ = combineLatest([
             this.loadedNativeEditor$,
             this.appState.selectedNode$.pipe(
