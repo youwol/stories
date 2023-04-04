@@ -52,6 +52,7 @@ import {
     installStartingCss,
     postInitConfiguration,
 } from './grapes.config'
+import { PluginsStore, synchronizePlugins } from './grapes.plugins'
 
 export type DisplayMode = 'edit' | 'preview'
 export type DeviceMode =
@@ -109,9 +110,7 @@ export class GrapesEditorState {
     /**
      * @group Mutable
      */
-    public readonly installedPlugins: {
-        [packName: string]: { blocks: string[]; components: string[] }
-    } = {}
+    public readonly installedPlugins: PluginsStore = {}
 
     /**
      * @group State
@@ -253,86 +252,8 @@ export class GrapesEditorState {
                 actionsFactory[mode](editor)
             })
     }
-
-    synchronizePlugins(
-        nativeEditor: grapesjs.Editor,
-        externalPlugins: string[],
-        globalPlugin,
-    ) {
-        const installedPluginsName = Object.keys(this.installedPlugins)
-        const pluginsToAdd = externalPlugins.filter(
-            (candidate) => !installedPluginsName.includes(candidate),
-        )
-        const pluginsToRemove = installedPluginsName.filter(
-            (candidate) => !externalPlugins.includes(candidate),
-        )
-        console.log('synchronize plugins', {
-            requested: externalPlugins,
-            pluginsToAdd,
-            pluginsToRemove,
-        })
-        pluginsToAdd.forEach((pluginName) => {
-            this.loadPlugin(nativeEditor, pluginName)
-        })
-        pluginsToRemove.forEach((pluginName) => {
-            this.uninstallPlugin(nativeEditor, pluginName)
-        })
-        window['globalPlugin'] = globalPlugin
-        this.loadPlugin(nativeEditor, 'globalPlugin')
-    }
-
-    uninstallPlugin(nativeEditor: grapesjs.Editor, pluginName) {
-        if (!this.installedPlugins[pluginName]) {
-            return
-        }
-        const { blocks, components } = this.installedPlugins[pluginName]
-        blocks.forEach((block) => {
-            nativeEditor.BlockManager.remove(block)
-        })
-        components.forEach((component) => {
-            nativeEditor.DomComponents.removeType(component)
-        })
-        delete this.installedPlugins[pluginName]
-    }
-
-    loadPlugin(nativeEditor: grapesjs.Editor, pluginName: string) {
-        console.log('Load plugin', pluginName)
-        this.uninstallPlugin(nativeEditor, pluginName)
-        const plugin = window[pluginName] as unknown as {
-            getComponents
-            getBlocks
-        }
-        const input = {
-            appState: this.appState,
-            grapesEditor: nativeEditor,
-            idFactory: (name) => `${pluginName}#${name}`,
-        }
-        const components = []
-        plugin.getComponents().forEach((ComponentClass) => {
-            const component = new ComponentClass(input)
-            nativeEditor.DomComponents.addType(
-                component.componentType,
-                component,
-            )
-            components.push(component.componentType)
-        })
-        const blocks = []
-        plugin.getBlocks().forEach((BlockClass) => {
-            const block = new BlockClass(input)
-            nativeEditor.BlockManager.add(block.blockType, {
-                ...block,
-                category: {
-                    id: pluginName,
-                    label: pluginName,
-                    open: false,
-                },
-            })
-            blocks.push(block.blockType)
-        })
-        this.installedPlugins[pluginName] = { components, blocks }
-        return { components, blocks }
-    }
 }
+
 function evaluateScript(content, nativeEditor) {
     return from(new Function(content)()(nativeEditor.Canvas.getWindow()))
 }
@@ -343,7 +264,8 @@ function syncPlugins(appState: AppState) {
             switchMap(([nativeEditor, plugins, globalComponents]) => {
                 return evaluateScript(globalComponents, nativeEditor).pipe(
                     tap((globalPlugin) =>
-                        appState.grapesEditorState.synchronizePlugins(
+                        synchronizePlugins(
+                            appState,
                             nativeEditor,
                             plugins,
                             globalPlugin,
