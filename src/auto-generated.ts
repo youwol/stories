@@ -10,7 +10,7 @@ const runTimeDependencies = {
         "@youwol/flux-view": "^1.0.4",
         "@youwol/fv-context-menu": "^0.1.1",
         "rxjs": "^6.5.5",
-        "grapesjs": "0.18.3",
+        "grapesjs": "^0.20.4",
         "codemirror": "^5.52.0"
     },
     "includedInBundle": {}
@@ -25,7 +25,7 @@ const externals = {
     "@youwol/flux-view": "window['@youwol/flux-view_APIv1']",
     "@youwol/fv-context-menu": "window['@youwol/fv-context-menu_APIv01']",
     "rxjs": "window['rxjs_APIv6']",
-    "grapesjs": "window['grapesjs_APIv018']",
+    "grapesjs": "window['grapesjs_APIv020']",
     "codemirror": "window['CodeMirror_APIv5']",
     "rxjs/operators": "window['rxjs_APIv6']['operators']"
 }
@@ -67,7 +67,7 @@ const exportedSymbols = {
         "exportedSymbol": "rxjs"
     },
     "grapesjs": {
-        "apiKey": "018",
+        "apiKey": "020",
         "exportedSymbol": "grapesjs"
     },
     "codemirror": {
@@ -76,8 +76,7 @@ const exportedSymbols = {
     }
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types -- allow to allow no secondary entries
-const mainEntry : Object = {
+const mainEntry : {entryFile: string,loadDependencies:string[]} = {
     "entryFile": "./index.ts",
     "loadDependencies": [
         "@youwol/os-core",
@@ -93,8 +92,8 @@ const mainEntry : Object = {
     ]
 }
 
-// eslint-disable-next-line @typescript-eslint/ban-types -- allow to allow no secondary entries
-const secondaryEntries : Object = {}
+const secondaryEntries : {[k:string]:{entryFile: string, name: string, loadDependencies:string[]}}= {}
+
 const entries = {
      '@youwol/stories': './index.ts',
     ...Object.values(secondaryEntries).reduce( (acc,e) => ({...acc, [`@youwol/stories/${e.name}`]:e.entryFile}), {})
@@ -102,7 +101,7 @@ const entries = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.7',
+    version:'0.2.8',
     shortDescription:"YouWol Stories application",
     developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
@@ -113,16 +112,20 @@ export const setup = {
     externals,
     exportedSymbols,
     entries,
+    secondaryEntries,
     getDependencySymbolExported: (module:string) => {
         return `${exportedSymbols[module].exportedSymbol}_APIv${exportedSymbols[module].apiKey}`
     },
 
-    installMainModule: ({cdnClient, installParameters}:{cdnClient, installParameters?}) => {
+    installMainModule: ({cdnClient, installParameters}:{
+        cdnClient:{install:(unknown) => Promise<Window>},
+        installParameters?
+    }) => {
         const parameters = installParameters || {}
         const scripts = parameters.scripts || []
         const modules = [
             ...(parameters.modules || []),
-            ...mainEntry['loadDependencies'].map( d => `${d}#${runTimeDependencies.externals[d]}`)
+            ...mainEntry.loadDependencies.map( d => `${d}#${runTimeDependencies.externals[d]}`)
         ]
         return cdnClient.install({
             ...parameters,
@@ -132,20 +135,24 @@ export const setup = {
             return window[`@youwol/stories_APIv02`]
         })
     },
-    installAuxiliaryModule: ({name, cdnClient, installParameters}:{name: string, cdnClient, installParameters?}) => {
+    installAuxiliaryModule: ({name, cdnClient, installParameters}:{
+        name: string,
+        cdnClient:{install:(unknown) => Promise<Window>},
+        installParameters?
+    }) => {
         const entry = secondaryEntries[name]
+        if(!entry){
+            throw Error(`Can not find the secondary entry '${name}'. Referenced in template.py?`)
+        }
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/stories#0.2.7~dist/@youwol/stories/${entry.name}.js`
+            `@youwol/stories#0.2.8~dist/@youwol/stories/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
             ...entry.loadDependencies.map( d => `${d}#${runTimeDependencies.externals[d]}`)
         ]
-        if(!entry){
-            throw Error(`Can not find the secondary entry '${name}'. Referenced in template.py?`)
-        }
         return cdnClient.install({
             ...parameters,
             modules,
@@ -153,5 +160,13 @@ export const setup = {
         }).then(() => {
             return window[`@youwol/stories/${entry.name}_APIv02`]
         })
+    },
+    getCdnDependencies(name?: string){
+        if(name && !secondaryEntries[name]){
+            throw Error(`Can not find the secondary entry '${name}'. Referenced in template.py?`)
+        }
+        const deps = name ? secondaryEntries[name].loadDependencies : mainEntry.loadDependencies
+
+        return deps.map( d => `${d}#${runTimeDependencies.externals[d]}`)
     }
 }

@@ -2,23 +2,34 @@ import { AppState } from '../app-state'
 import {
     debounceTime,
     distinctUntilChanged,
+    map,
     mergeMap,
     skip,
     take,
     tap,
 } from 'rxjs/operators'
-import { handleError, ExplorerNode } from '../../common'
+import { ExplorerNode, handleError } from '../../common'
 import { AssetsGateway, StoriesBackend } from '@youwol/http-clients'
 import { BehaviorSubject, of } from 'rxjs'
+import grapesjs from 'grapesjs'
 
 type Document = StoriesBackend.DocumentContentBody
 
-export interface GjsData {
-    'gsj-html': string
-    'gsj-css': string
-    'gsj-styles': string
-    'gsj-components': string
-}
+const wrapperComponent = (
+    node: ExplorerNode,
+    resp: StoriesBackend.DocumentContentBody,
+) => ({
+    type: 'wrapper',
+    style: {
+        height: '100vh',
+        width: '100vw',
+    },
+    attributes: {
+        documentId: node.id,
+        id: `wrapper_${node.id}`,
+    },
+    components: JSON.parse(resp.components == '' ? '[]' : resp.components),
+})
 
 /**
  * @category HTTP
@@ -44,54 +55,69 @@ export class StorageManager {
     constructor(params: { appState: AppState }) {
         Object.assign(this, params)
     }
-
-    load(_keys, clb, _clbErr) {
-        this.appState.selectedNode$
-            .pipe(
-                take(1),
-                mergeMap((node: ExplorerNode) => {
-                    if (this.documentsChange$[node.id]) {
-                        return of(this.documentsChange$[node.id].getValue())
-                    }
-                    return this.client
-                        .getContent$({
-                            storyId: node.getDocument().storyId,
-                            documentId: node.getDocument().documentId,
-                        })
-                        .pipe(
-                            handleError({
-                                browserContext: 'Selected node raw content',
-                            }),
-                            tap((resp) => {
-                                this.createCache(node.id, resp)
-                            }),
-                        )
-                }),
-            )
-            .subscribe((resp) => {
-                clb({
-                    'gjs-html': resp.html,
-                    'gjs-css': resp.css,
-                    'gjs-components': resp.components,
-                    'gjs-styles': resp.styles,
-                })
-            })
+    async load(): Promise<grapesjs.ProjectData> {
+        return new Promise((resolve) => {
+            this.appState.selectedNode$
+                .pipe(
+                    take(1),
+                    mergeMap((node: ExplorerNode) => {
+                        if (this.documentsChange$[node.id]) {
+                            return of([
+                                node,
+                                this.documentsChange$[node.id].getValue(),
+                            ])
+                        }
+                        return this.client
+                            .getContent$({
+                                storyId: node.getDocument().storyId,
+                                documentId: node.getDocument().documentId,
+                            })
+                            .pipe(
+                                handleError({
+                                    browserContext: 'Selected node raw content',
+                                }),
+                                tap((resp) => {
+                                    this.createCache(node.id, resp)
+                                }),
+                                map((resp) => [node, resp]),
+                            )
+                    }),
+                )
+                .subscribe(
+                    ([node, resp]: [
+                        ExplorerNode,
+                        StoriesBackend.DocumentContentBody,
+                    ]) => {
+                        const project = {
+                            pages: [
+                                {
+                                    component: wrapperComponent(node, resp),
+                                },
+                            ],
+                            styles:
+                                resp.styles == ''
+                                    ? '[]'
+                                    : JSON.parse(resp.styles),
+                        }
+                        console.log('Loaded ' + node.id, { project, resp })
+                        resolve(project)
+                    },
+                )
+        })
     }
 
-    store(gjsData, _clb, _clbErr) {
-        const components = JSON.parse(gjsData['gjs-components'])
-        if (components.length == 0) {
-            // this is when the canvas is cleared before reloading the new document
-            return
-        }
-        const documentId = components[0].attributes.id
+    store(data) {
+        const frame = data.pages[0].frames[0]
+        const wrapper = frame.component
+        const documentId = wrapper.attributes.documentId
         const document: StoriesBackend.DocumentContentBody = {
-            html: gjsData['gjs-html'],
-            css: gjsData['gjs-css'],
-            components: gjsData['gjs-components'],
-            styles: gjsData['gjs-styles'],
+            html: this.appState.grapesEditorState.nativeEditor.getHtml(),
+            css: this.appState.grapesEditorState.nativeEditor.getCss() as string,
+            components: JSON.stringify(wrapper.components) || '[]',
+            styles: JSON.stringify(data.styles),
         }
         this.documentsChange$[documentId].next(document)
+        return Promise.resolve()
     }
 
     createCache(documentId: string, document: Document) {
@@ -150,6 +176,7 @@ export class StorageManager {
                 handleError({ browserContext: 'save document' }),
             )
             .subscribe(() => {
+                console.log(`Saved ${documentId}`)
                 const node = this.appState.explorerState.getNode(documentId)
                 node.removeProcess('content-saving')
             })
