@@ -42,7 +42,7 @@ if (searchParams.has('mode') && searchParams.get('mode') == 'reader') {
                 'fontawesome#5.12.1~css/all.min.css',
                 '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
                 'highlight.js#11.2.0~styles/default.css',
-                'grapesjs#0.18.3~css/grapes.min.css',
+                `grapesjs#${setup.runTimeDependencies.externals.grapesjs}~css/grapes.min.css`,
             ],
             onEvent: (ev) => {
                 loadingScreen.next(ev)
