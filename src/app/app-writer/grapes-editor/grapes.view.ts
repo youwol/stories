@@ -75,7 +75,17 @@ export class GrapesEditorView implements VirtualDOM {
         this.children = [
             {
                 class: 'd-flex flex-column w-100 h-100',
-                children: [this.canvasView],
+                children: [
+                    {
+                        class: 'w-100 h-100',
+                        children: [
+                            child$(this.state.ready$, () => ({}), {
+                                untilFirst: new LoadingGrapesView(),
+                            }),
+                            this.canvasView,
+                        ],
+                    },
+                ],
             },
             new Dockable.View({
                 state: this.rightNavState,
@@ -93,6 +103,32 @@ export class GrapesEditorView implements VirtualDOM {
             elem.ownSubscriptions(...this.state.subscriptions)
         }
     }
+}
+
+/**
+ * @category View
+ */
+export class LoadingGrapesView implements VirtualDOM {
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly class =
+        'w-100 h-100 d-flex flex-column justify-content-center'
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly style = {
+        backgroundColor: 'gray',
+        zIndex: 1,
+    }
+    /**
+     * @group Immutable DOM Constants
+     */
+    public readonly children = [
+        {
+            class: 'mx-auto fa-2x fas fa-spinner fa-spin',
+        },
+    ]
 }
 
 /**
