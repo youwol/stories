@@ -4,7 +4,7 @@ import { DeviceMode, DisplayMode, GrapesEditorState } from './grapes.state'
 import { BehaviorSubject, Observable, ReplaySubject } from 'rxjs'
 
 import { styleToggleBase, ToggleMenu } from '../utils'
-import * as grapesjs from 'grapesjs'
+import grapesjs from 'grapesjs'
 import { ToolboxesTab } from './toolboxes.view'
 import * as Dockable from '../../common/dockable-tabs/dockable-tabs.view'
 
@@ -83,7 +83,7 @@ export class GrapesEditorView implements VirtualDOM {
             }),
         ]
 
-        this.state.load({
+        this.state.initializeGrapesEditor({
             canvas$: this.canvasView.htmlElement$,
             blocksPanel$: blocksTabView.htmlElement$,
             stylesPanel$: styleTabView.htmlElement$,

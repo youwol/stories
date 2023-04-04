@@ -1,10 +1,11 @@
 import { getStylesSectors } from './manager-style'
-import * as grapesjs from 'grapesjs'
+import grapesjs from 'grapesjs'
 import { install } from '@youwol/cdn-client'
 import { GrapesEditorState } from './grapes.state'
-import { StorageManager } from './grapes.storage'
 import { AppState } from '../app-state'
-
+import { StorageManager } from './grapes.storage'
+import { from, Observable } from 'rxjs'
+import { map, mergeMap } from 'rxjs/operators'
 /**
  *
  * @param canvas
@@ -28,7 +29,10 @@ export function grapesConfig({
         autorender: false,
         container: canvas,
         canvas: {
-            styles: [],
+            styles: [
+                // styles are not included here as grapesjs does not wait for them to be parsed before rendering a page
+                // for now see {@link installStartingCss}
+            ],
             scripts: [
                 '/api/assets-gateway/raw/package/QHlvdXdvbC9jZG4tY2xpZW50/latest/dist/@youwol/cdn-client.js',
             ],
@@ -62,21 +66,29 @@ export function grapesConfig({
         storageManager: {
             type: StorageManager.type,
             autosave: true, // Store data automatically
-            autoload: true, // Autoload stored data on init
+            autoload: false, // Pages loading are handled manually
             stepsBeforeSave: 1,
         },
     }
 }
 
-export function installStartingCss(editor: grapesjs.Editor) {
-    return install({
-        css: [
-            'bootstrap#4.4.1~bootstrap.min.css',
-            'fontawesome#5.12.1~css/all.min.css',
-            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
-        ],
-        executingWindow: editor.Canvas.getWindow(),
-    })
+export function installStartingCss() {
+    return (obs: Observable<grapesjs.Editor>) => {
+        return obs.pipe(
+            mergeMap((editor) =>
+                from(
+                    install({
+                        css: [
+                            'bootstrap#4.4.1~bootstrap.min.css',
+                            'fontawesome#5.12.1~css/all.min.css',
+                            '@youwol/fv-widgets#latest~dist/assets/styles/style.youwol.css',
+                        ],
+                        executingWindow: editor.Canvas.getWindow(),
+                    }),
+                ).pipe(map(() => editor)),
+            ),
+        )
+    }
 }
 
 export function postInitConfiguration(
