@@ -20,7 +20,7 @@ load_dependencies = {
     '@youwol/fv-context-menu': '^0.1.1',
     'rxjs': '^6.5.5',
     # do not '^' this version : latter versions have some changes in module definition
-    'grapesjs': '0.18.3',
+    'grapesjs': '^0.20.4',
 }
 
 template = Template(
