@@ -77,7 +77,7 @@ export class GrapesEditorView implements VirtualDOM {
                 class: 'd-flex flex-column w-100 h-100',
                 children: [
                     {
-                        class: 'w-100 h-100',
+                        class: 'w-100 h-100 overflow-hidden',
                         children: [
                             child$(this.state.ready$, () => ({}), {
                                 untilFirst: new LoadingGrapesView(),
