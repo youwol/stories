@@ -4,7 +4,7 @@ const runTimeDependencies = {
         "@youwol/os-core": "^0.1.5",
         "@youwol/fv-tree": "^0.2.3",
         "@youwol/os-top-banner": "^0.1.1",
-        "@youwol/cdn-client": "^1.0.2",
+        "@youwol/cdn-client": "^2.0.4",
         "@youwol/http-clients": "^2.0.3",
         "@youwol/http-primitives": "^0.1.2",
         "@youwol/flux-view": "^1.0.4",
@@ -19,7 +19,7 @@ const externals = {
     "@youwol/os-core": "window['@youwol/os-core_APIv01']",
     "@youwol/fv-tree": "window['@youwol/fv-tree_APIv02']",
     "@youwol/os-top-banner": "window['@youwol/os-top-banner_APIv01']",
-    "@youwol/cdn-client": "window['@youwol/cdn-client_APIv1']",
+    "@youwol/cdn-client": "window['@youwol/cdn-client_APIv2']",
     "@youwol/http-clients": "window['@youwol/http-clients_APIv2']",
     "@youwol/http-primitives": "window['@youwol/http-primitives_APIv01']",
     "@youwol/flux-view": "window['@youwol/flux-view_APIv1']",
@@ -43,7 +43,7 @@ const exportedSymbols = {
         "exportedSymbol": "@youwol/os-top-banner"
     },
     "@youwol/cdn-client": {
-        "apiKey": "1",
+        "apiKey": "2",
         "exportedSymbol": "@youwol/cdn-client"
     },
     "@youwol/http-clients": {
@@ -101,9 +101,9 @@ const entries = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.8',
+    version:'0.2.9-wip',
     shortDescription:"YouWol Stories application",
-    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
+    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
     sourceGithub:'https://github.com/youwol/stories',
     userGuide:'https://l.youwol.com/doc/@youwol/stories',
@@ -118,7 +118,7 @@ export const setup = {
     },
 
     installMainModule: ({cdnClient, installParameters}:{
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const parameters = installParameters || {}
@@ -137,7 +137,7 @@ export const setup = {
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
         name: string,
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const entry = secondaryEntries[name]
@@ -147,7 +147,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/stories#0.2.8~dist/@youwol/stories/${entry.name}.js`
+            `@youwol/stories#0.2.9-wip~dist/@youwol/stories/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),

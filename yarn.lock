@@ -1182,6 +1182,11 @@
     "@typescript-eslint/types" "5.57.0"
     eslint-visitor-keys "^3.3.0"
 
+"@ungap/custom-elements@1.2.0":
+  version "1.2.0"
+  resolved "https://registry.yarnpkg.com/@ungap/custom-elements/-/custom-elements-1.2.0.tgz#e211a25250af329b746eadc1a345b7df87e440ac"
+  integrity sha512-zdSuu79stAwVUtzkQU9B5jhGh2LavtkeX4kxd2jtMJmZt7QqRJ1KJW5bukt/vUOaUs3z674GHd+nqYm0bu0Gyg==
+
 "@webassemblyjs/ast@1.11.1":
   version "1.11.1"
   resolved "https://registry.yarnpkg.com/@webassemblyjs/ast/-/ast-1.11.1.tgz#2bfd767eae1a6996f432ff7e8d7fc75679c0b6a7"
@@ -1337,6 +1342,15 @@
   dependencies:
     semver "^7.3.4"
 
+"@youwol/cdn-client@^2.0.4":
+  version "2.0.4"
+  resolved "https://registry.yarnpkg.com/@youwol/cdn-client/-/cdn-client-2.0.4.tgz#e09318845ff38d7a83114104fadd0e3b2f83f23d"
+  integrity sha512-GlJ+TZzjvL7JNwuT2jTos2YLrP4jRFqgScV9ctOOWagSqZvbwnxAcMC6YSVprd3bZdQ2nLGZ1u9R5P9OTeFZvg==
+  dependencies:
+    "@youwol/flux-view" "^1.1.0"
+    rxjs "^6.5.5"
+    semver "^7.3.4"
+
 "@youwol/eslint-config@^0.1.0":
   version "0.1.0"
   resolved "https://registry.yarnpkg.com/@youwol/eslint-config/-/eslint-config-0.1.0.tgz#0c851e1f342870012e3f34b12ab7890b0b9ac681"
@@ -1357,6 +1371,14 @@
   resolved "https://registry.yarnpkg.com/@youwol/flux-view/-/flux-view-1.0.4.tgz#b1031003c5c335e1a687962fad79241d3f31424b"
   integrity sha512-/zfg0bJt2NSFhIG9hf6aP8bsbfTSIZ7pr2qndlOeNbilCmiC7eLFuiULL4DfIwXJHi1rCAnpxbmiMxzgnQCeWA==
   dependencies:
+    rxjs "^6.5.5"
+
+"@youwol/flux-view@^1.1.0":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@youwol/flux-view/-/flux-view-1.1.1.tgz#66c41672b913b99ace5ce6e70d05ad6a9daea579"
+  integrity sha512-/EWXYnRRpRI5BMu9IRcwqPJmlf9MZQMS6FaRp3yCzr9RAxhuAbvSZUDN18OJGg3hUvUtRTmQOUWtfQaVypH8Tg==
+  dependencies:
+    "@ungap/custom-elements" "1.2.0"
     rxjs "^6.5.5"
 
 "@youwol/fv-context-menu@^0.1.1":
