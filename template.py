@@ -18,15 +18,15 @@ folder_path = Path(__file__).parent
 pkg_json = parse_json(folder_path / 'package.json')
 
 load_dependencies = {
-    '@youwol/os-core': '^0.1.5',
-    '@youwol/fv-tree': '^0.2.3',
-    '@youwol/os-top-banner': '^0.1.1',
-    '@youwol/cdn-client': '^1.0.2',
-    '@youwol/http-clients': '^2.0.3',
-    '@youwol/http-primitives': '^0.1.2',
-    '@youwol/flux-view': '^1.0.4',
-    '@youwol/fv-context-menu': '^0.1.1',
-    'rxjs': '^6.5.5',
+    "@youwol/os-core": "^0.1.5",
+    "@youwol/fv-tree": "^0.2.3",
+    "@youwol/os-top-banner": "^0.1.1",
+    "@youwol/cdn-client": "^2.0.4",
+    "@youwol/http-clients": "^2.0.3",
+    "@youwol/http-primitives": "^0.1.2",
+    "@youwol/flux-view": "^1.0.4",
+    "@youwol/fv-context-menu": "^0.1.1",
+    "rxjs": "^6.5.5",
     # do not '^' this version : latter versions have some changes in module definition
     'grapesjs': '^0.20.4',
 }
