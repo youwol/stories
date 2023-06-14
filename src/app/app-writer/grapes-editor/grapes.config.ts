@@ -1,11 +1,12 @@
 import { getStylesSectors } from './manager-style'
 import grapesjs from 'grapesjs'
-import { install } from '@youwol/cdn-client'
+import { install, getUrlBase } from '@youwol/cdn-client'
 import { GrapesEditorState } from './grapes.state'
 import { AppState } from '../app-state'
 import { StorageManager } from './grapes.storage'
 import { from, Observable } from 'rxjs'
 import { map, mergeMap } from 'rxjs/operators'
+import { setup } from '../../../auto-generated'
 /**
  *
  * @param canvas
@@ -34,7 +35,10 @@ export function grapesConfig({
                 // for now see {@link installStartingCss}
             ],
             scripts: [
-                '/api/assets-gateway/raw/package/QHlvdXdvbC9jZG4tY2xpZW50/latest/dist/@youwol/cdn-client.js',
+                getUrlBase(
+                    '@youwol/cdn-client',
+                    setup.runTimeDependencies.externals['@youwol/cdn-client'],
+                ) + '/dist/@youwol/cdn-client.js',
             ],
         },
         height: '100%',
