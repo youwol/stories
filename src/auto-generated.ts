@@ -101,9 +101,9 @@ const entries = {
 export const setup = {
     name:'@youwol/stories',
         assetId:'QHlvdXdvbC9zdG9yaWVz',
-    version:'0.2.8',
+    version:'0.2.9-wip',
     shortDescription:"YouWol Stories application",
-    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories',
+    developerDocumentation:'https://platform.youwol.com/applications/@youwol/cdn-explorer/latest?package=@youwol/stories&tab=doc',
     npmPackage:'https://www.npmjs.com/package/@youwol/stories',
     sourceGithub:'https://github.com/youwol/stories',
     userGuide:'https://l.youwol.com/doc/@youwol/stories',
@@ -118,7 +118,7 @@ export const setup = {
     },
 
     installMainModule: ({cdnClient, installParameters}:{
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const parameters = installParameters || {}
@@ -137,7 +137,7 @@ export const setup = {
     },
     installAuxiliaryModule: ({name, cdnClient, installParameters}:{
         name: string,
-        cdnClient:{install:(unknown) => Promise<Window>},
+        cdnClient:{install:(unknown) => Promise<WindowOrWorkerGlobalScope>},
         installParameters?
     }) => {
         const entry = secondaryEntries[name]
@@ -147,7 +147,7 @@ export const setup = {
         const parameters = installParameters || {}
         const scripts = [
             ...(parameters.scripts || []),
-            `@youwol/stories#0.2.8~dist/@youwol/stories/${entry.name}.js`
+            `@youwol/stories#0.2.9-wip~dist/@youwol/stories/${entry.name}.js`
         ]
         const modules = [
             ...(parameters.modules || []),
