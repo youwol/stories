@@ -12,7 +12,6 @@ from youwol.utils.context import Context
 
 
 class PipelineFactory(IPipelineFactory):
-
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -24,7 +23,7 @@ class PipelineFactory(IPipelineFactory):
                 links=[
                     Link(name="doc", url="dist/docs/index.html"),
                     Link(name="coverage", url="coverage/lcov-report/index.html"),
-                    Link(name="bundle-analysis", url="dist/bundle-analysis.html")
+                    Link(name="bundle-analysis", url="dist/bundle-analysis.html"),
                 ],
                 graphics=BrowserAppGraphics(
                     appIcon=icon(size_px=80),
@@ -34,20 +33,17 @@ class PipelineFactory(IPipelineFactory):
                         "style": {
                             "opacity": 0.3,
                             "background-image": bgImage,
-                            "background-size": "cover"
-                        }
-                    }
+                            "background-size": "cover",
+                        },
+                    },
                 ),
                 execution=Execution(
                     standalone=True,
                     parametrized=[
-                        OpenWith(
-                            match={"kind": "story"},
-                            parameters={"id": 'rawId'}
-                        )
-                    ]
-                )
-            )
+                        OpenWith(match={"kind": "story"}, parameters={"id": "rawId"})
+                    ],
+                ),
+            ),
         )
         return await pipeline(config, context)
 
