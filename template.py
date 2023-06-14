@@ -1,9 +1,17 @@
 import shutil
 from pathlib import Path
 
-from youwol.pipelines.pipeline_typescript_weback_npm import Template, PackageType, Dependencies, \
-    RunTimeDeps, generate_template, DevServer, Bundles, MainModule
-from youwol_utils import parse_json
+from youwol.pipelines.pipeline_typescript_weback_npm import (
+    Template,
+    PackageType,
+    Dependencies,
+    RunTimeDeps,
+    generate_template,
+    DevServer,
+    Bundles,
+    MainModule,
+)
+from youwol.utils import parse_json
 
 folder_path = Path(__file__).parent
 
