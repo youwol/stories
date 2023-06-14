@@ -3,7 +3,7 @@ from pathlib import Path
 
 from youwol.pipelines.pipeline_typescript_weback_npm import Template, PackageType, Dependencies, \
     RunTimeDeps, generate_template, DevServer, Bundles, MainModule
-from youwol_utils import parse_json
+from youwol.utils import parse_json
 
 folder_path = Path(__file__).parent
 
@@ -67,5 +67,3 @@ for file in ['README.md', '.gitignore', '.npmignore', '.prettierignore', 'LICENS
         src=folder_path / '.template' / file,
         dst=folder_path / file
     )
-
-
