@@ -21,17 +21,20 @@ class PipelineFactory(IPipelineFactory):
                     Link(name="bundle-analysis", url="dist/bundle-analysis.html")
                 ],
                 graphics=BrowserAppGraphics(
-                    appIcon={"style": {
-                        "width": "80px",
-                        "height": "80px",
-                        "background-image": bgImage,
-                        "background-size": "contain",
-                        "background-repeat": "no-repeat",
-                        "background-position": "center center",
-                        "filter": "drop-shadow(rgb(0, 0, 0) 1px 3px 5px)",
-                        "border-radius": "20px"
-                    }},
+                    appIcon={
+                        "class": "appIcon",
+                        "style": {
+                            "width": "80px",
+                            "height": "80px",
+                            "background-image": bgImage,
+                            "background-size": "contain",
+                            "background-repeat": "no-repeat",
+                            "background-position": "center center",
+                            "filter": "drop-shadow(rgb(0, 0, 0) 1px 3px 5px)",
+                            "border-radius": "20px"
+                        }},
                     fileIcon={
+                        "class": "fileIcon",
                         "style": {
                             "width": "30px",
                             "height": "30px",
@@ -44,7 +47,7 @@ class PipelineFactory(IPipelineFactory):
                         }
                     },
                     background={
-                        "class": "h-100 w-100",
+                        "class": "backgroundIcon",
                         "style": {
                             "opacity": 0.3,
                             "background-image": bgImage,
