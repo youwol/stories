@@ -18,7 +18,7 @@ import {
 import { StoryTopBannerView } from './top-banner'
 import { GrapesEditorView, GrapesEditorState } from './grapes-editor'
 import { map, mapTo, mergeMap } from 'rxjs/operators'
-import { installLoadingGraph } from '@youwol/cdn-client'
+import { installLoadingGraph, LoadingGraph } from '@youwol/cdn-client'
 import { Code } from './models'
 import { StructureTab } from '../common/side-nav.view'
 import {
@@ -300,9 +300,12 @@ export class AppState implements AppStateCommonInterface {
             .pipe(
                 handleError({ browserContext: 'add plugin' }),
                 mergeMap((resp) => {
+                    // TODO: http-clients.StoriesBackend need to be updated such that the 'aliases' property
+                    //  is exposed in `LoadingGraph.lock`. TG-1769
                     return from(
                         installLoadingGraph({
-                            loadingGraph: resp.requirements.loadingGraph,
+                            loadingGraph: resp.requirements
+                                .loadingGraph as LoadingGraph,
                         }),
                     )
                 }),

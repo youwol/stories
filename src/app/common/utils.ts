@@ -11,6 +11,7 @@ import {
     CdnMessageEvent,
     Client,
     installLoadingGraph,
+    LoadingGraph,
     LoadingScreenView,
 } from '@youwol/cdn-client'
 import { ChildApplicationAPI } from '@youwol/os-core'
@@ -105,9 +106,12 @@ export function load$(
                 if (!story.requirements.loadingGraph || !loadPlugins) {
                     return of(story)
                 }
+                // TODO: http-clients.StoriesBackend need to be updated such that the 'aliases' property
+                //  is exposed in `LoadingGraph.lock`. TG-1769
                 return from(
                     installLoadingGraph({
-                        loadingGraph: story.requirements.loadingGraph,
+                        loadingGraph: story.requirements
+                            .loadingGraph as LoadingGraph,
                         onEvent: (event) => {
                             loadingScreen.next(event)
                         },
