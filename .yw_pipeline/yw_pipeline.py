@@ -19,7 +19,7 @@ class PipelineFactory(IPipelineFactory):
         config = PipelineConfig(
             with_tags=["flux"],
             target=BrowserApp(
-                displayName="Story",
+                displayName="Story builder",
                 links=[
                     Link(name="doc", url="dist/docs/index.html"),
                     Link(name="coverage", url="coverage/lcov-report/index.html"),
