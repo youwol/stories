@@ -7,7 +7,7 @@ from youwol.app.environment.models_project import (
     OpenWith,
     Link,
 )
-from youwol.pipelines.pipeline_typescript_weback_npm import pipeline, PipelineConfig
+from youwol.pipelines.pipeline_typescript_weback_npm import pipeline, PipelineConfig, PublishConfig
 from youwol.utils.context import Context
 
 
@@ -44,6 +44,9 @@ class PipelineFactory(IPipelineFactory):
                     ],
                 ),
             ),
+            publishConfig=PublishConfig(
+                packagedFolders=["assets"],
+            )
         )
         return await pipeline(config, context)
 
